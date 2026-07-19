@@ -49,6 +49,8 @@ def build_matcher_config(args):
         config['ratio'] = args.mat_ratio
     if args.mat_cross_check is not None:
         config['cross_check'] = args.mat_cross_check
+    if args.mat_score_threshold is not None:
+        config['score_threshold'] = args.mat_score_threshold
     return config
 
 
@@ -58,6 +60,8 @@ def build_preprocessor_config(args):
         config['device'] = args.device
     if args.modelpath is not None:
         config['modelpath'] = args.modelpath
+    if args.modelpathlg is not None:
+        config['modelpath_lg'] = args.modelpathlg
     return config
 
 
@@ -97,6 +101,8 @@ def performance_tests_parser():
                             choices=available_devices, help='The device on which the script will be run')
     arg_parser.add_argument('-mp', '--modelpath', type=Path, default=None,
                             help='Path to models')
+    arg_parser.add_argument('-mplg', '--modelpathlg', type=Path, default=None,
+                            help='Path to LightGlue model')
 
     det_group = arg_parser.add_argument_group('Detector config')
     det_group.add_argument('-dn', '--det-nfeatures', type=int, default=None,
@@ -121,6 +127,8 @@ def performance_tests_parser():
                            help='Ratio threshold for KNN')
     mat_group.add_argument('-mc', '--mat-cross-check', action='store_true', default=None,
                            help='Enable cross-check for BF matcher')
+    mat_group.add_argument('-mst', '--mat-score-threshold', type=float, default=None,
+                           help='scoreThreshold for LightGlue matcher')
 
     arg_parser.add_argument('-n', '--iterations', type=int, default=10,
                             help='Number of iterations for performance testing (default: 10)')

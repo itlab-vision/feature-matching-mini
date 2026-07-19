@@ -27,7 +27,7 @@ class OpenCVDNNFeatureExtractors(Detector, Descriptor, register=False):
 
         kp, des = self.extractor.detectAndCompute(img, None)
         self._logger.info(f"{self.extractor_name} found {len(kp)} points")
-        OpenCVDNNFeatureExtractors._extracted_data = {'kp': kp, 'des': des}
+        OpenCVDNNFeatureExtractors._extracted_data = {'kp': kp, 'des': des, 'img_shape': img.shape}
         return OpenCVDNNFeatureExtractors._extracted_data
 
     def detect(self, img):
@@ -74,7 +74,7 @@ class DISKOpenCV(OpenCVDNNFeatureExtractors):
     }
 
     def __init__(self, extractor_name, logger, config):
-        disk_model_path = config.pop('modelpath', "models/disk.onnx")
+        disk_model_path = config.pop('modelpath', "models/disk_1024.onnx")
         mapped_config = {}
         for config_key, value in config.items():
             if config_key in self._PARAM_MAPPING:

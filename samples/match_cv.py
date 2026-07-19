@@ -46,6 +46,8 @@ def parser():
                             help='Path to save result image')
     arg_parser.add_argument('-mp', '--modelpath', type=Path, default=None,
                             help='Path to models')
+    arg_parser.add_argument('-mplg', '--modelpathlg', type=Path, default=None,
+                            help='Path to LightGlue model')
 
     det_group = arg_parser.add_argument_group('Detector config')
     det_group.add_argument('-dn', '--det-nfeatures', type=int, default=None,
@@ -70,6 +72,8 @@ def parser():
                            help='Ratio threshold for KNN')
     mat_group.add_argument('-mc', '--mat-cross-check', action='store_true', default=None,
                            help='Enable cross-check for BF matcher')
+    mat_group.add_argument('-mst', '--mat-score-threshold', type=float, default=None,
+                           help='scoreThreshold for LightGlue matcher')
     return arg_parser.parse_args()
 
 

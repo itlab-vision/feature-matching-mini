@@ -14,6 +14,7 @@ from src.descriptors import Descriptor  # noqa: E402
 from src.matchers import Matcher  # noqa: E402
 from samples.performance_profiler import PerformanceProfiler  # noqa: E402
 from src.opencv_dnn_extractors import ALIKEDOpenCV, DISKOpenCV  # noqa: E402, F401
+from src.opencv_dnn_matchers import LightGlueOpenCVMatcher  # noqa: E402, F401
 
 
 logging.basicConfig(level=logging.INFO, format='[ %(levelname)s ] %(message)s')
@@ -52,10 +53,10 @@ def _dnn_staged_perf_test(logger, profiler, descriptor, descriptor_name,
     min_time_matcher = np.min(times_matchers)
     mean_time_matcher = np.mean(times_matchers)
 
-    logger.info(f"\nMin time feature extract: {min_time_detectors_and_descriptors}\n"
-                f"Mean time feature extract: {mean_time_detectors_and_descriptors}\n"
-                f"Min time match: {min_time_matcher}\n"
-                f"Mean time match: {mean_time_matcher}\n"
+    logger.info(f"\nMin time feature extract: {min_time_detectors_and_descriptors:.5f}\n"
+                f"Mean time feature extract: {mean_time_detectors_and_descriptors:.5f}\n"
+                f"Min time match: {min_time_matcher:.5f}\n"
+                f"Mean time match: {mean_time_matcher:.5f}\n"
                 f"Number of key points 1: {count_kp0}\n"
                 f"Number of key points 2: {count_kp1}\n"
                 f"Descriptors dimension: {descriptor_dimension}\n")
@@ -101,12 +102,12 @@ def _opencv_staged_perf_test(logger, profiler, detector, detector_name, descript
     min_time_matcher = np.min(times_matchers)
     mean_time_matcher = np.mean(times_matchers)
 
-    logger.info(f"\nMin time detection: {min_time_detector}\n"
-                f"Mean time detection: {mean_time_detector}\n"
-                f"Min time descriptor: {min_time_descriptor}\n"
-                f"Mean time descriptor: {mean_time_descriptor}\n"
-                f"Min time match: {min_time_matcher}\n"
-                f"Mean time match: {mean_time_matcher}\n"
+    logger.info(f"\nMin time detection: {min_time_detector:.5f}\n"
+                f"Mean time detection: {mean_time_detector:.5f}\n"
+                f"Min time descriptor: {min_time_descriptor:.5f}\n"
+                f"Mean time descriptor: {mean_time_descriptor:.5f}\n"
+                f"Min time match: {min_time_matcher:.5f}\n"
+                f"Mean time match: {mean_time_matcher:.5f}\n"
                 f"Number of key points 1: {count_kp0}\n"
                 f"Number of key points 2: {count_kp1}\n"
                 f"Descriptors dimension: {descriptor_dimension}\n")

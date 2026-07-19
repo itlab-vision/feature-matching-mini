@@ -13,7 +13,7 @@ OPENCV_DETECTORS = {'sift', 'orb', 'fast', 'akaze', 'brisk', 'kaze', 'gftt', 'ms
 OPENCV_DESCRIPTORS = {'sift', 'orb', 'akaze', 'brisk', 'kaze', 'brief', 'freak', 'daisy', 'latch', 'beblid', 'teblid',
                       'vgg', 'boostdesc', 'diskopencv', 'alikedopencv'}
 
-OPENCV_MATCHERS = {'bf', 'flann'}
+OPENCV_MATCHERS = {'bf', 'flann', 'lightglueopencv'}
 OPENCV_MATCHERS_MODE = {'simple', 'knn'}
 
 
@@ -67,9 +67,9 @@ DESCRIPTOR_MATCHER_COMPATIBILITY = {
     'superpoint': ['bf', 'flann'],
     'superpoint_lightglue': ['lightglue'],
     'disk_lightglue': ['lightglue'],
-    'diskopencv': ['bf', 'flann'],
+    'diskopencv': ['bf', 'flann', 'lightglueopencv'],
     'sift_lightglue': ['lightglue'],
     'aliked_lightglue': ['lightglue'],
-    'alikedopencv': ['bf', 'flann'],
+    'alikedopencv': ['bf', 'flann', 'lightglueopencv'],
     'doghardnet_lightglue': ['lightglue'],
 }
