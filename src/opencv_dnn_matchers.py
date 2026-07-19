@@ -12,6 +12,7 @@ class LightGlueOpenCVMatcher(Matcher):
             self.lightglue_model_path = config.pop('modelpath_lg', "models/lightglue_for_aliked.onnx")
         self.scoreThreshold = config.pop('score_threshold', 0.1)
         self.matcher = self._init_matcher()
+        self.mode = config.get('mode', 'simple')
 
     def _init_matcher(self):
         return cv.LightGlueMatcher.create(self.lightglue_model_path, scoreThreshold=self.scoreThreshold)
@@ -32,6 +33,11 @@ class LightGlueOpenCVMatcher(Matcher):
         kpts1_mat = cv.KeyPoint_convert(kp1)
         kpts2_mat = cv.KeyPoint_convert(kp2)
         self.matcher.setPairInfo(kpts1_mat, kpts2_mat, (w1, h1), (w2, h2))
-        matches = self.matcher.match(des1, des2)
-        self._logger.info(f"LightGlue found {len(matches)} matches")
+        if self.mode == 'knn':
+            matches = self.matcher.knnMatch(des1, des2, k=1)
+            valid_matches = [m for m in matches if m]
+            self._logger.info(f"LightGlue found {len(valid_matches)} matches")
+        else:
+            matches = self.matcher.match(des1, des2)
+            self._logger.info(f"LightGlue found {len(matches)} matches")
         return {'matches': matches}
