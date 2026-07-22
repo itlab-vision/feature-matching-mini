@@ -28,7 +28,7 @@ def build_detector_config(args):
 
 def build_descriptor_config(args):
     config = dict()
-    if (args.device is not None) and (args.descriptor in DNN_DESCRIPTORS):
+    if (args.device is not None) and (args.descriptor in DNN_DESCRIPTORS or args.descriptor in ['tfeat']):
         config['device'] = args.device
     if args.des_nfeatures is not None:
         config['nfeatures'] = args.des_nfeatures
@@ -36,6 +36,12 @@ def build_descriptor_config(args):
         config['threshold'] = args.des_threshold
     if args.des_scale is not None:
         config['scale_factor'] = args.des_scale
+    if args.tfeat_model_path is not None:
+        config['tfeat_model_path'] = args.tfeat_model_path
+    if args.tfeat_model_name is not None:
+        config['tfeat_model_name'] = args.tfeat_model_name
+    if args.magfactor is not None:
+        config['magfactor'] = args.magfactor
     return config
 
 
@@ -119,6 +125,12 @@ def performance_tests_parser():
                            help='Descriptor threshold')
     des_group.add_argument('-dss', '--des-scale', type=float, default=None,
                            help='Scale factor')
+    des_group.add_argument('-tmp', '--tfeat-model-path', type=str, default=None,
+                           help='TFeat Model Path')
+    des_group.add_argument('-tmn', '--tfeat-model-name', type=str, default=None,
+                           help='TFeat Model')
+    des_group.add_argument('-mag', '--magfactor', type=int, default=None,
+                           help='MagFactor for TFeat')
 
     mat_group = arg_parser.add_argument_group('Matcher config')
     mat_group.add_argument('-mat_m', '--matcher_mode', type=str, default='simple',

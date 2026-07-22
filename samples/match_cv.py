@@ -44,9 +44,9 @@ def parser():
                             choices=available_devices, help='The device on which the script will be run')
     arg_parser.add_argument('-s', '--save', type=Path, default=None,
                             help='Path to save result image')
-    arg_parser.add_argument('-mp', '--modelpath', type=Path, default=None,
+    arg_parser.add_argument('-mp', '--modelpath', type=str, default=None,
                             help='Path to models')
-    arg_parser.add_argument('-mplg', '--modelpathlg', type=Path, default=None,
+    arg_parser.add_argument('-mplg', '--modelpathlg', type=str, default=None,
                             help='Path to LightGlue model')
 
     det_group = arg_parser.add_argument_group('Detector config')
@@ -64,6 +64,12 @@ def parser():
                            help='Descriptor threshold')
     des_group.add_argument('-dss', '--des-scale', type=float, default=None,
                            help='Scale factor')
+    des_group.add_argument('-tmp', '--tfeat-model-path', type=str, default=None,
+                           help='TFeat Model Path')
+    des_group.add_argument('-tmn', '--tfeat-model-name', type=str, default=None,
+                           help='TFeat Model')
+    des_group.add_argument('-mag', '--magfactor', type=int, default=None,
+                           help='MagFactor for TFeat')
 
     mat_group = arg_parser.add_argument_group('Matcher config')
     mat_group.add_argument('-mat_m', '--matcher_mode', type=str, default='simple',

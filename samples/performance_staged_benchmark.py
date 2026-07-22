@@ -15,6 +15,7 @@ from src.matchers import Matcher  # noqa: E402
 from samples.performance_profiler import PerformanceProfiler  # noqa: E402
 from src.opencv_dnn_extractors import ALIKEDOpenCV, DISKOpenCV  # noqa: E402, F401
 from src.opencv_dnn_matchers import LightGlueOpenCVMatcher  # noqa: E402, F401
+from src.tfeat_descriptor import TFeat  # noqa: E402, F401
 
 
 logging.basicConfig(level=logging.INFO, format='[ %(levelname)s ] %(message)s')
