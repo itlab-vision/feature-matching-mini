@@ -44,10 +44,6 @@ def parser():
                             choices=available_devices, help='The device on which the script will be run')
     arg_parser.add_argument('-s', '--save', type=Path, default=None,
                             help='Path to save result image')
-    arg_parser.add_argument('-mp', '--modelpath', type=str, default=None,
-                            help='Path to models')
-    arg_parser.add_argument('-mplg', '--modelpathlg', type=str, default=None,
-                            help='Path to LightGlue model')
 
     det_group = arg_parser.add_argument_group('Detector config')
     det_group.add_argument('-dn', '--det-nfeatures', type=int, default=None,
@@ -56,6 +52,10 @@ def parser():
                            help='Number of octave layers')
     det_group.add_argument('-dt', '--det-threshold', type=float, default=None,
                            help='Detection threshold')
+    det_group.add_argument('-mpd', '--disk-model-path', type=str, default=None,
+                           help='Path to DISK opencv model')
+    det_group.add_argument('-mpa', '--aliked-model-path', type=str, default=None,
+                           help='Path to ALIKED opencv model')
 
     des_group = arg_parser.add_argument_group('Descriptor config')
     des_group.add_argument('-dsen', '--des-nfeatures', type=int, default=None,
@@ -64,22 +64,24 @@ def parser():
                            help='Descriptor threshold')
     des_group.add_argument('-dss', '--des-scale', type=float, default=None,
                            help='Scale factor')
-    des_group.add_argument('-tmp', '--tfeat-model-path', type=str, default=None,
-                           help='TFeat Model Path')
-    des_group.add_argument('-tmn', '--tfeat-model-name', type=str, default=None,
-                           help='TFeat Model')
+    des_group.add_argument('-mpt', '--tfeat-model-path', type=str, default=None,
+                           help='Path to TFeat model')
     des_group.add_argument('-mag', '--magfactor', type=int, default=None,
                            help='MagFactor for TFeat')
 
     mat_group = arg_parser.add_argument_group('Matcher config')
     mat_group.add_argument('-mat_m', '--matcher_mode', type=str, default='simple',
                            choices=available_matchers_modes, help='Matching mode')
+    mat_group.add_argument('-k', '--k_knn', type=int, default=None,
+                           help='K for knn mode')
     mat_group.add_argument('-mr', '--mat-ratio', type=float, default=None,
                            help='Ratio threshold for KNN')
     mat_group.add_argument('-mc', '--mat-cross-check', action='store_true', default=None,
                            help='Enable cross-check for BF matcher')
     mat_group.add_argument('-mst', '--mat-score-threshold', type=float, default=None,
                            help='scoreThreshold for LightGlue matcher')
+    mat_group.add_argument('-mplg', '--lightglue-model-path', type=str, default=None,
+                           help='Path to LightGlue opencv model')
     return arg_parser.parse_args()
 
 

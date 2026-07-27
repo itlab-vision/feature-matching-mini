@@ -53,8 +53,7 @@ class ALIKEDOpenCV(OpenCVDNNFeatureExtractors):
     }
 
     def __init__(self, extractor_name, logger, config):
-        aliked_model_path = config.pop('modelpath', "models/aliked-n32-top2k-640.onnx")
-
+        aliked_model_path = config.pop('aliked_model_path', "models/aliked-n32-top2k-640.onnx")
         mapped_config = {}
         for config_key, value in config.items():
             if config_key in self._PARAM_MAPPING:
@@ -74,7 +73,7 @@ class DISKOpenCV(OpenCVDNNFeatureExtractors):
     }
 
     def __init__(self, extractor_name, logger, config):
-        disk_model_path = config.pop('modelpath', "models/disk_1024.onnx")
+        disk_model_path = config.pop('disk_model_path', "models/disk_1024.onnx")
         mapped_config = {}
         for config_key, value in config.items():
             if config_key in self._PARAM_MAPPING:

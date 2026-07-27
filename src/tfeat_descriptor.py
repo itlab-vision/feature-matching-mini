@@ -1,17 +1,24 @@
 import cv2 as cv
 import torch
-import os
-from src.descriptors import Descriptor
-from tfeat.tfeat_model import TNet
-from tfeat.tfeat_utils import describe_opencv
+import sys
+from pathlib import Path
+
+TFEAT_ROOT = str(Path(__file__).parent.parent / "tfeat")
+if TFEAT_ROOT not in sys.path:
+    sys.path.append(TFEAT_ROOT)
+
+from src.descriptors import Descriptor  # noqa: E402
+from tfeat.tfeat_model import TNet  # noqa: E402
+from tfeat.tfeat_utils import describe_opencv  # noqa: E402
 
 
 class TFeat(Descriptor):
     def __init__(self, descriptor_name, logger, config):
         super().__init__(logger, descriptor_name)
         self.model = TNet()
-        models_path = config.pop('tfeat_model_path', "tfeat/pretrained-models")
-        net_name = config.pop('tfeat_model_name', 'tfeat-liberty')
+        base_dir = Path(__file__).parent.parent
+        models_path = config.pop('tfeat_model_path',
+                                 str(base_dir / "tfeat" / "pretrained-models" / "tfeat-liberty.params"))
         self.mag_factor = config.pop('magfactor', 3)
         device = config.pop('device', None)
         if device is None:
@@ -24,7 +31,7 @@ class TFeat(Descriptor):
         else:
             self._device = torch.device(device)
 
-        self.model.load_state_dict(torch.load(os.path.join(models_path, net_name + ".params")))
+        self.model.load_state_dict(torch.load(models_path))
         self.model.to(self._device)
         self.model.eval()
 
