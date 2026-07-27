@@ -31,7 +31,8 @@ class TFeat(Descriptor):
         else:
             self._device = torch.device(device)
 
-        self.model.load_state_dict(torch.load(models_path))
+        state_dict = torch.load(models_path, map_location=self._device)
+        self.model.load_state_dict(state_dict)
         self.model.to(self._device)
         self.model.eval()
 
