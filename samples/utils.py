@@ -32,7 +32,7 @@ def build_detector_config(args):
 
 def build_descriptor_config(args):
     config = dict()
-    if (args.device is not None) and (args.descriptor in DNN_DESCRIPTORS or args.descriptor in ['tfeat']):
+    if (args.device is not None) and (args.descriptor in DNN_DESCRIPTORS or args.descriptor in ['tfeat', 'hardnet']):
         config['device'] = args.device
     if args.des_nfeatures is not None:
         config['nfeatures'] = args.des_nfeatures
@@ -46,6 +46,12 @@ def build_descriptor_config(args):
         config['aliked_model_path'] = args.aliked_model_path
     if args.tfeat_model_path is not None:
         config['tfeat_model_path'] = args.tfeat_model_path
+    if args.hardnet_model_path is not None:
+        config['hardnet_model_path'] = args.hardnet_model_path
+    if args.patch_size is not None:
+        config['patch_size'] = args.patch_size
+    if args.batch_size is not None:
+        config['batch_size'] = args.batch_size
     if args.magfactor is not None:
         config['magfactor'] = args.magfactor
     return config
@@ -134,6 +140,12 @@ def performance_tests_parser():
                            help='Scale factor')
     des_group.add_argument('-mpt', '--tfeat-model-path', type=str, default=None,
                            help='Path to TFeat model')
+    des_group.add_argument('-mphn', '--hardnet-model-path', type=str, default=None,
+                           help='Path to HardNet model')
+    des_group.add_argument('-psize', '--patch-size', type=int, default=None,
+                           help='Patch size for HardNet model')
+    des_group.add_argument('-bsize', '--batch-size', type=int, default=None,
+                           help='Batch size for HardNet model')
     des_group.add_argument('-mag', '--magfactor', type=int, default=None,
                            help='MagFactor for TFeat')
 

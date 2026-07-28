@@ -66,6 +66,12 @@ def parser():
                            help='Scale factor')
     des_group.add_argument('-mpt', '--tfeat-model-path', type=str, default=None,
                            help='Path to TFeat model')
+    des_group.add_argument('-mphn', '--hardnet-model-path', type=str, default=None,
+                           help='Path to HardNet model')
+    des_group.add_argument('-psize', '--patch-size', type=int, default=None,
+                           help='Patch size for HardNet model')
+    des_group.add_argument('-bsize', '--batch-size', type=int, default=None,
+                           help='Batch size for HardNet model')
     des_group.add_argument('-mag', '--magfactor', type=int, default=None,
                            help='MagFactor for TFeat')
 
