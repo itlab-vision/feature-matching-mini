@@ -1,0 +1,10 @@
+pytest
+pytest-mock
+torch
+huggingface_hub
+transformers
+screeninfo
+flake8==7.3.0
+opencv-python
+opencv-contrib-python
+matplotlib

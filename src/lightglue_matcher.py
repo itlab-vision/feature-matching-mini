@@ -1,32 +1,22 @@
 import torch
 
-from src.matchers import Matcher
+from src.dnn_matchers import DNNMatcher
 from lightglue import LightGlue
 from lightglue.utils import rbd
 
 
-class LightGlueMatcher(Matcher):
+class LightGlueMatcher(DNNMatcher):
     def __init__(self, logger, matcher_name, descriptor_name, config=None):
-        Matcher.__init__(self, logger, matcher_name, descriptor_name)
-
         if config is None:
             config = {}
+
+        DNNMatcher.__init__(self, logger, matcher_name, descriptor_name, config)
 
         if isinstance(descriptor_name, str):
             self._extractor_name = descriptor_name.replace('_lightglue', '').lower()
         else:
             self._extractor_name = descriptor_name._descriptor_name.replace('_lightglue', '').lower()
 
-        device = config.pop('device', None)
-        if device is None:
-            if torch.cuda.is_available():
-                self._device = torch.device('cuda')
-            elif torch.backends.mps.is_available():
-                self._device = torch.device('mps')
-            else:
-                self._device = torch.device('cpu')
-        else:
-            self._device = torch.device(device)
         self._matcher = LightGlue(features=self._extractor_name, **config).eval().to(self._device)
 
     def _init_matcher(self):

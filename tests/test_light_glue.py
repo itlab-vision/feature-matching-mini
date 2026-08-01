@@ -126,7 +126,7 @@ class TestLightGlueFeatureExtractorInference:
 
     def test_forward_none_input(self, lg_instance, session_logger):
         result = lg_instance._forward(None)
-        assert result == {'des': (), 'kp': ()}
+        assert result == {'descriptors': (), 'keypoints': ()}
         session_logger.error.assert_called()
 
     def test_detect_sets_is_extracted(self, lg_instance, load_img, to_tensor):

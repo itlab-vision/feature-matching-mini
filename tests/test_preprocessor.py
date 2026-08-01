@@ -6,7 +6,7 @@ from pathlib import Path
 from unittest.mock import MagicMock
 from logging import Logger
 
-from src.preprocessor import PreProcessor
+from src.preprocessor import Preprocessor
 from src.algorithms import DNN_ALGORITHMS, OPENCV_ALGORITHMS
 
 
@@ -17,12 +17,12 @@ def mock_logger():
 
 @pytest.fixture
 def preprocessor(mock_logger):
-    return PreProcessor(logger=mock_logger, config=None)
+    return Preprocessor(logger=mock_logger, config=None)
 
 
 @pytest.fixture
 def preprocessor_cpu(mock_logger):
-    return PreProcessor(logger=mock_logger, config={'device': 'cpu'})
+    return Preprocessor(logger=mock_logger, config={'device': 'cpu'})
 
 
 @pytest.fixture
@@ -71,23 +71,23 @@ def sample_opencv_matches():
 
 class TestPreProcessorInit:
     def test_default_config(self, mock_logger):
-        pp = PreProcessor(logger=mock_logger)
+        pp = Preprocessor(logger=mock_logger)
         assert pp._device == 'cpu'
 
     def test_none_config(self, mock_logger):
-        pp = PreProcessor(logger=mock_logger, config=None)
+        pp = Preprocessor(logger=mock_logger, config=None)
         assert pp._device == 'cpu'
 
     def test_custom_device(self, mock_logger):
-        pp = PreProcessor(logger=mock_logger, config={'device': 'cpu'})
+        pp = Preprocessor(logger=mock_logger, config={'device': 'cpu'})
         assert pp._device == 'cpu'
 
     def test_empty_config(self, mock_logger):
-        pp = PreProcessor(logger=mock_logger, config={})
+        pp = Preprocessor(logger=mock_logger, config={})
         assert pp._device == 'cpu'
 
     def test_logger_assigned(self, mock_logger):
-        pp = PreProcessor(logger=mock_logger)
+        pp = Preprocessor(logger=mock_logger)
         assert pp._logger is mock_logger
 
     def test_converters_created(self, preprocessor):
