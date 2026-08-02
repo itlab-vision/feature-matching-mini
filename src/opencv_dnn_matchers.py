@@ -6,8 +6,8 @@ class LightGlueOpenCVMatcher(Matcher):
     def __init__(self, logger, matcher_name, descriptor_name, config):
         super().__init__(logger, matcher_name, descriptor_name)
         self._logger = logger
-        if descriptor_name == 'diskopencv':
-            self.lightglue_model_path = config.pop('lightglue_model_path', "models/disk_lightglue.onnx")
+        if descriptor_name._descriptor_name == 'diskopencv':
+            self.lightglue_model_path = config.pop('lightglue_model_path', "models/disk_lightglue_2outputs_.onnx")
         else:
             self.lightglue_model_path = config.pop('lightglue_model_path', "models/lightglue_for_aliked.onnx")
         self.scoreThreshold = config.pop('score_threshold', 0.1)
