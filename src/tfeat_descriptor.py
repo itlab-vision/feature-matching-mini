@@ -3,9 +3,9 @@ import torch
 import sys
 from pathlib import Path
 
-TFEAT_ROOT = str(Path(__file__).parent.parent / "tfeat")
-if TFEAT_ROOT not in sys.path:
-    sys.path.append(TFEAT_ROOT)
+TFEAT_ROOT = Path(__file__).parent.parent / "3rdparty"
+if str(TFEAT_ROOT) not in sys.path:
+    sys.path.append(str(TFEAT_ROOT))
 
 from src.descriptors import Descriptor  # noqa: E402
 from tfeat.tfeat_model import TNet  # noqa: E402
@@ -16,9 +16,8 @@ class TFeat(Descriptor):
     def __init__(self, descriptor_name, logger, config):
         super().__init__(logger, descriptor_name)
         self.model = TNet()
-        base_dir = Path(__file__).parent.parent
         models_path = config.pop('tfeat_model_path',
-                                 str(base_dir / "tfeat" / "pretrained-models" / "tfeat-liberty.params"))
+                                 str(TFEAT_ROOT / "tfeat" / "pretrained-models" / "tfeat-liberty.params"))
         self.mag_factor = config.pop('magfactor', 3)
         device = config.pop('device', None)
         if device is None:

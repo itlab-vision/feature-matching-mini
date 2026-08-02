@@ -1,0 +1,6 @@
+[submodule "3rdparty/hardnet"]
+	path = 3rdparty/hardnet
+	url = https://github.com/DagnyT/hardnet
+[submodule "3rdparty/tfeat"]
+	path = 3rdparty/tfeat
+	url = https://github.com/vbalnt/tfeat
