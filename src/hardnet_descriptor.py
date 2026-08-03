@@ -53,7 +53,11 @@ class HardNet(Descriptor):
             self._logger.error("Input image is None. Detection aborted.")
             return {'kp': (), 'des': ()}
 
-        kp = features['kp']
+        kp = features.get('kp')
+        if kp is None or len(kp) == 0:
+            self._logger.info("No keypoints provided. Returning empty descriptors.")
+            return {'kp': (), 'des': np.empty((0, 128), dtype=np.float32)}
+
         if len(img.shape) == 3:
             img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
         self._logger.info(f"Running inference with {self._descriptor_name}")

@@ -1,6 +1,7 @@
 import cv2 as cv
 import torch
 import sys
+import numpy as np
 from pathlib import Path
 
 TFEAT_ROOT = Path(__file__).parent.parent / "3rdparty"
@@ -44,11 +45,16 @@ class TFeat(Descriptor):
             self._logger.error("Input image is None. Detection aborted.")
             return {'kp': (), 'des': ()}
 
+        kp = features.get('kp')
+        if kp is None or len(kp) == 0:
+            self._logger.info("No keypoints provided. Returning empty descriptors.")
+            return {'kp': (), 'des': np.empty((0, 128), dtype=np.float32)}
+
         if len(img.shape) == 3:
             img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
 
         self._logger.info(f"Running inference with {self._descriptor_name}")
-        kp = features.get('kp')
+
         use_gpu = (self._device.type == 'cuda')
         desc_tfeat = describe_opencv(self.model, img, kp, 32, self.mag_factor, use_gpu=use_gpu)
         self._logger.info(f"{self._descriptor_name} computed {len(desc_tfeat)} descriptors")
