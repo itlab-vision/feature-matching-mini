@@ -82,7 +82,14 @@ class FeaturesConverter(Converter):
         keypoints = cv.KeyPoint_convert(keypoints_np)
         descriptors = descriptors.detach().cpu().numpy()
 
-        return {'kp': keypoints, 'des': descriptors}
+        result = {'kp': keypoints, 'des': descriptors}
+
+        if 'width' in data:
+            result['width'] = data['width']
+        if 'height' in data:
+            result['height'] = data['height']
+
+        return result
 
     def _to_tensor(self, data, device='cpu'):
         kp = data.get('kp')
@@ -92,7 +99,14 @@ class FeaturesConverter(Converter):
         keypoints = torch.from_numpy(keypoints_np).to(device)
         descriptors = torch.from_numpy(des).to(device)
 
-        return {'keypoints': keypoints, 'descriptors': descriptors}
+        result = {'keypoints': keypoints, 'descriptors': descriptors}
+
+        if 'width' in data:
+            result['width'] = data['width']
+        if 'height' in data:
+            result['height'] = data['height']
+
+        return result
 
 
 class MatchesConverter(Converter):

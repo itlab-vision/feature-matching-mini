@@ -4,3 +4,9 @@
 [submodule "3rdparty/tfeat"]
 	path = 3rdparty/tfeat
 	url = https://github.com/vbalnt/tfeat
+[submodule "3rdparty/superglue"]
+	path = 3rdparty/superglue
+	url = https://github.com/magicleap/SuperGluePretrainedNetwork.git
+[submodule "3rdparty/d2net"]
+	path = 3rdparty/d2net
+	url = https://github.com/mihaidusmanu/d2-net.git

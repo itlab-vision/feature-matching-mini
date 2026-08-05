@@ -15,6 +15,8 @@ from src.lightglue_matcher import LightGlue  # noqa: F401
 from src.lightglue_pipeline import LightGlueFeatureExtractor  # noqa: F401
 from src.tfeat_descriptor import TFeat  # noqa: F401
 from src.hardnet_descriptor import HardNet  # noqa: F401
+from src.super_glue import SuperGlueMatcher  # noqa: F401
+from src.d2net import D2Net  # noqa: F401
 
 
 class FeatureMatcherCV2:

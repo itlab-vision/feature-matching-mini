@@ -45,7 +45,7 @@ def to_tensor():
 @pytest.fixture(scope="session")
 def lg_instance(session_logger):
     return LightGlueFeatureExtractor("superpoint_lightglue",
-                                     logger=session_logger, config={'device': 'cpu'})
+                                     logger=session_logger, config=None)
 
 
 class TestLightGlueFeatureExtractorRegistration:
@@ -228,7 +228,7 @@ class TestLightGlueMatcherInference:
 
         matcher = Matcher.create("lightglue", session_logger,
                                  descriptor_name="superpoint_lightglue",
-                                 config={'device': 'cpu'})
+                                 config=None)
 
         f0 = lg_instance.detectAndCompute(to_tensor(img1))
         f1 = lg_instance.detectAndCompute(to_tensor(img2))
@@ -246,7 +246,7 @@ class TestLightGlueMatcherInference:
 
         matcher = Matcher.create("lightglue", session_logger,
                                  descriptor_name="superpoint_lightglue",
-                                 config={'device': 'cpu'})
+                                 config=None)
 
         f0 = lg_instance.detectAndCompute(to_tensor(img1))
         f1 = lg_instance.detectAndCompute(to_tensor(img2))
@@ -261,7 +261,7 @@ class TestLightGlueMatcherInference:
 
         matcher = Matcher.create("lightglue", session_logger,
                                  descriptor_name="superpoint_lightglue",
-                                 config={'device': 'cpu'})
+                                 config=None)
 
         f0 = lg_instance.detectAndCompute(to_tensor(img1))
         f1 = lg_instance.detectAndCompute(to_tensor(img2))
