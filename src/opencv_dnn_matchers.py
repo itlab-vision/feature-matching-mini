@@ -27,7 +27,7 @@ class LightGlueOpenCVMatcher(Matcher):
         h1, w1 = img_shape1[:2]
         h2, w2 = img_shape2[:2]
 
-        if kp1 is None or kp2 is None or des1 is None or des2 is None:
+        if not kp1 or not kp2 or des1 is None or des2 is None:
             return {'matches': ()}
 
         kpts1_mat = cv.KeyPoint_convert(kp1)
