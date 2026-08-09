@@ -10,3 +10,6 @@
 [submodule "3rdparty/d2net"]
 	path = 3rdparty/d2net
 	url = https://github.com/mihaidusmanu/d2-net.git
+[submodule "3rdparty/lightglue"]
+	path = 3rdparty/lightglue
+	url = https://github.com/cvg/lightglue.git

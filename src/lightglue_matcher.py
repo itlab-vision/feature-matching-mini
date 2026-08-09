@@ -1,6 +1,13 @@
 import torch
+import sys
+from pathlib import Path
 
 from src.dnn_matchers import DNNMatcher
+
+LIGHTGLUE_ROOT = Path(__file__).resolve().parent.parent / "3rdparty" / "lightglue"
+if str(LIGHTGLUE_ROOT) not in sys.path:
+    sys.path.insert(0, str(LIGHTGLUE_ROOT))
+
 from lightglue import LightGlue
 from lightglue.utils import rbd
 
