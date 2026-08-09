@@ -167,7 +167,7 @@ def save_results_to_csv(results, output_path):
     df = df[existing_columns]
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    df.to_csv(output_path, index=False)
+    df.to_csv(output_path, index=False, float_format='%.2f')
     logger.info(f"Results saved to {output_path}")
     logger.info(f"Total rows: {len(df)}")
 

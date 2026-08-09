@@ -11,9 +11,9 @@ OPENCV_DETECTORS = {'sift', 'orb', 'fast', 'akaze', 'brisk', 'kaze', 'gftt', 'ms
                     'harrislaplace', 'msd', 'diskopencv', 'alikedopencv'}
 
 OPENCV_DESCRIPTORS = {'sift', 'orb', 'akaze', 'brisk', 'kaze', 'brief', 'freak', 'daisy', 'latch', 'beblid', 'teblid',
-                      'vgg', 'boostdesc', 'diskopencv', 'alikedopencv'}
+                      'vgg', 'boostdesc', 'diskopencv', 'alikedopencv', 'tfeat', 'hardnet'}
 
-OPENCV_MATCHERS = {'bf', 'flann'}
+OPENCV_MATCHERS = {'bf', 'flann', 'lightglueopencv'}
 OPENCV_MATCHERS_MODE = {'simple', 'knn'}
 
 
@@ -22,22 +22,32 @@ OPENCV_ALGORITHMS = OPENCV_DETECTORS | OPENCV_DESCRIPTORS | OPENCV_MATCHERS
 ALL_ALGORITHMS = DNN_ALGORITHMS | OPENCV_ALGORITHMS
 
 DETECTOR_DESCRIPTOR_COMPATIBILITY = {
-    'sift': ['sift', 'brisk', 'brief', 'freak', 'daisy', 'latch', 'beblid', 'teblid', 'vgg', 'boostdesc'],
-    'orb': ['sift', 'orb', 'brisk', 'brief', 'freak', 'daisy', 'latch', 'beblid', 'teblid', 'vgg', 'boostdesc'],
-    'fast': ['sift', 'orb', 'brisk', 'brief', 'freak', 'daisy', 'latch', 'beblid', 'teblid', 'vgg', 'boostdesc'],
+    'sift': ['sift', 'brisk', 'brief', 'freak', 'daisy', 'latch', 'beblid', 'teblid', 'vgg', 'boostdesc', 'tfeat',
+             'hardnet'],
+    'orb': ['sift', 'orb', 'brisk', 'brief', 'freak', 'daisy', 'latch', 'beblid', 'teblid', 'vgg', 'boostdesc',
+            'tfeat', 'hardnet'],
+    'fast': ['sift', 'orb', 'brisk', 'brief', 'freak', 'daisy', 'latch', 'beblid', 'teblid', 'vgg', 'boostdesc',
+             'tfeat', 'hardnet'],
     'akaze': ['sift', 'orb', 'akaze', 'brisk', 'kaze', 'brief', 'freak', 'daisy', 'latch', 'beblid', 'teblid',
-              'vgg', 'boostdesc'],
-    'brisk': ['sift', 'orb', 'brisk', 'brief', 'freak', 'daisy', 'latch', 'beblid', 'teblid', 'vgg', 'boostdesc'],
+              'vgg', 'boostdesc', 'tfeat', 'hardnet'],
+    'brisk': ['sift', 'orb', 'brisk', 'brief', 'freak', 'daisy', 'latch', 'beblid', 'teblid', 'vgg', 'boostdesc',
+              'tfeat', 'hardnet'],
     'kaze': ['sift', 'orb', 'brisk', 'kaze', 'brief', 'freak', 'daisy', 'latch', 'beblid', 'teblid', 'vgg',
-             'boostdesc'],
-    'gftt': ['sift', 'orb', 'brisk', 'brief', 'freak', 'daisy', 'latch', 'beblid', 'teblid', 'vgg', 'boostdesc'],
-    'mser': ['sift', 'orb', 'brisk', 'brief', 'freak', 'daisy', 'latch', 'beblid', 'teblid', 'vgg', 'boostdesc'],
-    'agast': ['sift', 'orb', 'brisk', 'brief', 'freak', 'daisy', 'latch', 'beblid', 'teblid', 'vgg', 'boostdesc'],
-    'blob': ['sift', 'orb', 'brisk', 'brief', 'freak', 'daisy', 'latch', 'beblid', 'teblid', 'vgg', 'boostdesc'],
-    'star': ['sift', 'orb', 'brisk', 'brief', 'freak', 'daisy', 'latch', 'beblid', 'teblid', 'vgg', 'boostdesc'],
+             'boostdesc', 'tfeat', 'hardnet'],
+    'gftt': ['sift', 'orb', 'brisk', 'brief', 'freak', 'daisy', 'latch', 'beblid', 'teblid', 'vgg', 'boostdesc',
+             'tfeat', 'hardnet'],
+    'mser': ['sift', 'orb', 'brisk', 'brief', 'freak', 'daisy', 'latch', 'beblid', 'teblid', 'vgg', 'boostdesc',
+             'tfeat', 'hardnet'],
+    'agast': ['sift', 'orb', 'brisk', 'brief', 'freak', 'daisy', 'latch', 'beblid', 'teblid', 'vgg', 'boostdesc',
+              'tfeat', 'hardnet'],
+    'blob': ['sift', 'orb', 'brisk', 'brief', 'freak', 'daisy', 'latch', 'beblid', 'teblid', 'vgg', 'boostdesc',
+             'tfeat', 'hardnet'],
+    'star': ['sift', 'orb', 'brisk', 'brief', 'freak', 'daisy', 'latch', 'beblid', 'teblid', 'vgg', 'boostdesc',
+             'tfeat', 'hardnet'],
     'harrislaplace': ['sift', 'orb', 'brisk', 'brief', 'freak', 'daisy', 'latch', 'beblid', 'teblid', 'vgg',
-                      'boostdesc'],
-    'msd': ['orb', 'brisk', 'brief', 'freak', 'daisy', 'latch', 'beblid', 'teblid', 'vgg', 'boostdesc'],
+                      'boostdesc', 'tfeat', 'hardnet'],
+    'msd': ['orb', 'brisk', 'brief', 'freak', 'daisy', 'latch', 'beblid', 'teblid', 'vgg', 'boostdesc', 'tfeat',
+            'hardnet'],
 
     'superpoint': ['superpoint'],
     'superpoint_lightglue': ['superpoint_lightglue'],
@@ -68,10 +78,12 @@ DESCRIPTOR_MATCHER_COMPATIBILITY = {
     'superpoint': ['bf', 'flann', 'superglue'],
     'superpoint_lightglue': ['lightglue'],
     'disk_lightglue': ['lightglue'],
-    'diskopencv': ['bf', 'flann'],
+    'diskopencv': ['bf', 'flann', 'lightglueopencv'],
     'sift_lightglue': ['lightglue'],
     'aliked_lightglue': ['lightglue'],
-    'alikedopencv': ['bf', 'flann'],
+    'alikedopencv': ['bf', 'flann', 'lightglueopencv'],
     'doghardnet_lightglue': ['lightglue'],
+    'tfeat': ['bf', 'flann'],
+    'hardnet': ['bf', 'flann'],
     'd2net': ['bf', 'flann'],
 }
