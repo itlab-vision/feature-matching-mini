@@ -7,7 +7,7 @@ from unittest.mock import MagicMock
 from logging import Logger
 
 from src.descriptors import Descriptor
-from src.loftr_pipeline import LoFTR
+from src.loftr import LoFTR
 from src.detectors import Detector
 from src.matchers import Matcher
 

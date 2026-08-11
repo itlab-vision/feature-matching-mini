@@ -15,7 +15,7 @@ from src.lightglue_pipeline import LightGlueFeatureExtractor  # noqa: F401
 from src.super_glue import SuperGlueMatcher  # noqa: F401
 from src.d2net import D2Net  # noqa: F401
 from src.r2d2 import R2D2  # noqa: F401
-from src.loftr_pipeline import LoFTR  # noqa: F401
+from src.loftr import LoFTR  # noqa: F401
 from src.efficient_loftr_pipeline import EfficientLoFTR  # noqa: F401
 from src.roma import RoMa  # noqa: F401
 
