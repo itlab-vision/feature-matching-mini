@@ -43,7 +43,8 @@ class PerformanceProfiler:
         des1 = descriptor.compute(img1, kp1)['des']
         des1 = self.preprocessor.prepare_features(des1, from_algo=descriptor_name, to_algo=matcher_name)
 
-        res_match = matcher.match({'des': des0}, {'des': des1})
+        res_match = matcher.match({'kp': kp0.get('kp'), 'des': des0, 'img_shape': img0.shape},
+                                  {'kp': kp1.get('kp'), 'des': des1, 'img_shape': img1.shape})
         return res_match
 
     @measure_time
