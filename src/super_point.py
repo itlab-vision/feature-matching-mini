@@ -41,23 +41,26 @@ class SuperPoint(DNNFeatureExtractors):
         self._processor = SuperPoint._image_processor
         self._model = SuperPoint._model
 
+    def _preprocess(self, img):
+        input_type = 'torch' if isinstance(img, torch.Tensor) else 'numpy'
+        img = to_numpy_bgr(img, input_type=input_type)
+        height, width = img.shape[:2]
+        inputs = self._processor(img, return_tensors="pt").to(self._device)
+        return inputs, height, width
+
     def _forward(self, img):
         if img is None:
             self._logger.error("Input image is None. Detection aborted.")
             return {'keypoints': (), 'descriptors': ()}
 
         self._logger.info(f"Running inference with {self._detector_name}")
-
-        input_type = 'torch' if isinstance(img, torch.Tensor) else 'numpy'
-        img = to_numpy_bgr(img, input_type=input_type)
-        height, width = img.shape[:2]
-        inputs = self._processor(img, return_tensors="pt").to(self._device)
+        inputs, height, width = self._preprocess(img)
 
         try:
             with torch.no_grad():
                 outputs = self._model(**inputs)
 
-            processed = self._processor.post_process_keypoint_detection(outputs, [img.shape[:2]])[0]
+            processed = self._processor.post_process_keypoint_detection(outputs, [[height, width]])[0]
 
             raw_kp = processed['keypoints']
             raw_scores = processed['scores']

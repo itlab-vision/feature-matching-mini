@@ -4,3 +4,15 @@
 [submodule "3rdparty/d2net"]
 	path = 3rdparty/d2net
 	url = https://github.com/mihaidusmanu/d2-net.git
+[submodule "3rdparty/loftr"]
+	path = 3rdparty/loftr
+	url = https://github.com/zju3dv/LoFTR
+[submodule "3rdparty/efficient_loftr"]
+	path = 3rdparty/efficient_loftr
+	url = https://github.com/zju3dv/EfficientLoFTR
+[submodule "3rdparty/roma"]
+	path = 3rdparty/roma
+	url = https://github.com/Parskatt/RoMa
+[submodule "3rdparty/r2d2"]
+	path = 3rdparty/r2d2
+	url = https://github.com/naver/r2d2

@@ -5,11 +5,11 @@ from src.matchers import Matcher
 
 
 class DNNMatcher(Matcher, register=False):
-    def __init__(self, logger, matcher_name, descriptor_name, config=None):
-        Matcher.__init__(self, logger, matcher_name, descriptor_name)
-
+    def __init__(self, matcher_name, logger, config=None, descriptor_name=None):
         if config is None:
             config = {}
+
+        Matcher.__init__(self, matcher_name, logger, config, descriptor_name)
 
         device = config.pop('device', None)
         if device is None:
