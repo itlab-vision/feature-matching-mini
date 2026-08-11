@@ -13,6 +13,10 @@ from src.descriptors import Descriptor  # noqa: E402
 from src.matchers import Matcher  # noqa: E402
 from samples.performance_profiler import PerformanceProfiler  # noqa: E402
 from src.opencv_dnn_extractors import ALIKEDOpenCV, DISKOpenCV  # noqa: E402, F401
+from src.opencv_dnn_matchers import LightGlueOpenCVMatcher  # noqa: E402, F401
+from src.tfeat_descriptor import TFeat  # noqa: E402, F401
+from src.hardnet_descriptor import HardNet  # noqa: E402, F401
+
 
 logging.basicConfig(level=logging.INFO, format='[ %(levelname)s ] %(message)s')
 logger = logging.getLogger("Pipeline_Performance_Test_Sample")
@@ -34,8 +38,8 @@ def pipeline_performance_test(logger, profiler, detector, detector_name, descrip
 
     min_time = np.min(times)
     mean_time = np.mean(times)
-    logger.info(f"\nMin time pipeline test: {min_time}\n"
-                f"Mean time pipeline test: {mean_time}")
+    logger.info(f"\nMin time pipeline test: {min_time:.5f}\n"
+                f"Mean time pipeline test: {mean_time:.5f}")
 
 
 def main():

@@ -1,10 +1,18 @@
 [submodule "3rdparty/xfeat"]
 	path = 3rdparty/xfeat
 	url = https://github.com/verlab/accelerated_features.git
+[submodule "3rdparty/hardnet"]
+	path = 3rdparty/hardnet
+	url = https://github.com/DagnyT/hardnet
+[submodule "3rdparty/tfeat"]
+	path = 3rdparty/tfeat
+	url = https://github.com/vbalnt/tfeat
 [submodule "3rdparty/superglue"]
 	path = 3rdparty/superglue
 	url = https://github.com/magicleap/SuperGluePretrainedNetwork.git
 [submodule "3rdparty/d2net"]
 	path = 3rdparty/d2net
 	url = https://github.com/mihaidusmanu/d2-net.git
-
+[submodule "3rdparty/lightglue"]
+	path = 3rdparty/lightglue
+	url = https://github.com/cvg/lightglue.git
