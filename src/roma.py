@@ -35,11 +35,15 @@ class RoMa(DNNPipeline):
 
     def _preprocess(self, img):
         if torch.is_tensor(img):
-            if img.ndim == 4: img = img.squeeze(0)
+            if img.ndim == 4:
+                img = img.squeeze(0)
             img_np = img.permute(1, 2, 0).cpu().detach().numpy()
-            if img_np.max() <= 1.01: img_np = (img_np * 255).astype(np.uint8)
+
+            if img_np.max() <= 1.01:
+                img_np = (img_np * 255).astype(np.uint8)
             return Image.fromarray(img_np)
         img_np = np.array(img)
+
         if len(img_np.shape) == 3:
             img_rgb = cv.cvtColor(img_np.astype(np.uint8), cv.COLOR_BGR2RGB)
         else:

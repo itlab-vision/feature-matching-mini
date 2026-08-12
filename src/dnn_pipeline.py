@@ -3,6 +3,7 @@ from abc import abstractmethod
 from src.dnn_extractors import DNNFeatureExtractors
 from src.dnn_matchers import DNNMatcher
 
+
 class DNNPipeline(DNNFeatureExtractors, DNNMatcher, register=False):
     def __init__(self, extractor_name, logger, config=None):
         if config is None:
@@ -10,7 +11,6 @@ class DNNPipeline(DNNFeatureExtractors, DNNMatcher, register=False):
 
         DNNFeatureExtractors.__init__(self, extractor_name, logger, config)
         DNNMatcher.__init__(self, extractor_name, logger, config, extractor_name)
-
 
     def detect(self, img):
         return {'image': img}

@@ -38,7 +38,8 @@ class R2D2(DNNFeatureExtractors):
     def _preprocess(self, img):
         if torch.is_tensor(img):
             img_np = img.squeeze(0).cpu().detach().numpy().transpose(1, 2, 0)
-            if img_np.max() <= 1.01: img_np *= 255.0
+            if img_np.max() <= 1.01:
+                img_np *= 255.0
         else:
             img_np = np.array(img)
 
@@ -85,7 +86,6 @@ class R2D2(DNNFeatureExtractors):
                 self._logger.info(f"{self._descriptor_name} computed {len(desc)} descriptors")
             else:
                 self._logger.warning(f"{self._descriptor_name} computed 0 descriptors")
-
 
             self._logger.info(f"{self._detector_name} found {len(xys)} points")
             return extracted_data

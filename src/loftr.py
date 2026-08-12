@@ -10,8 +10,8 @@ LOFTR_ROOT = Path(__file__).resolve().parent.parent / "3rdparty" / "loftr" / "sr
 if str(LOFTR_ROOT) not in sys.path:
     sys.path.insert(0, str(LOFTR_ROOT))
 
-from loftr import LoFTR as LoFTRModel  # noqa: F401
-from loftr import default_cfg  # noqa: F401
+from loftr import LoFTR as LoFTRModel  # noqa: E402
+from loftr import default_cfg  # noqa: E402
 
 
 class LoFTR(DNNPipeline):
@@ -46,7 +46,7 @@ class LoFTR(DNNPipeline):
                 model.load_state_dict(ckpt_data['state_dict'])
 
                 LoFTR._model = model.to(self._device).eval()
-                self._logger.info(f"LoFTR successfully loaded.")
+                self._logger.info("LoFTR successfully loaded.")
 
             except Exception as e:
                 self._logger.error(f"Failed to load from {checkpoint}: {e}")
@@ -56,7 +56,8 @@ class LoFTR(DNNPipeline):
 
     def _preprocess(self, img):
         if torch.is_tensor(img):
-            if img.ndim == 4: img = img.squeeze(0)
+            if img.ndim == 4:
+                img = img.squeeze(0)
 
             if img.shape[0] == 3:
                 img_np = 0.299 * img[0] + 0.587 * img[1] + 0.114 * img[2]

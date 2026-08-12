@@ -29,6 +29,7 @@ def load_img():
 
     return _load
 
+
 @pytest.fixture(scope="session")
 def session_logger():
     return MagicMock(spec=Logger)
@@ -113,7 +114,6 @@ class TestLoFTRSingleton:
             m2.detect(img)
         except Exception as e:
             pytest.fail(f"Singleton model was corrupted after object deletion: {e}")
-
 
 
 class TestLoFTRInference:

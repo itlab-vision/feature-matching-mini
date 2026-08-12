@@ -86,6 +86,7 @@ class TestR2D2Config:
         assert r2d2._top_k == 128
         assert r2d2._device.type == 'cpu'
 
+
 class TestR2D2Singleton:
     def test_shared_model_weights(self, mock_logger):
         rd1 = R2D2("r2d2", logger=mock_logger, config=None)
