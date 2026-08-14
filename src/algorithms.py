@@ -1,11 +1,11 @@
 
 DNN_DETECTORS = {'superpoint', 'superpoint_lightglue', 'disk_lightglue', 'sift_lightglue', 'aliked_lightglue',
-                 'doghardnet_lightglue', 'd2net', 'r2d2', 'loftr', 'efficientloftr', 'roma'}
+                 'doghardnet_lightglue', 'd2net', 'r2d2', 'loftr', 'roma'}
 
 DNN_DESCRIPTORS = {'superpoint', 'superpoint_lightglue', 'disk_lightglue', 'sift_lightglue', 'aliked_lightglue',
-                   'doghardnet_lightglue', 'd2net', 'r2d2', 'loftr', 'efficientloftr', 'roma'}
+                   'doghardnet_lightglue', 'd2net', 'r2d2', 'loftr', 'roma'}
 
-DNN_MATCHERS = {'lightglue', 'superglue', 'loftr', 'efficientloftr', 'roma'}
+DNN_MATCHERS = {'lightglue', 'superglue', 'loftr', 'roma'}
 
 DNN_PIPELINES = {'loftr', 'roma'}
 
@@ -62,7 +62,6 @@ DETECTOR_DESCRIPTOR_COMPATIBILITY = {
     'd2net': ['d2net'],
     'r2d2': ['r2d2'],
     'loftr': ['loftr'],
-    'efficientloftr': ['efficientloftr'],
     'roma': ['roma'],
 }
 
@@ -94,6 +93,5 @@ DESCRIPTOR_MATCHER_COMPATIBILITY = {
     'd2net': ['bf', 'flann'],
     'r2d2': ['bf', 'flann'],
     'loftr': ['loftr'],
-    'efficientloftr': ['efficientloftr'],
     'roma': ['roma'],
 }
