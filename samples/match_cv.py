@@ -56,6 +56,12 @@ def parser():
                            help='Path to DISK opencv model')
     det_group.add_argument('-mpa', '--aliked-model-path', type=str, default=None,
                            help='Path to ALIKED opencv model')
+    det_group.add_argument('--det-et-model', type=Path,
+                            help='Path to a detector .pte file')
+    det_group.add_argument('--det-et-input-shape', type=int, nargs=4, metavar=('N', 'C', 'H', 'W'),
+                           help='Static detector .pte input shape')
+    det_group.add_argument('--det-et-num-keypoints', type=int, default=256,
+                           help='Fixed K emitted by the ExecuTorch detector')
 
     des_group = arg_parser.add_argument_group('Descriptor config')
     des_group.add_argument('-dsen', '--des-nfeatures', type=int, default=None,
@@ -74,6 +80,10 @@ def parser():
                            help='Batch size for HardNet model')
     des_group.add_argument('-mag', '--magfactor', type=int, default=None,
                            help='MagFactor for TFeat')
+    des_group.add_argument('--des-et-model', type=Path,
+                           help='Path to a descriptor .pte file')
+    des_group.add_argument('--des-et-patch-size', type=int, default=32,
+                           help='Patch size for descriptor model')
 
     mat_group = arg_parser.add_argument_group('Matcher config')
     mat_group.add_argument('-mat_m', '--matcher_mode', type=str, default='simple',
@@ -88,6 +98,8 @@ def parser():
                            help='scoreThreshold for LightGlue matcher')
     mat_group.add_argument('-mplg', '--lightglue-model-path', type=str, default=None,
                            help='Path to LightGlue opencv model')
+    mat_group.add_argument('--mat-et-model', type=Path,
+                           help='Path to a fixed-K matcher .pte file')
     return arg_parser.parse_args()
 
 

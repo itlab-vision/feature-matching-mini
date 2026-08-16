@@ -1,6 +1,8 @@
 from abc import ABC, abstractmethod
 import cv2 as cv
 
+from src.algorithms import ALL_MATCHERS
+
 
 class Matcher(ABC):
     _METHODS = {}
@@ -15,17 +17,25 @@ class Matcher(ABC):
 
         if register:
             key = cls.__name__.replace("Matcher", "").lower()
+
+            for key_ in ALL_MATCHERS:
+                if key_.replace("_", "") == key:
+                    key = key_
+                    break
             if key:
                 Matcher._METHODS[key] = cls
 
     @staticmethod
     def create(matcher_name, logger, descriptor_name, config):
-        matcher_class_name = Matcher._METHODS.get(matcher_name.lower())
-        if not matcher_class_name:
-            raise ValueError(f"Matcher '{matcher_name}' not found."
+        if config is None:
+            config = {}
+
+        matcher_class_name = matcher_name.lower()
+        if matcher_class_name not in Matcher._METHODS:
+            raise ValueError(f"Matcher '{matcher_class_name}' not found."
                              f" Available: {list(Matcher._METHODS.keys())}")
 
-        return Matcher._METHODS[matcher_name](logger, matcher_name, descriptor_name, config)
+        return Matcher._METHODS[matcher_class_name](logger, matcher_class_name, descriptor_name, config)
 
     @abstractmethod
     def match(self, features1, features2):

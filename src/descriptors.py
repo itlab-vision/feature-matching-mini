@@ -1,6 +1,8 @@
 import cv2 as cv
 from abc import ABC, abstractmethod
 
+from src.algorithms import ALL_DESCRIPTORS
+
 
 class Descriptor(ABC):
     _METHODS = {}
@@ -18,6 +20,11 @@ class Descriptor(ABC):
 
         elif register:
             key = cls.__name__.replace("Descriptor", "").lower()
+
+            for key_ in ALL_DESCRIPTORS:
+                if key_.replace("_", "") == key:
+                    key = key_
+                    break
             if key:
                 Descriptor._METHODS[key] = cls
 
@@ -26,11 +33,12 @@ class Descriptor(ABC):
         if config is None:
             config = {}
 
-        if descriptor_name not in Descriptor._METHODS:
-            raise ValueError(f"Descriptor '{descriptor_name}' not found."
+        descriptor_class_name = descriptor_name.lower()
+        if descriptor_class_name not in Descriptor._METHODS:
+            raise ValueError(f"Descriptor '{descriptor_class_name}' not found."
                              f" Available: {list(Descriptor._METHODS.keys())}")
 
-        return Descriptor._METHODS[descriptor_name](descriptor_name, logger, config)
+        return Descriptor._METHODS[descriptor_class_name](descriptor_class_name, logger, config)
 
     @property
     @abstractmethod
