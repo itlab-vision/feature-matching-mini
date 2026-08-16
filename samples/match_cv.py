@@ -57,7 +57,7 @@ def parser():
     det_group.add_argument('-mpa', '--aliked-model-path', type=str, default=None,
                            help='Path to ALIKED opencv model')
     det_group.add_argument('--det-et-model', type=Path,
-                            help='Path to a detector .pte file')
+                           help='Path to a detector .pte file')
     det_group.add_argument('--det-et-input-shape', type=int, nargs=4, metavar=('N', 'C', 'H', 'W'),
                            help='Static detector .pte input shape')
     det_group.add_argument('--det-et-num-keypoints', type=int, default=256,

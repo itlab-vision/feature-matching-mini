@@ -11,38 +11,41 @@ from src.detectors import Detector
 from src.matchers import Matcher
 
 
-def _load_method(model_path):
-    path = Path(model_path)
-    if not path.is_file():
-        raise FileNotFoundError(f"ExecuTorch model does not exist: {path}")
-    return Runtime.get().load_program(str(path), verification=Verification.Minimal).load_method("forward")
+class ExecuTorch:
+    @staticmethod
+    def _load_method(model_path):
+        path = Path(model_path)
+        if not path.is_file():
+            raise FileNotFoundError(f"ExecuTorch model does not exist: {path}")
+        return Runtime.get().load_program(str(path), verification=Verification.Minimal).load_method("forward")
+
+    @staticmethod
+    def _nms_topk(scores, keypoints, radius):
+        if scores.ndim != 2:
+            raise ValueError(f"Expected an HxW score map, got {tuple(scores.shape)}")
+
+        height, width = scores.shape
+        if not 0 < keypoints <= height * width:
+            raise ValueError(f"num_keypoints must be in [1, {height * width}], got {keypoints}")
+
+        local_max = functional.max_pool2d(scores[None, None], kernel_size=radius * 2 + 1, stride=1, padding=radius)[0, 0]
+        filtered = scores.masked_fill(scores != local_max, float("-inf"))
+        values, indices = torch.topk(filtered.reshape(-1), keypoints)
+        xy = torch.stack((indices % width, torch.div(indices, width, rounding_mode="floor")), dim=1)
+        return xy.to(torch.float32), values
+
+    @staticmethod
+    def _sample_descriptors(dense, keypoints, image_height, image_width):
+        _, channels, height, width = dense.shape
+        x = keypoints[:, 0] / max(image_width - 1, 1) * 2 - 1
+        y = keypoints[:, 1] / max(image_height - 1, 1) * 2 - 1
+
+        grid = torch.stack((x, y), dim=-1).reshape(1, 1, -1, 2)
+        descriptors = functional.grid_sample(dense, grid, align_corners=True)[0, :, 0].transpose(0, 1)
+        return functional.normalize(descriptors, p=2, dim=1)
 
 
-def _nms_topk(scores, keypoints, radius):
-    if scores.ndim != 2:
-        raise ValueError(f"Expected an HxW score map, got {tuple(scores.shape)}")
-
-    height, width = scores.shape
-    if not 0 < keypoints <= height * width:
-        raise ValueError(f"num_keypoints must be in [1, {height * width}], got {keypoints}")
-
-    local_max = functional.max_pool2d(scores[None, None], kernel_size=radius * 2 + 1, stride=1, padding=radius)[0, 0]
-    filtered = scores.masked_fill(scores != local_max, float("-inf"))
-    values, indices = torch.topk(filtered.reshape(-1), keypoints)
-    xy = torch.stack((indices % width, torch.div(indices, width, rounding_mode="floor")), dim=1)
-    return xy.to(torch.float32), values
-
-
-def _sample_descriptors(dense, keypoints, image_height, image_width):
-    _, channels, height, width = dense.shape
-    x = keypoints[:, 0] / max(image_width - 1, 1) * 2 - 1
-    y = keypoints[:, 1] / max(image_height - 1, 1) * 2 - 1
-    grid = torch.stack((x, y), dim=-1).reshape(1, 1, -1, 2)
-    descriptors = functional.grid_sample(dense, grid, align_corners=True)[0, :, 0].transpose(0, 1)
-    return functional.normalize(descriptors, p=2, dim=1)
-
-
-class ExecuTorchDetector(Detector, register=False):
+class ExecuTorchDetector(ExecuTorch, Detector, register=False):
     def __init__(self, detector_name, logger, config=None):
         if config is None:
             config = {}
@@ -52,7 +55,7 @@ class ExecuTorchDetector(Detector, register=False):
         if model_path is None:
             raise ValueError("ExecuTorch detector requires 'executorch_model_path' in detector config")
 
-        self._method = _load_method(model_path)
+        self._method = self._load_method(model_path)
         self._input_shape = config.get("input_shape", (1, 3, 480, 640))
         self._num_keypoints = config.get("num_keypoints", 256)
         self._nms_radius = config.get("nms_radius", 4)
@@ -84,8 +87,11 @@ class ExecuTorchDetector(Detector, register=False):
         _, _, input_height, input_width = tensor.shape
         outputs = self._method.execute((tensor,))
         keypoints, descriptors, scores = self._features(outputs, input_height, input_width)
+
         keypoints[:, 0] *= original_width / input_width
         keypoints[:, 1] *= original_height / input_height
+        self._logger.info(f"Descriptor stats: mean={descriptors.mean():.4f}, std={descriptors.std():.4f}, "
+                          f"norm_mean={descriptors.norm(dim=1).mean():.4f}")
         self._logger.info(f"ExecuTorch {self._detector_name} found {len(keypoints)} keypoints")
         return {"keypoints": keypoints, "descriptors": descriptors, "scores": scores,
                 "width": original_width, "height": original_height, "executorch": True}
@@ -105,7 +111,7 @@ class ExecuTorchDescriptor(Descriptor, register=False):
             if model_path is None:
                 raise ValueError(f"ExecuTorch descriptor '{descriptor_name}' requires 'executorch_model_path'")
 
-            self._method = _load_method(model_path)
+            self._method = self._load_method(model_path)
             self._patch_size = config.pop("patch_size", 32)
 
     @property
@@ -180,7 +186,7 @@ class ExecuTorchDescriptor(Descriptor, register=False):
         return patches
 
 
-class ExecuTorchMatcher(Matcher, register=False):
+class ExecuTorchMatcher(ExecuTorch, Matcher, register=False):
     def __init__(self, logger, matcher_name, descriptor_name, config=None):
         if config is None:
             config = {}
@@ -190,7 +196,7 @@ class ExecuTorchMatcher(Matcher, register=False):
         if model_path is None:
             raise ValueError("ExecuTorch matcher requires 'executorch_model_path' in matcher config")
 
-        self._method = _load_method(model_path)
+        self._method = self._load_method(model_path)
         self._num_keypoints = config.get("num_keypoints", 256)
 
     def _fixed_features(self, feature):
@@ -234,8 +240,8 @@ class SuperPointLightGlueExecuTorch(ExecuTorchDetector, ExecuTorchDescriptor):
 
         scores = probabilities.permute(0, 2, 3, 1).reshape(1, coarse_height, coarse_width, 8, 8)
         scores = scores.permute(0, 1, 3, 2, 4).reshape(1, coarse_height * 8, coarse_width * 8)[0]
-        keypoints, values = _nms_topk(scores, self._num_keypoints, self._nms_radius)
-        descriptors = _sample_descriptors(dense, keypoints / 8, coarse_height, coarse_width)
+        keypoints, values = self._nms_topk(scores, self._num_keypoints, self._nms_radius)
+        descriptors = self._sample_descriptors(dense, keypoints / 8, coarse_height, coarse_width)
         return keypoints, descriptors, values
 
 
@@ -251,8 +257,11 @@ class DiskLightGlueExecuTorch(ExecuTorchDetector, ExecuTorchDescriptor):
 
     def _features(self, outputs, input_height, input_width):
         heatmap, dense = outputs
-        keypoints, values = _nms_topk(heatmap[0, 0], self._num_keypoints, self._nms_radius)
-        descriptors = _sample_descriptors(dense, keypoints, input_height, input_width)
+        self._logger.info(f"Raw dense stats: mean={dense.mean():.4f}, has_nan={torch.isnan(dense).any().item()}, "
+                          f"has_inf={torch.isinf(dense).any().item()}")
+        self._logger.info(f"Raw heatmap stats: mean={heatmap.mean():.4f}, has_nan={torch.isnan(heatmap).any().item()}")
+        keypoints, values = self._nms_topk(heatmap[0, 0], self._num_keypoints, self._nms_radius)
+        descriptors = self._sample_descriptors(dense, keypoints, input_height, input_width)
         return keypoints, descriptors, values
 
 
@@ -282,13 +291,13 @@ class D2NetExecuTorch(ExecuTorchDetector, ExecuTorchDescriptor):
     def _features(self, outputs, input_height, input_width):
         dense = outputs[0]
         score_map = self._d2net_score_map(dense)
-        coarse_keypoints, values = _nms_topk(score_map, self._num_keypoints, self._nms_radius)
+        coarse_keypoints, values = self._nms_topk(score_map, self._num_keypoints, self._nms_radius)
 
         coarse_height, coarse_width = score_map.shape
         keypoints = coarse_keypoints.clone()
         keypoints[:, 0] *= input_width / coarse_width
         keypoints[:, 1] *= input_height / coarse_height
-        descriptors = _sample_descriptors(dense, coarse_keypoints, coarse_height, coarse_width)
+        descriptors = self._sample_descriptors(dense, coarse_keypoints, coarse_height, coarse_width)
         return keypoints, descriptors, values
 
 
