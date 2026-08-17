@@ -28,7 +28,8 @@ class ExecuTorch:
         if not 0 < keypoints <= height * width:
             raise ValueError(f"num_keypoints must be in [1, {height * width}], got {keypoints}")
 
-        local_max = functional.max_pool2d(scores[None, None], kernel_size=radius * 2 + 1, stride=1, padding=radius)[0, 0]
+        local_max = functional.max_pool2d(scores[None, None], kernel_size=radius * 2 + 1,
+                                          stride=1, padding=radius)[0, 0]
         filtered = scores.masked_fill(scores != local_max, float("-inf"))
         values, indices = torch.topk(filtered.reshape(-1), keypoints)
         xy = torch.stack((indices % width, torch.div(indices, width, rounding_mode="floor")), dim=1)
@@ -97,7 +98,7 @@ class ExecuTorchDetector(ExecuTorch, Detector, register=False):
                 "width": original_width, "height": original_height, "executorch": True}
 
 
-class ExecuTorchDescriptor(Descriptor, register=False):
+class ExecuTorchDescriptor(ExecuTorch, Descriptor, register=False):
     def __init__(self, descriptor_name, logger, config=None):
         if config is None:
             config = {}
@@ -257,9 +258,6 @@ class DiskLightGlueExecuTorch(ExecuTorchDetector, ExecuTorchDescriptor):
 
     def _features(self, outputs, input_height, input_width):
         heatmap, dense = outputs
-        self._logger.info(f"Raw dense stats: mean={dense.mean():.4f}, has_nan={torch.isnan(dense).any().item()}, "
-                          f"has_inf={torch.isinf(dense).any().item()}")
-        self._logger.info(f"Raw heatmap stats: mean={heatmap.mean():.4f}, has_nan={torch.isnan(heatmap).any().item()}")
         keypoints, values = self._nms_topk(heatmap[0, 0], self._num_keypoints, self._nms_radius)
         descriptors = self._sample_descriptors(dense, keypoints, input_height, input_width)
         return keypoints, descriptors, values
