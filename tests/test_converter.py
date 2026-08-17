@@ -3,7 +3,7 @@ import cv2 as cv
 import numpy as np
 import torch
 
-from src.converter import (Converter, ImageConverter, FeaturesConverter, MatchesConverter)
+from feature_matching.converter import (Converter, ImageConverter, FeaturesConverter, MatchesConverter)
 
 
 @pytest.fixture

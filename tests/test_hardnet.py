@@ -5,8 +5,8 @@ from pathlib import Path
 from unittest.mock import MagicMock
 from logging import Logger
 
-from src.hardnet_descriptor import HardNet
-from src.descriptors import Descriptor
+from feature_matching.hardnet_descriptor import HardNet
+from feature_matching.descriptors import Descriptor
 
 
 @pytest.fixture

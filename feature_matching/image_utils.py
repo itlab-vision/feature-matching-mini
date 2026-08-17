@@ -1,5 +1,5 @@
 from screeninfo import get_monitors
-from src.converter import Converter
+from converter import Converter
 import cv2 as cv
 
 

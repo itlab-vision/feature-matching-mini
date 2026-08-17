@@ -1,16 +1,10 @@
 import cv2 as cv
 import torch
-import sys
 import numpy as np
-from pathlib import Path
 
-TFEAT_ROOT = Path(__file__).parent.parent / "3rdparty"
-if str(TFEAT_ROOT) not in sys.path:
-    sys.path.append(str(TFEAT_ROOT))
-
-from src.descriptors import Descriptor  # noqa: E402
-from tfeat.tfeat_model import TNet  # noqa: E402
-from tfeat.tfeat_utils import describe_opencv  # noqa: E402
+from descriptors import Descriptor
+from thirdparty.tfeat.tfeat_model import TNet
+from thirdparty.tfeat.tfeat_utils import describe_opencv
 
 
 class TFeat(Descriptor):
@@ -18,7 +12,7 @@ class TFeat(Descriptor):
         super().__init__(logger, descriptor_name)
         self.model = TNet()
         models_path = config.pop('tfeat_model_path',
-                                 str(TFEAT_ROOT / "tfeat" / "pretrained-models" / "tfeat-liberty.params"))
+                                 "3rdparty/tfeat/pretrained-models/tfeat-liberty.params")
         self.mag_factor = config.pop('magfactor', 3)
         device = config.pop('device', None)
         if device is None:

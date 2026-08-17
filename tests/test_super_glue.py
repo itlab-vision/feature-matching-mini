@@ -5,9 +5,9 @@ from pathlib import Path
 from unittest.mock import MagicMock
 from logging import Logger
 
-from src.super_point import SuperPoint
-from src.super_glue import SuperGlueMatcher
-from src.matchers import Matcher
+from feature_matching.super_point import SuperPoint
+from feature_matching.super_glue import SuperGlueMatcher
+from feature_matching.matchers import Matcher
 
 
 @pytest.fixture(scope="session")

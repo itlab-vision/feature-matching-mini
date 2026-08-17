@@ -1,16 +1,10 @@
 import torch
 import torch.nn.functional as functional
-import sys
 import numpy as np
-from pathlib import Path
 
-from src.dnn_matchers import DNNMatcher  # noqa: E402
+from feature_matching.dnn_matchers import DNNMatcher
 
-SG_ROOT = Path(__file__).resolve().parent.parent / "3rdparty" / "superglue"
-if str(SG_ROOT) not in sys.path:
-    sys.path.insert(0, str(SG_ROOT))
-
-from models.superglue import SuperGlue  # noqa: E402
+from thirdparty.superglue.models.superglue import SuperGlue
 
 
 class SuperGlueMatcher(DNNMatcher):

@@ -7,8 +7,8 @@ from unittest.mock import patch, MagicMock
 import tempfile
 import shutil
 
-from src.image_utils import read_image, save_image, show_image, to_numpy_bgr
-from src.converter import Converter
+from feature_matching.image_utils import read_image, save_image, show_image, to_numpy_bgr
+from feature_matching.converter import Converter
 
 
 @pytest.fixture

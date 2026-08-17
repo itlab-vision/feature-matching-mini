@@ -2,8 +2,8 @@ import torch
 import cv2 as cv
 from abc import abstractmethod
 
-from src.detectors import Detector
-from src.descriptors import Descriptor
+from detectors import Detector
+from descriptors import Descriptor
 
 
 class DNNFeatureExtractors(Detector, Descriptor, register=False):

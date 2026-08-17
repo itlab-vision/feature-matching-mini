@@ -5,9 +5,9 @@ from pathlib import Path
 from unittest.mock import MagicMock
 from logging import Logger
 
-from src.matchers import Matcher
-from src.feature_matcher import FeatureMatcherCV2
-from src.algorithms import DNN_ALGORITHMS, DESCRIPTOR_MATCHER_COMPATIBILITY
+from feature_matching.matchers import Matcher
+from feature_matching.feature_matcher import FeatureMatcherCV2
+from feature_matching.algorithms import DNN_ALGORITHMS, DESCRIPTOR_MATCHER_COMPATIBILITY
 
 
 @pytest.fixture

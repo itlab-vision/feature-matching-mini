@@ -1,0 +1,14 @@
+torch>=1.9
+opencv-python>=4.8
+opencv-contrib-python>=4.8
+numpy
+matplotlib
+transformers
+huggingface_hub
+screeninfo
+kornia>=0.6.11
+
+[dev]
+pytest
+pytest-mock
+flake8==7.3.0

@@ -1,14 +1,8 @@
 import torch
-import sys
-from pathlib import Path
 
-from src.dnn_extractors import DNNFeatureExtractors  # noqa: E402
+from feature_matching.dnn_extractors import DNNFeatureExtractors
 
-LIGHTGLUE_ROOT = Path(__file__).resolve().parent.parent / "3rdparty" / "lightglue"
-if str(LIGHTGLUE_ROOT) not in sys.path:
-    sys.path.insert(0, str(LIGHTGLUE_ROOT))
-
-from lightglue import SuperPoint, DISK, SIFT, ALIKED, DoGHardNet  # noqa: E402
+from thirdparty.lightglue.lightglue import SuperPoint, DISK, SIFT, ALIKED, DoGHardNet
 
 
 class LightGlueFeatureExtractor(DNNFeatureExtractors, register=False):

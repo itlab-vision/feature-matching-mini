@@ -1,5 +1,5 @@
-from src.algorithms import DNN_ALGORITHMS, OPENCV_ALGORITHMS
-from src.converter import Converter
+from algorithms import DNN_ALGORITHMS, OPENCV_ALGORITHMS
+from converter import Converter
 
 
 class Preprocessor:

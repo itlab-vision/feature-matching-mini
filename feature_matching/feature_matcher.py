@@ -1,23 +1,23 @@
 import cv2 as cv
 import numpy as np
 
-from src.preprocessor import Preprocessor
-from src.algorithms import (DETECTOR_DESCRIPTOR_COMPATIBILITY, DESCRIPTOR_MATCHER_COMPATIBILITY, DNN_MATCHERS,
+from preprocessor import Preprocessor
+from algorithms import (DETECTOR_DESCRIPTOR_COMPATIBILITY, DESCRIPTOR_MATCHER_COMPATIBILITY, DNN_MATCHERS,
                             OPENCV_MATCHERS)
 
-from src.detectors import Detector
-from src.descriptors import Descriptor
-from src.matchers import Matcher
-from src.super_point import SuperPoint  # noqa: F401
-from src.opencv_dnn_extractors import ALIKEDOpenCV, DISKOpenCV  # noqa: F401
-from src.opencv_dnn_matchers import LightGlueOpenCVMatcher  # noqa: F401
-from src.lightglue_matcher import LightGlue  # noqa: F401
-from src.lightglue_pipeline import LightGlueFeatureExtractor  # noqa: F401
-from src.xfeat import XFeat  # noqa: F401
-from src.tfeat_descriptor import TFeat  # noqa: F401
-from src.hardnet_descriptor import HardNet  # noqa: F401
-from src.super_glue import SuperGlueMatcher  # noqa: F401
-from src.d2net import D2Net  # noqa: F401
+from detectors import Detector
+from descriptors import Descriptor
+from matchers import Matcher
+from super_point import SuperPoint  # noqa: F401
+from opencv_dnn_extractors import ALIKEDOpenCV, DISKOpenCV  # noqa: F401
+from opencv_dnn_matchers import LightGlueOpenCVMatcher  # noqa: F401
+from lightglue_matcher import LightGlue  # noqa: F401
+from lightglue_pipeline import LightGlueFeatureExtractor  # noqa: F401
+from xfeat import XFeat  # noqa: F401
+from tfeat_descriptor import TFeat  # noqa: F401
+from hardnet_descriptor import HardNet  # noqa: F401
+from super_glue import SuperGlueMatcher  # noqa: F401
+from d2net import D2Net  # noqa: F401
 
 
 class FeatureMatcherCV2:

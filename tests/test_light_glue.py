@@ -5,11 +5,11 @@ from pathlib import Path
 from unittest.mock import MagicMock
 from logging import Logger
 
-from src.lightglue_pipeline import LightGlueFeatureExtractor
-from src.lightglue_matcher import LightGlueMatcher
-from src.detectors import Detector
-from src.descriptors import Descriptor
-from src.matchers import Matcher
+from feature_matching.lightglue_pipeline import LightGlueFeatureExtractor
+from feature_matching.lightglue_matcher import LightGlueMatcher
+from feature_matching.detectors import Detector
+from feature_matching.descriptors import Descriptor
+from feature_matching.matchers import Matcher
 
 
 @pytest.fixture
