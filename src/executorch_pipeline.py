@@ -299,6 +299,30 @@ class D2NetExecuTorch(ExecuTorchDetector, ExecuTorchDescriptor):
         return keypoints, descriptors, values
 
 
+class XFeatExecuTorch(ExecuTorchDetector, ExecuTorchDescriptor):
+    def __init__(self, extractor_name, logger, config):
+        if config is None:
+            config = {}
+
+        if "executorch_model_path" in config or "model_path" in config:
+            ExecuTorchDetector.__init__(self, extractor_name, logger, config)
+        else:
+            ExecuTorchDescriptor.__init__(self, extractor_name, logger, config)
+
+    def _features(self, outputs, input_height, input_width):
+        logits, dense = outputs
+        probs = functional.softmax(logits[:, :-1], dim=1)
+        _, _, coarse_h, coarse_w = probs.shape
+
+        scores = probs.permute(0, 2, 3, 1).reshape(1, coarse_h, coarse_w, 8, 8)
+        scores = scores.permute(0, 1, 3, 2, 4).reshape(coarse_h * 8, coarse_w * 8)
+
+        keypoints, values = self._nms_topk(scores, self._num_keypoints, self._nms_radius)
+        descriptors = self._sample_descriptors(dense, keypoints / 8, coarse_h, coarse_w)
+
+        return keypoints, descriptors, values
+
+
 class TFeatExecuTorch(ExecuTorchDescriptor):
     pass
 

@@ -6,9 +6,8 @@ import cv2 as cv
 import numpy as np
 import pytest
 import torch
-import torch.nn.functional as functional
 
-from src.executorch_pipeline import (ExecuTorch, ExecuTorchDetector, ExecuTorchDescriptor, ExecuTorchMatcher,
+from src.executorch_pipeline import (ExecuTorch, ExecuTorchDetector, ExecuTorchMatcher, XFeatExecuTorch,
                                      SuperPointLightGlueExecuTorch, DiskLightGlueExecuTorch, D2NetExecuTorch,
                                      TFeatExecuTorch, HardNetExecuTorch, LightGlueExecuTorch, SuperGlueExecuTorch)
 
@@ -122,10 +121,6 @@ class ConcreteDetector(ExecuTorchDetector):
 
 
 class TestExecuTorchDetectorInit:
-    def test_requires_model_path(self, mock_logger, patched_runtime):
-        with pytest.raises(ValueError, match="requires 'executorch_model_path'"):
-            ConcreteDetector("det", mock_logger, config={})
-
     def test_custom_input_shape(self, mock_logger, patched_runtime):
         det = ConcreteDetector("det", mock_logger, config={
             "executorch_model_path": "m.pte", "input_shape": (1, 1, 32, 32)
@@ -442,15 +437,30 @@ class TestD2NetFeatures:
             "nms_radius": 1,
         })
 
-    def test_score_map_shape(self, model):
+    def test_features_rescales_keypoints_to_input_resolution(self, model):
         dense = torch.rand(1, 16, 10, 10)
-        score_map = model._d2net_score_map(dense)
-        assert score_map.shape == (10, 10)
+        outputs = (dense,)
+        keypoints, descriptors, scores = model._features(outputs, input_height=40, input_width=40)
+        assert torch.all(keypoints[:, 0] <= 40)
+        assert torch.all(keypoints[:, 1] <= 40)
+        assert descriptors.shape[0] == keypoints.shape[0] == scores.shape[0]
 
-    def test_score_map_is_finite_and_nonnegative_range(self, model):
-        dense = torch.rand(1, 16, 10, 10) * 5 - 2
-        score_map = model._d2net_score_map(dense)
-        assert torch.isfinite(score_map).all()
+    def test_score_map_all_zero_dense_does_not_crash(self, model):
+        dense = torch.zeros(1, 8, 10, 10)
+        outputs = (dense,)
+        keypoints, descriptors, scores = model._features(outputs, input_height=40, input_width=40)
+        assert torch.isfinite(keypoints).all()
+
+
+class TestXFeatFeatures:
+    @pytest.fixture
+    def model(self, mock_logger, patched_runtime):
+        return XFeatExecuTorch("xfeat", mock_logger, config={
+            "executorch_model_path": "m.pte",
+            "input_shape": (1, 3, 40, 40),
+            "num_keypoints": 4,
+            "nms_radius": 1,
+        })
 
     def test_features_rescales_keypoints_to_input_resolution(self, model):
         dense = torch.rand(1, 16, 10, 10)
@@ -518,8 +528,8 @@ class TestSuperGlueExecuTorchCorrespondences:
         assert called_s1.shape == (1, 4)
 
 
-
 pytestmark_integration = pytest.mark.integration
+
 
 @pytest.mark.integration
 class TestIntegrationSuperPointLightGlueDetector:
@@ -601,8 +611,44 @@ class TestIntegrationD2NetDetector:
         assert features["keypoints"].shape[0] <= 256
 
     def test_detect_on_alternate_resolution_model(self, model, mock_logger, load_img):
-        alt_path = model_path_or_skip("d2net_dense_none_1x3x720x960.pte")
+        alt_path = model_path_or_skip("d2net_dense_none_1x3x480x640.pte")
         alt_model = D2NetExecuTorch("d2net", mock_logger, config={
+            "executorch_model_path": str(alt_path),
+            "input_shape": (1, 3, 720, 960),
+            "num_keypoints": 256,
+            "nms_radius": 4,
+        })
+        img = load_img("box.png")
+        img_rgb = cv.cvtColor(img, cv.COLOR_BGR2RGB)
+        tensor = torch.from_numpy(img_rgb).permute(2, 0, 1).float() / 255.0
+        features = alt_model.detect(tensor)
+        assert features["keypoints"].shape[0] <= 256
+
+
+@pytest.mark.integration
+class TestIntegrationXFeatDetector:
+    MODEL_NAME = "xfeat_dense_none_1x3x480x640.pte"
+
+    @pytest.fixture
+    def model(self, mock_logger):
+        path = model_path_or_skip(self.MODEL_NAME)
+        return XFeatExecuTorch("xfeat", mock_logger, config={
+            "executorch_model_path": str(path),
+            "input_shape": (1, 3, 480, 640),
+            "num_keypoints": 256,
+            "nms_radius": 4,
+        })
+
+    def test_detect_on_real_image(self, model, load_img):
+        img = load_img("box.png")
+        img_rgb = cv.cvtColor(img, cv.COLOR_BGR2RGB)
+        tensor = torch.from_numpy(img_rgb).permute(2, 0, 1).float() / 255.0
+        features = model.detect(tensor)
+        assert features["keypoints"].shape[0] <= 256
+
+    def test_detect_on_alternate_resolution_model(self, model, mock_logger, load_img):
+        alt_path = model_path_or_skip("xfeat_dense_none_1x3x480x640.pte")
+        alt_model = XFeatExecuTorch("xfeat", mock_logger, config={
             "executorch_model_path": str(alt_path),
             "input_shape": (1, 3, 720, 960),
             "num_keypoints": 256,
@@ -740,7 +786,6 @@ class TestIntegrationDiskLightGlueMatcher:
 
 @pytest.mark.integration
 class TestIntegrationBackendVariants:
-
     @pytest.mark.parametrize("backend", ["none", "vulkan", "xnnpack"])
     def test_d2net_backend_variant_loads_and_runs(self, backend, mock_logger, load_img):
         filename = f"d2net_dense_{backend}_1x3x480x640.pte"

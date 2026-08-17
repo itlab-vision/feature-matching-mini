@@ -16,8 +16,10 @@ OPENCV_DESCRIPTORS = {'sift', 'orb', 'akaze', 'brisk', 'kaze', 'brief', 'freak',
 OPENCV_MATCHERS = {'bf', 'flann', 'lightglueopencv'}
 OPENCV_MATCHERS_MODE = {'simple', 'knn'}
 
-DNN_EXECUTORCH_DETECTORS = {'superpoint_lightglue_executorch', 'disk_lightglue_executorch', 'd2net_executorch'}
-DNN_EXECUTORCH_DESCRIPTORS = {'superpoint_lightglue_executorch', 'disk_lightglue_executorch', 'd2net_executorch'}
+DNN_EXECUTORCH_DETECTORS = {'superpoint_lightglue_executorch', 'disk_lightglue_executorch', 'd2net_executorch',
+                            'xfeat_executorch'}
+DNN_EXECUTORCH_DESCRIPTORS = {'superpoint_lightglue_executorch', 'disk_lightglue_executorch', 'd2net_executorch',
+                              'xfeat_executorch'}
 DNN_EXECUTORCH_MATCHERS = {'lightglue_executorch', 'superglue_executorch'}
 
 OPENCV_EXECUTORCH_DESCRIPTORS = {'tfeat_executorch', 'hardnet_executorch'}
@@ -74,6 +76,7 @@ DETECTOR_DESCRIPTOR_COMPATIBILITY = {
     'superpoint_lightglue_executorch': ['superpoint_lightglue_executorch'],
     'disk_lightglue_executorch': ['disk_lightglue_executorch'],
     'd2net_executorch': ['d2net_executorch'],
+    'xfeat_executorch': ['xfeat_executorch'],
 }
 
 DESCRIPTOR_MATCHER_COMPATIBILITY = {
@@ -108,4 +111,5 @@ DESCRIPTOR_MATCHER_COMPATIBILITY = {
     'd2net_executorch': ['bf', 'flann'],
     'tfeat_executorch': ['bf', 'flann'],
     'hardnet_executorch': ['bf', 'flann'],
+    'xfeat_executorch': ['bf', 'flann'],
 }
