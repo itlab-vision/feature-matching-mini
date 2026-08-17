@@ -1,9 +1,9 @@
 
 DNN_DETECTORS = {'superpoint', 'superpoint_lightglue', 'disk_lightglue', 'sift_lightglue', 'aliked_lightglue',
-                 'doghardnet_lightglue', 'd2net'}
+                 'doghardnet_lightglue', 'xfeat', 'd2net'}
 
 DNN_DESCRIPTORS = {'superpoint', 'superpoint_lightglue', 'disk_lightglue', 'sift_lightglue', 'aliked_lightglue',
-                   'doghardnet_lightglue', 'd2net'}
+                   'doghardnet_lightglue', 'xfeat', 'd2net'}
 
 DNN_MATCHERS = {'lightglue', 'superglue'}
 
@@ -70,6 +70,7 @@ DETECTOR_DESCRIPTOR_COMPATIBILITY = {
     'alikedopencv': ['alikedopencv'],
     'doghardnet_lightglue': ['doghardnet_lightglue'],
     'd2net': ['d2net'],
+    'xfeat': ['xfeat'],
     'superpoint_lightglue_executorch': ['superpoint_lightglue_executorch'],
     'disk_lightglue_executorch': ['disk_lightglue_executorch'],
     'd2net_executorch': ['d2net_executorch'],
@@ -98,6 +99,7 @@ DESCRIPTOR_MATCHER_COMPATIBILITY = {
     'aliked_lightglue': ['lightglue'],
     'alikedopencv': ['bf', 'flann', 'lightglueopencv'],
     'doghardnet_lightglue': ['lightglue'],
+    'xfeat': ['bf', 'flann'],
     'tfeat': ['bf', 'flann'],
     'hardnet': ['bf', 'flann'],
     'd2net': ['bf', 'flann'],
