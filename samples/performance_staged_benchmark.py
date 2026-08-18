@@ -17,7 +17,9 @@ from src.opencv_dnn_extractors import ALIKEDOpenCV, DISKOpenCV  # noqa: E402, F4
 from src.opencv_dnn_matchers import LightGlueOpenCVMatcher  # noqa: E402, F401
 from src.tfeat_descriptor import TFeat  # noqa: E402, F401
 from src.hardnet_descriptor import HardNet  # noqa: E402, F401
-
+from src.xfeat import XFeat  # noqa: E402, F401
+from src.super_glue import SuperGlueMatcher  # noqa: E402, F401
+from src.d2net import D2Net  # noqa: E402, F401
 
 logging.basicConfig(level=logging.INFO, format='[ %(levelname)s ] %(message)s')
 logger = logging.getLogger("Staged_Performance_Test_Sample")
