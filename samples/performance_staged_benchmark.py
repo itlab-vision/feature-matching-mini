@@ -2,15 +2,22 @@ import sys
 import logging
 import numpy as np
 
-from feature_matching.image_utils import read_image
-from utils import build_feature_matcher_config, performance_tests_parser
-from feature_matching.preprocessor import Preprocessor
-from feature_matching.algorithms import DNN_ALGORITHMS
-from feature_matching.detectors import Detector
-from feature_matching.descriptors import Descriptor
-from feature_matching.matchers import Matcher
-from performance_profiler import PerformanceProfiler
 
+from feature_matching.image_utils import read_image  # noqa: E402
+from utils import build_feature_matcher_config, performance_tests_parser  # noqa: E402
+from feature_matching.preprocessor import Preprocessor  # noqa: E402
+from feature_matching.algorithms import DNN_ALGORITHMS  # noqa: E402
+from feature_matching.detectors import Detector  # noqa: E402
+from feature_matching.descriptors import Descriptor  # noqa: E402
+from feature_matching.matchers import Matcher  # noqa: E402
+from performance_profiler import PerformanceProfiler  # noqa: E402
+from feature_matching.opencv_dnn_extractors import ALIKEDOpenCV, DISKOpenCV  # noqa: E402, F401
+from feature_matching.opencv_dnn_matchers import LightGlueOpenCVMatcher  # noqa: E402, F401
+from feature_matching.tfeat_descriptor import TFeat  # noqa: E402, F401
+from feature_matching.hardnet_descriptor import HardNet  # noqa: E402, F401
+from feature_matching.xfeat import XFeat  # noqa: E402, F401
+from feature_matching.super_glue import SuperGlueMatcher  # noqa: E402, F401
+from feature_matching.d2net import D2Net  # noqa: E402, F401
 
 logging.basicConfig(level=logging.INFO, format='[ %(levelname)s ] %(message)s')
 logger = logging.getLogger("Staged_Performance_Test_Sample")
