@@ -9,6 +9,7 @@ dependencies = [
     "numpy",
     "matplotlib",
     "transformers",
+    "torchvision",
     "huggingface_hub",
     "screeninfo",
     "kornia>=0.6.11",
