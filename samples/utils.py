@@ -1,16 +1,10 @@
-import sys
 import argparse
 from pathlib import Path
 
-sys.path.append(str(Path(__file__).parent.parent))  # noqa: E402
-
-from src.detectors import Detector  # noqa: E402
-from src.descriptors import Descriptor  # noqa: E402
-from src.matchers import Matcher, OpenCVMatcher  # noqa: E402
-from src.algorithms import DNN_DETECTORS, DNN_DESCRIPTORS, DNN_MATCHERS, OPENCV_MATCHERS  # noqa: E402
-from src.super_point import SuperPoint  # noqa: F401, E402
-from src.lightglue_matcher import LightGlue  # noqa: F401, E402
-from src.lightglue_pipeline import LightGlueFeatureExtractor  # noqa: F401, E402
+from feature_matching.detectors import Detector
+from feature_matching.descriptors import Descriptor
+from feature_matching.matchers import Matcher, OpenCVMatcher
+from feature_matching.algorithms import DNN_DETECTORS, DNN_DESCRIPTORS, DNN_MATCHERS, OPENCV_MATCHERS
 
 
 def build_detector_config(args):
@@ -151,7 +145,7 @@ def performance_tests_parser():
 
     mat_group = arg_parser.add_argument_group('Matcher config')
     mat_group.add_argument('-mat_m', '--matcher_mode', type=str, default='simple',
-                           choices=available_matchers_modes, help='Matching mode')
+                           help='Matching mode')
     mat_group.add_argument('-k', '--k_knn', type=int, default=None,
                            help='K for knn mode')
     mat_group.add_argument('-mr', '--mat-ratio', type=float, default=None,

@@ -6,9 +6,9 @@ from pathlib import Path
 from unittest.mock import MagicMock
 from logging import Logger
 
-from src.descriptors import Descriptor
-from src.detectors import Detector
-from src.matchers import Matcher, BFMatcher, FLANNMatcher
+from feature_matching.descriptors import Descriptor
+from feature_matching.detectors import Detector
+from feature_matching.matchers import Matcher, BFMatcher, FLANNMatcher
 
 
 @pytest.fixture

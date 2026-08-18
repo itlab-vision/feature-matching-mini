@@ -3,16 +3,14 @@ import sys
 import logging
 from pathlib import Path
 
-sys.path.append(str(Path(__file__).parent.parent))  # noqa: E402
+from feature_matching.detectors import Detector
+from feature_matching.descriptors import Descriptor
+from feature_matching.matchers import Matcher, OpenCVMatcher
+from feature_matching.feature_matcher import FeatureMatcherCV2
 
-from src.detectors import Detector  # noqa: E402
-from src.descriptors import Descriptor  # noqa: E402
-from src.matchers import Matcher, OpenCVMatcher  # noqa: E402
-from src.feature_matcher import FeatureMatcherCV2  # noqa: E402
-
-from samples.utils import build_hpatches_benchmark_config  # noqa: E402
-from samples.hpatches_task import HPatchesTask  # noqa: E402
-from samples.hpatches_data_manager import HPatchesDataManager  # noqa: E402
+from utils import build_hpatches_benchmark_config
+from hpatches_task import HPatchesTask
+from hpatches_data_manager import HPatchesDataManager
 
 logging.basicConfig(level=logging.INFO, format='[ %(levelname)s ] %(message)s')
 logger = logging.getLogger("hpatches_benchmark")

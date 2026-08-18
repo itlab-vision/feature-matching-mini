@@ -2,8 +2,8 @@ import torch
 from transformers import AutoImageProcessor, SuperPointForKeypointDetection
 from pathlib import Path
 
-from src.dnn_extractors import DNNFeatureExtractors
-from src.image_utils import to_numpy_bgr
+from feature_matching.dnn_extractors import DNNFeatureExtractors
+from feature_matching.image_utils import to_numpy_bgr
 
 
 class SuperPoint(DNNFeatureExtractors):

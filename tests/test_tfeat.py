@@ -5,8 +5,8 @@ from pathlib import Path
 from unittest.mock import MagicMock
 from logging import Logger
 
-from src.tfeat_descriptor import TFeat
-from src.descriptors import Descriptor
+from feature_matching.tfeat_descriptor import TFeat
+from feature_matching.descriptors import Descriptor
 
 
 @pytest.fixture

@@ -6,9 +6,9 @@ from pathlib import Path
 from unittest.mock import MagicMock
 from logging import Logger
 
-from src.super_point import SuperPoint
-from src.detectors import Detector
-from src.descriptors import Descriptor
+from feature_matching.super_point import SuperPoint
+from feature_matching.detectors import Detector
+from feature_matching.descriptors import Descriptor
 
 
 @pytest.fixture

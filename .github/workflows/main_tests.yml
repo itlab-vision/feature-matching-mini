@@ -22,14 +22,13 @@ jobs:
       - name: Setting up Python
         uses: actions/setup-python@v4
         with:
-          python-version: 3.9
+          python-version: 3.14
 
       - name: Setting up Python dependencies
         run: |
           python -m pip install --upgrade pip
+          python -m pip install -e .
           python -m pip install -r requirements_ci.txt
-          git clone https://github.com/cvg/lightglue
-          python -m pip install lightglue/
 
       - name: Run main tests
         run: python -m pytest tests/

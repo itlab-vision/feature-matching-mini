@@ -5,14 +5,14 @@ from pathlib import Path
 from unittest.mock import MagicMock
 from logging import Logger
 
-from src.image_utils import read_image
-from src.algorithms import DNN_ALGORITHMS
+from feature_matching.image_utils import read_image
+from feature_matching.algorithms import DNN_ALGORITHMS
 
-from src.detectors import Detector
-from src.descriptors import Descriptor, SIFTDescriptor, OpenCVDescriptor
-from src.feature_matcher import FeatureMatcherCV2
-from src.lightglue_pipeline import LightGlueFeatureExtractor  # noqa: F401
-from src.super_point import SuperPoint  # noqa: F401
+from feature_matching.detectors import Detector
+from feature_matching.descriptors import Descriptor, SIFTDescriptor, OpenCVDescriptor
+from feature_matching.feature_matcher import FeatureMatcherCV2
+from feature_matching.lightglue_pipeline import LightGlueFeatureExtractor  # noqa: F401
+from feature_matching.super_point import SuperPoint  # noqa: F401
 
 
 @pytest.fixture

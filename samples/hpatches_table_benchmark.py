@@ -6,15 +6,13 @@ import logging
 import pandas as pd
 from pathlib import Path
 
-sys.path.append(str(Path(__file__).parent.parent))  # noqa: E402
+from feature_matching.matchers import OpenCVMatcher
+from feature_matching.algorithms import DETECTOR_DESCRIPTOR_COMPATIBILITY, DESCRIPTOR_MATCHER_COMPATIBILITY
+from feature_matching.feature_matcher import FeatureMatcherCV2
 
-from src.matchers import OpenCVMatcher  # noqa: E402
-from src.algorithms import DETECTOR_DESCRIPTOR_COMPATIBILITY, DESCRIPTOR_MATCHER_COMPATIBILITY  # noqa: E402
-from src.feature_matcher import FeatureMatcherCV2  # noqa: E402
-
-from samples.utils import build_hpatches_benchmark_config, build_feature_matcher_config  # noqa: E402
-from samples.hpatches_task import HPatchesTask  # noqa: E402
-from samples.hpatches_data_manager import HPatchesDataManager  # noqa: E402
+from samples.utils import build_hpatches_benchmark_config, build_feature_matcher_config
+from samples.hpatches_task import HPatchesTask
+from samples.hpatches_data_manager import HPatchesDataManager
 
 
 logging.basicConfig(level=logging.INFO, format='[ %(levelname)s ] %(message)s')

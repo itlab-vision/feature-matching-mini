@@ -6,8 +6,8 @@ from pathlib import Path
 from unittest.mock import MagicMock
 from logging import Logger
 
-from src.preprocessor import Preprocessor
-from src.algorithms import DNN_ALGORITHMS, OPENCV_ALGORITHMS
+from feature_matching.preprocessor import Preprocessor
+from feature_matching.algorithms import DNN_ALGORITHMS, OPENCV_ALGORITHMS
 
 
 @pytest.fixture

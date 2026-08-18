@@ -1,0 +1,33 @@
+[project]
+name = "feature-matching-mini"
+version = "0.1.0"
+requires-python = ">=3.10"
+dependencies = [
+    "torch>=1.9",
+    "opencv-python>=4.8",
+    "opencv-contrib-python>=4.8",
+    "numpy",
+    "matplotlib",
+    "transformers",
+    "torchvision",
+    "huggingface_hub",
+    "screeninfo",
+    "kornia>=0.6.11",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-mock",
+    "flake8==7.3.0",
+]
+
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = { find = { namespaces = true } }
+
+[tool.setuptools.package-data]
+"*" = ["**/*"]

@@ -5,9 +5,9 @@ from pathlib import Path
 from unittest.mock import MagicMock
 from logging import Logger
 
-from src.opencv_dnn_extractors import DISKOpenCV
-from src.opencv_dnn_matchers import LightGlueOpenCVMatcher
-from src.matchers import Matcher
+from feature_matching.opencv_dnn_extractors import DISKOpenCV
+from feature_matching.opencv_dnn_matchers import LightGlueOpenCVMatcher
+from feature_matching.matchers import Matcher
 
 
 @pytest.fixture

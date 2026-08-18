@@ -1,15 +1,9 @@
 import cv2 as cv
 import torch
-import sys
 import numpy as np
-from pathlib import Path
 
-HARDNET_ROOT = Path(__file__).parent.parent / "3rdparty"
-if str(HARDNET_ROOT) not in sys.path:
-    sys.path.append(str(HARDNET_ROOT))
-
-from src.descriptors import Descriptor  # noqa: E402
-from hardnet.examples.extract_hardnet_desc_from_hpatches_file import HardNet as HardNetModel  # noqa: E402
+from feature_matching.descriptors import Descriptor
+from thirdparty.hardnet.examples.extract_hardnet_desc_from_hpatches_file import HardNet as HardNetModel
 
 
 class HardNet(Descriptor):
@@ -19,8 +13,8 @@ class HardNet(Descriptor):
     def __init__(self, descriptor_name, logger, config):
         super().__init__(logger, descriptor_name)
         model_path = config.pop('hardnet_model_path',
-                                str(HARDNET_ROOT / "hardnet" / "pretrained"
-                                    / "train_liberty_with_aug" / "checkpoint_liberty_with_aug.pth"))
+                                "thirdparty/hardnet/pretrained"
+                                "/train_liberty_with_aug/checkpoint_liberty_with_aug.pth")
         self.patch_size = config.pop('patch_size', 32)
         self.batch_size = config.pop('batch_size', 128)
         device = config.pop('device', None)

@@ -3,14 +3,12 @@ import sys
 import logging
 from pathlib import Path
 
-sys.path.append(str(Path(__file__).parent.parent))  # noqa: E402
-
-from src.image_utils import read_image, save_image, show_image  # noqa: E402
-from samples.utils import build_feature_matcher_config  # noqa: E402
-from src.detectors import Detector  # noqa: E402
-from src.descriptors import Descriptor  # noqa: E402
-from src.matchers import Matcher, OpenCVMatcher  # noqa: E402
-from src.feature_matcher import FeatureMatcherCV2  # noqa: E402
+from feature_matching.image_utils import read_image, save_image, show_image
+from utils import build_feature_matcher_config
+from feature_matching.detectors import Detector
+from feature_matching.descriptors import Descriptor
+from feature_matching.matchers import Matcher, OpenCVMatcher
+from feature_matching.feature_matcher import FeatureMatcherCV2
 
 
 logging.basicConfig(level=logging.INFO, format='[ %(levelname)s ] %(message)s')

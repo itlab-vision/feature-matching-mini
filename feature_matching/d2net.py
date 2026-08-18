@@ -1,17 +1,12 @@
 import torch
 import numpy as np
-import sys
 from pathlib import Path
 
-from src.dnn_extractors import DNNFeatureExtractors
+from feature_matching.dnn_extractors import DNNFeatureExtractors
 
-D2_ROOT = Path(__file__).resolve().parent.parent / "3rdparty" / "d2net"
-if str(D2_ROOT) not in sys.path:
-    sys.path.insert(0, str(D2_ROOT))
-
-from lib.model_test import D2Net as D2NetModel  # noqa: E402
-from lib.pyramid import process_multiscale  # noqa: E402
-from lib.utils import preprocess_image  # noqa: E402
+from thirdparty.d2net.lib.model_test import D2Net as D2NetModel
+from thirdparty.d2net.lib.pyramid import process_multiscale
+from thirdparty.d2net.lib.utils import preprocess_image
 
 
 class D2Net(DNNFeatureExtractors):

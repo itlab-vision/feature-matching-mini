@@ -6,9 +6,9 @@ from pathlib import Path
 from unittest.mock import MagicMock
 from logging import Logger
 
-from src.d2net import D2Net
-from src.detectors import Detector
-from src.descriptors import Descriptor
+from feature_matching.d2net import D2Net
+from feature_matching.detectors import Detector
+from feature_matching.descriptors import Descriptor
 
 
 @pytest.fixture
