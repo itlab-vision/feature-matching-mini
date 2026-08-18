@@ -25,20 +25,8 @@ dev = [
 requires = ["setuptools>=45", "wheel"]
 build-backend = "setuptools.build_meta"
 
-[tool.pytest.ini_options]
-pythonpath = [
-    ".",
-    "thirdparty/d2net",
-    "thirdparty/xfeat",
-    "thirdparty/hardnet",
-    "thirdparty/tfeat",
-    "thirdparty/superglue",
-    "thirdparty/lightglue"
-]
-
 [tool.setuptools]
 packages = { find = { namespaces = true } }
 
-[tool.setuptools.package-dir]
-"" = "."
-
+[tool.setuptools.package-data]
+"*" = ["**/*"]

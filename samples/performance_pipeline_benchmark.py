@@ -9,7 +9,7 @@ from feature_matching.algorithms import DNN_ALGORITHMS  # noqa: E402
 from feature_matching.detectors import Detector  # noqa: E402
 from feature_matching.descriptors import Descriptor  # noqa: E402
 from feature_matching.matchers import Matcher  # noqa: E402
-from samples.performance_profiler import PerformanceProfiler  # noqa: E402
+from performance_profiler import PerformanceProfiler  # noqa: E402
 from feature_matching.opencv_dnn_extractors import ALIKEDOpenCV, DISKOpenCV  # noqa: E402, F401
 from feature_matching.opencv_dnn_matchers import LightGlueOpenCVMatcher  # noqa: E402, F401
 from feature_matching.tfeat_descriptor import TFeat  # noqa: E402, F401
