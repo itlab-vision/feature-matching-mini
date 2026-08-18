@@ -1,8 +1,8 @@
 import torch
 import numpy as np
+from pathlib import Path
 
-from dnn_extractors import DNNFeatureExtractors
-
+from feature_matching.dnn_extractors import DNNFeatureExtractors
 
 from thirdparty.d2net.lib.model_test import D2Net as D2NetModel
 from thirdparty.d2net.lib.pyramid import process_multiscale

@@ -5,6 +5,7 @@ import numpy as np
 from feature_matching.descriptors import Descriptor
 from thirdparty.hardnet.examples.extract_hardnet_desc_from_hpatches_file import HardNet as HardNetModel
 
+
 class HardNet(Descriptor):
     MEAN = 0.443728476019
     STD = 0.20197947209
@@ -12,7 +13,7 @@ class HardNet(Descriptor):
     def __init__(self, descriptor_name, logger, config):
         super().__init__(logger, descriptor_name)
         model_path = config.pop('hardnet_model_path',
-                                "3rdparty/hardnet/pretrained"
+                                "thirdparty/hardnet/pretrained"
                                 "/train_liberty_with_aug/checkpoint_liberty_with_aug.pth")
         self.patch_size = config.pop('patch_size', 32)
         self.batch_size = config.pop('batch_size', 128)

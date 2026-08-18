@@ -1,14 +1,10 @@
-import sys
 import argparse
 from pathlib import Path
 
-from feature_matching.detectors import Detector  # noqa: E402
-from feature_matching.descriptors import Descriptor  # noqa: E402
-from feature_matching.matchers import Matcher, OpenCVMatcher  # noqa: E402
-from feature_matching.algorithms import DNN_DETECTORS, DNN_DESCRIPTORS, DNN_MATCHERS, OPENCV_MATCHERS  # noqa: E402
-from feature_matching.super_point import SuperPoint  # noqa: F401, E402
-from feature_matching.lightglue_matcher import LightGlue  # noqa: F401, E402
-from feature_matching.lightglue_pipeline import LightGlueFeatureExtractor  # noqa: F401, E402
+from feature_matching.detectors import Detector
+from feature_matching.descriptors import Descriptor
+from feature_matching.matchers import Matcher, OpenCVMatcher
+from feature_matching.algorithms import DNN_DETECTORS, DNN_DESCRIPTORS, DNN_MATCHERS, OPENCV_MATCHERS
 
 
 def build_detector_config(args):
@@ -96,18 +92,18 @@ def performance_tests_parser():
         description="Feature matching staged performance test",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
-    available_detectors = list(Detector._METHODS.keys())
-    available_descriptors = list(Descriptor._METHODS.keys())
-    available_matchers = list(Matcher._METHODS.keys())
-    available_matchers_modes = list(OpenCVMatcher._MODE)
+    #available_detectors = list(Detector._METHODS.keys())
+    #available_descriptors = list(Descriptor._METHODS.keys())
+    #available_matchers = list(Matcher._METHODS.keys())
+    #available_matchers_modes = list(OpenCVMatcher._MODE)
     available_devices = ['cpu', 'cuda', 'mps']
 
     arg_parser.add_argument('-det', '--detector', type=str, default='sift',
-                            choices=available_detectors, help='Detector algorithm')
+                            help='Detector algorithm')
     arg_parser.add_argument('-des', '--descriptor', type=str, default='sift',
-                            choices=available_descriptors, help='Descriptor algorithm')
+                            help='Descriptor algorithm')
     arg_parser.add_argument('-mat', '--matcher', type=str, default='bf',
-                            choices=available_matchers, help='Matching algorithm')
+                            help='Matching algorithm')
 
     arg_parser.add_argument('-i1', '--image1', type=Path, required=True,
                             help='Path to the first image')
@@ -149,7 +145,7 @@ def performance_tests_parser():
 
     mat_group = arg_parser.add_argument_group('Matcher config')
     mat_group.add_argument('-mat_m', '--matcher_mode', type=str, default='simple',
-                           choices=available_matchers_modes, help='Matching mode')
+                           help='Matching mode')
     mat_group.add_argument('-k', '--k_knn', type=int, default=None,
                            help='K for knn mode')
     mat_group.add_argument('-mr', '--mat-ratio', type=float, default=None,

@@ -1,7 +1,7 @@
 import torch
 from abc import abstractmethod
 
-from matchers import Matcher
+from feature_matching.matchers import Matcher
 
 
 class DNNMatcher(Matcher, register=False):

@@ -1,7 +1,7 @@
 import cv2 as cv
 
-from descriptors import Descriptor
-from detectors import Detector
+from feature_matching.descriptors import Descriptor
+from feature_matching.detectors import Detector
 
 
 class OpenCVDNNFeatureExtractors(Detector, Descriptor, register=False):

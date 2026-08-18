@@ -100,7 +100,7 @@ class TestShowImage:
     @patch('cv2.imshow')
     @patch('cv2.resizeWindow')
     @patch('cv2.namedWindow')
-    @patch('src.image_utils.get_monitors')
+    @patch('feature_matching.image_utils.get_monitors')
     def test_show_numpy(self, mock_get_monitors, mock_named, mock_resize,
                         mock_imshow, mock_wait, mock_destroy, sample_numpy):
         mock_monitor = MagicMock()
@@ -119,7 +119,7 @@ class TestShowImage:
     @patch('cv2.imshow')
     @patch('cv2.resizeWindow')
     @patch('cv2.namedWindow')
-    @patch('src.image_utils.get_monitors')
+    @patch('feature_matching.image_utils.get_monitors')
     def test_show_tensor(self, mock_get_monitors, mock_named, mock_resize,
                          mock_imshow, mock_wait, mock_destroy, sample_tensor):
         mock_monitor = MagicMock()

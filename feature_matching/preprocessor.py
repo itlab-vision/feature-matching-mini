@@ -1,5 +1,5 @@
-from algorithms import DNN_ALGORITHMS, OPENCV_ALGORITHMS
-from converter import Converter
+from feature_matching.algorithms import DNN_ALGORITHMS, OPENCV_ALGORITHMS
+from feature_matching.converter import Converter
 
 
 class Preprocessor:

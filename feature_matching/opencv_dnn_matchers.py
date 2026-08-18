@@ -1,5 +1,5 @@
 import cv2 as cv
-from matchers import Matcher
+from feature_matching.matchers import Matcher
 
 
 class LightGlueOpenCVMatcher(Matcher):

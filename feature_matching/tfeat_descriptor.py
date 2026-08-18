@@ -2,7 +2,7 @@ import cv2 as cv
 import torch
 import numpy as np
 
-from descriptors import Descriptor
+from feature_matching.descriptors import Descriptor
 from thirdparty.tfeat.tfeat_model import TNet
 from thirdparty.tfeat.tfeat_utils import describe_opencv
 
@@ -12,7 +12,7 @@ class TFeat(Descriptor):
         super().__init__(logger, descriptor_name)
         self.model = TNet()
         models_path = config.pop('tfeat_model_path',
-                                 "3rdparty/tfeat/pretrained-models/tfeat-liberty.params")
+                                 "thirdparty/tfeat/pretrained-models/tfeat-liberty.params")
         self.mag_factor = config.pop('magfactor', 3)
         device = config.pop('device', None)
         if device is None:

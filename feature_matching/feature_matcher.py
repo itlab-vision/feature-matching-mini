@@ -1,23 +1,13 @@
 import cv2 as cv
 import numpy as np
 
-from preprocessor import Preprocessor
-from algorithms import (DETECTOR_DESCRIPTOR_COMPATIBILITY, DESCRIPTOR_MATCHER_COMPATIBILITY, DNN_MATCHERS,
-                            OPENCV_MATCHERS)
+from feature_matching.preprocessor import Preprocessor
+from feature_matching.algorithms import (DETECTOR_DESCRIPTOR_COMPATIBILITY, DESCRIPTOR_MATCHER_COMPATIBILITY,
+                        DNN_MATCHERS, OPENCV_MATCHERS)
 
-from detectors import Detector
-from descriptors import Descriptor
-from matchers import Matcher
-from super_point import SuperPoint  # noqa: F401
-from opencv_dnn_extractors import ALIKEDOpenCV, DISKOpenCV  # noqa: F401
-from opencv_dnn_matchers import LightGlueOpenCVMatcher  # noqa: F401
-from lightglue_matcher import LightGlue  # noqa: F401
-from lightglue_pipeline import LightGlueFeatureExtractor  # noqa: F401
-from xfeat import XFeat  # noqa: F401
-from tfeat_descriptor import TFeat  # noqa: F401
-from hardnet_descriptor import HardNet  # noqa: F401
-from super_glue import SuperGlueMatcher  # noqa: F401
-from d2net import D2Net  # noqa: F401
+from feature_matching.detectors import Detector
+from feature_matching.descriptors import Descriptor
+from feature_matching.matchers import Matcher
 
 
 class FeatureMatcherCV2:
