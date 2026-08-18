@@ -92,18 +92,18 @@ def performance_tests_parser():
         description="Feature matching staged performance test",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
-    #available_detectors = list(Detector._METHODS.keys())
-    #available_descriptors = list(Descriptor._METHODS.keys())
-    #available_matchers = list(Matcher._METHODS.keys())
-    #available_matchers_modes = list(OpenCVMatcher._MODE)
+    available_detectors = list(Detector._METHODS.keys())
+    available_descriptors = list(Descriptor._METHODS.keys())
+    available_matchers = list(Matcher._METHODS.keys())
+    available_matchers_modes = list(OpenCVMatcher._MODE)
     available_devices = ['cpu', 'cuda', 'mps']
 
     arg_parser.add_argument('-det', '--detector', type=str, default='sift',
-                            help='Detector algorithm')
+                            choices=available_detectors, help='Detector algorithm')
     arg_parser.add_argument('-des', '--descriptor', type=str, default='sift',
-                            help='Descriptor algorithm')
+                            choices=available_descriptors, help='Descriptor algorithm')
     arg_parser.add_argument('-mat', '--matcher', type=str, default='bf',
-                            help='Matching algorithm')
+                            choices=available_matchers, help='Matching algorithm')
 
     arg_parser.add_argument('-i1', '--image1', type=Path, required=True,
                             help='Path to the first image')

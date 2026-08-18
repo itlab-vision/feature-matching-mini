@@ -3,7 +3,7 @@ import numpy as np
 
 from feature_matching.preprocessor import Preprocessor
 from feature_matching.algorithms import (DETECTOR_DESCRIPTOR_COMPATIBILITY, DESCRIPTOR_MATCHER_COMPATIBILITY,
-                        DNN_MATCHERS, OPENCV_MATCHERS)
+                                         DNN_MATCHERS, OPENCV_MATCHERS)
 
 from feature_matching.detectors import Detector
 from feature_matching.descriptors import Descriptor
