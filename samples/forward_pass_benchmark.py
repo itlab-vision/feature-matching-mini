@@ -2,9 +2,10 @@ import argparse
 import logging
 import sys
 from pathlib import Path
-from samples.forward_profiler import ForwardProfiler
 
 sys.path.append(str(Path(__file__).parent.parent))  # noqa: E402
+
+from samples.forward_profiler import ForwardProfiler  # noqa: E402
 
 logging.basicConfig(level=logging.INFO, format='[ %(levelname)s ] %(message)s')
 logger = logging.getLogger("ForwardPassBenchmark")
