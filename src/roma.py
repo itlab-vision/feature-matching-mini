@@ -20,7 +20,7 @@ class RoMa(DNNPipeline):
 
         DNNPipeline.__init__(self, extractor_name, logger, config)
 
-        self._num_features = self.config.get('num_features', 4096)
+        self._num_features = config.get('num_features', 4096)
 
         if RoMa._model is None:
             try:

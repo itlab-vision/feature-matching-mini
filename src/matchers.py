@@ -12,7 +12,6 @@ class Matcher(ABC):
         self.matcher_name = matcher_name
         self.descriptor_name = descriptor_name
         self.logger = logger
-        self.config = config
 
     def __init_subclass__(cls, register=True, **kwargs):
         super().__init_subclass__(**kwargs)
@@ -23,7 +22,7 @@ class Matcher(ABC):
                 Matcher._METHODS[key] = cls
 
     @staticmethod
-    def create(matcher_name, logger, descriptor_name, config):
+    def create(matcher_name, logger, config, descriptor_name):
         matcher_class_name = Matcher._METHODS.get(matcher_name.lower())
         if not matcher_class_name:
             raise ValueError(f"Matcher '{matcher_name}' not found."

@@ -14,11 +14,11 @@ from models.superglue import SuperGlue  # noqa: E402
 
 
 class SuperGlueMatcher(DNNMatcher):
-    def __init__(self, logger, matcher_name, config=None, descriptor_name=None):
+    def __init__(self, matcher_name, logger, config=None, descriptor_name=None):
         if config is None:
             config = {}
 
-        DNNMatcher.__init__(self, logger, matcher_name, config, descriptor_name)
+        DNNMatcher.__init__(self, matcher_name, logger, config, descriptor_name)
         sg_config = {
             'weights': config.get('weights', 'outdoor'),
             'sinkhorn_iterations': config.get('sinkhorn_iterations', 20),

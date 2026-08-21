@@ -13,7 +13,7 @@ class DNNPipeline(DNNFeatureExtractors, DNNMatcher, register=False):
         DNNMatcher.__init__(self, extractor_name, logger, config, extractor_name)
 
     def detect(self, img):
-        return {'image': img}
+        return {'image': img, 'keypoints': (), 'descriptors': ()}
 
     def compute(self, img, features=None):
         return features

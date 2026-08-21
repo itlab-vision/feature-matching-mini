@@ -3,8 +3,8 @@ from src.matchers import Matcher
 
 
 class LightGlueOpenCVMatcher(Matcher):
-    def __init__(self, logger, matcher_name, descriptor_name, config):
-        super().__init__(logger, matcher_name, descriptor_name)
+    def __init__(self, matcher_name, logger, config, descriptor_name):
+        super().__init__(matcher_name, logger, config, descriptor_name)
         self._logger = logger
         if descriptor_name._descriptor_name == 'diskopencv':
             self.lightglue_model_path = config.pop('lightglue_model_path', "models/disk_lightglue_2outputs.onnx")
