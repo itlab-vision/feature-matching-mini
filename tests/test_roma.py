@@ -38,7 +38,7 @@ def session_logger():
 @pytest.fixture(scope="session")
 def roma_instance(session_logger):
     config = {
-        'device': 'mps',
+        'device': 'cpu',
         'coarse_res': 128,
         'upsample_res': (160, 160),
         'num_features': 10

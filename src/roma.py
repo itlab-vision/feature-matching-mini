@@ -27,7 +27,7 @@ class RoMa(DNNPipeline):
         if RoMa._model is None:
             try:
                 self._logger.info(f"Loading RoMa weights onto {self._device}")
-                RoMa._model = roma_outdoor(device=self._device, coarse_res=self._coarse_res ,
+                RoMa._model = roma_outdoor(device=self._device, coarse_res=self._coarse_res,
                                            upsample_res=self._upsample_res)
                 RoMa._model.eval().to(self._device)
                 self._logger.info("RoMa loaded successfully.")
