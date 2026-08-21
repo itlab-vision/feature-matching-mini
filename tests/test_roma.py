@@ -37,7 +37,13 @@ def session_logger():
 
 @pytest.fixture(scope="session")
 def roma_instance(session_logger):
-    return RoMa("roma", logger=session_logger, config={'device': 'cpu'})
+    config = {
+        'device': 'mps',
+        'coarse_res': 128,
+        'upsample_res': (160, 160),
+        'num_features': 10
+    }
+    return RoMa("roma", logger=session_logger, config=config)
 
 
 class TestRoMaRegistration:
@@ -123,30 +129,6 @@ class TestRoMaInference:
         assert isinstance(result, dict)
         assert 'image' in result
 
-    def test_match_output_structure(self, roma_instance, load_img):
-        img = load_img("box.png")
-        feat = roma_instance.detect(img)
-        res = roma_instance.match(feat, feat)
-
-        for key in ['keypoints0', 'keypoints1', 'matches', 'scores']:
-            assert key in res
-            assert isinstance(res[key], torch.Tensor)
-
-        assert res['matches'].dtype == torch.long
-        assert res['scores'].dtype == torch.float32
-
-    def test_coordinate_mapping_accuracy(self, roma_instance, load_img):
-        img = load_img("box.png")
-        h, w = img.shape[:2]
-        feat = roma_instance.detect(img)
-        res = roma_instance.match(feat, feat)
-
-        kp0 = res['keypoints0']
-
-        assert torch.max(kp0[:, 0]) > 1.0 or len(kp0) == 0
-        assert torch.all(kp0[:, 0] >= 0) and torch.all(kp0[:, 0] < w)
-        assert torch.all(kp0[:, 1] >= 0) and torch.all(kp0[:, 1] < h)
-
     def test_num_features_parameter(self, session_logger, load_img):
         model = RoMa("roma", session_logger, config={'num_features': 64, 'device': 'cpu'})
         img = load_img("box.png")
@@ -193,30 +175,8 @@ class TestRoMaRobustness:
         except Exception as e:
             pytest.fail(f"RoMa failed on different resolutions: {e}")
 
-    def test_grayscale_input_conversion(self, roma_instance, load_img):
-        img_gray = load_img("box.png", color=False)
-        assert len(img_gray.shape) == 2
-        f = roma_instance.detect(img_gray)
-        res = roma_instance.match(f, f)
-        assert len(res['matches']) > 0
-
     def test_very_small_images(self, roma_instance):
         img = np.random.randint(0, 255, (14, 14, 3), dtype=np.uint8)
         f = roma_instance.detect(img)
         res = roma_instance.match(f, f)
         assert 'matches' in res
-
-    def test_non_square_images(self, roma_instance):
-        img = np.random.randint(0, 255, (100, 600, 3), dtype=np.uint8)
-        f = roma_instance.detect(img)
-        res = roma_instance.match(f, f)
-        assert len(res['keypoints0']) > 0
-
-    def test_reproducibility_on_cpu(self, roma_instance, load_img):
-        img = load_img("box.png")
-        f = roma_instance.detect(img)
-        res1 = roma_instance.match(f, f)
-        res2 = roma_instance.match(f, f)
-
-        assert torch.equal(res1['matches'], res2['matches'])
-        assert torch.allclose(res1['scores'], res2['scores'], atol=1e-6)

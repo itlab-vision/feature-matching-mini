@@ -21,11 +21,14 @@ class RoMa(DNNPipeline):
         DNNPipeline.__init__(self, extractor_name, logger, config)
 
         self._num_features = config.get('num_features', 4096)
+        self._coarse_res = config.get('coarse_res', 560)
+        self._upsample_res = config.get('upsample_res', (864, 1152))
 
         if RoMa._model is None:
             try:
                 self._logger.info(f"Loading RoMa weights onto {self._device}")
-                RoMa._model = roma_outdoor(device=self._device, coarse_res=560, upsample_res=(864, 1152))
+                RoMa._model = roma_outdoor(device=self._device, coarse_res=self._coarse_res ,
+                                           upsample_res=self._upsample_res)
                 RoMa._model.eval().to(self._device)
                 self._logger.info("RoMa loaded successfully.")
             except Exception as e:
