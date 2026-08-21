@@ -40,6 +40,12 @@ class Converter(ABC):
     def _to_tensor(self, data, device='cpu'):
         pass
 
+    @staticmethod
+    def to_numpy(data):
+        if torch.is_tensor(data):
+            return data.detach().cpu().numpy()
+        return data
+
 
 class ImageConverter(Converter):
     def _to_tensor(self, data, device='cpu'):
