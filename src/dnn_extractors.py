@@ -1,6 +1,5 @@
 import torch
 import cv2 as cv
-from abc import abstractmethod
 
 from src.detectors import Detector
 from src.descriptors import Descriptor
@@ -18,8 +17,8 @@ class DNNFeatureExtractors(Detector, Descriptor, register=False):
         Detector.__init__(self, logger, extractor_name)
         Descriptor.__init__(self, logger, extractor_name)
 
-        device = config.pop('device', None)
-        self._threshold = config.pop('threshold', 0.005)
+        device = config.get('device', None)
+        self._threshold = config.get('threshold', 0.005)
 
         if device is None:
             if torch.cuda.is_available():
@@ -35,7 +34,6 @@ class DNNFeatureExtractors(Detector, Descriptor, register=False):
     def default_norm(self):
         return cv.NORM_L2
 
-    @abstractmethod
     def _forward(self, img):
         pass
 

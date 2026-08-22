@@ -13,11 +13,11 @@ from lightglue.utils import rbd  # noqa: E402
 
 
 class LightGlueMatcher(DNNMatcher):
-    def __init__(self, logger, matcher_name, descriptor_name, config=None):
+    def __init__(self, matcher_name, logger, config=None, descriptor_name=None):
         if config is None:
             config = {}
 
-        DNNMatcher.__init__(self, logger, matcher_name, descriptor_name, config)
+        DNNMatcher.__init__(self, matcher_name, logger, config, descriptor_name)
 
         if isinstance(descriptor_name, str):
             self._extractor_name = descriptor_name.replace('_lightglue', '').lower()

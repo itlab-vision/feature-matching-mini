@@ -41,13 +41,7 @@ class D2Net(DNNFeatureExtractors):
 
         self._model = D2Net._model
 
-    def _forward(self, img):
-        if img is None:
-            self._logger.error("Input image is None. Detection aborted.")
-            return {'keypoints': (), 'descriptors': ()}
-
-        self._logger.info(f"Running inference with {self._detector_name}")
-
+    def _preprocess(self, img):
         if torch.is_tensor(img):
             img_np = img.squeeze(0).cpu().detach().numpy().transpose(1, 2, 0)
             if img_np.max() <= 1.0:
@@ -55,7 +49,15 @@ class D2Net(DNNFeatureExtractors):
         else:
             img_np = np.array(img)
 
-        img_prep = preprocess_image(img_np, preprocessing='caffe')
+        return preprocess_image(img_np, preprocessing='caffe')
+
+    def _forward(self, img):
+        if img is None:
+            self._logger.error("Input image is None. Detection aborted.")
+            return {'keypoints': (), 'descriptors': ()}
+
+        self._logger.info(f"Running inference with {self._detector_name}")
+        img_prep = self._preprocess(img)
 
         try:
             with torch.no_grad():
