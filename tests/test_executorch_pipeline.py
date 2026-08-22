@@ -9,7 +9,7 @@ import torch
 
 from src.executorch_pipeline import (ExecuTorch, ExecuTorchDetector, ExecuTorchMatcher, XFeatExecuTorch,
                                      SuperPointLightGlueExecuTorch, DiskLightGlueExecuTorch, D2NetExecuTorch,
-                                     TFeatExecuTorch, HardNetExecuTorch, LightGlueExecuTorch, SuperGlueExecuTorch)
+                                     TFeatExecuTorch, HardNetExecuTorch, LightGlueExecuTorch)
 
 
 @pytest.fixture
@@ -435,18 +435,26 @@ class TestXFeatFeatures:
         })
 
     def test_features_rescales_keypoints_to_input_resolution(self, model):
-        dense = torch.rand(1, 16, 10, 10)
-        outputs = (dense,)
+        logits = torch.rand(1, 65, 5, 5)
+        dense = torch.rand(1, 64, 5, 5)
+
+        outputs = (logits, dense)
         keypoints, descriptors, scores = model._features(outputs, input_height=40, input_width=40)
+
         assert torch.all(keypoints[:, 0] <= 40)
         assert torch.all(keypoints[:, 1] <= 40)
         assert descriptors.shape[0] == keypoints.shape[0] == scores.shape[0]
+        assert descriptors.shape[1] == 64
 
     def test_score_map_all_zero_dense_does_not_crash(self, model):
-        dense = torch.zeros(1, 8, 10, 10)
-        outputs = (dense,)
+        logits = torch.zeros(1, 65, 5, 5)
+        dense = torch.zeros(1, 64, 5, 5)
+
+        outputs = (logits, dense)
         keypoints, descriptors, scores = model._features(outputs, input_height=40, input_width=40)
+
         assert torch.isfinite(keypoints).all()
+        assert len(keypoints) == 4
 
 
 class TestLightGlueExecuTorchCorrespondences:
@@ -474,27 +482,3 @@ class TestLightGlueExecuTorchCorrespondences:
         matcher._method.execute.return_value = "result"
         matcher._correspondences(features0, features1)
         matcher._method.execute.assert_called_once_with((None, None, None, None))
-
-
-class TestSuperGlueExecuTorchCorrespondences:
-    @pytest.fixture
-    def matcher(self, mock_logger, patched_runtime):
-        return SuperGlueExecuTorch(mock_logger, "superglue", "superpoint", config={
-            "executorch_model_path": "m.pte", "num_keypoints": 4})
-
-    def test_transposes_descriptors_and_adds_batch_to_scores(self, matcher):
-        kp0, desc0 = torch.rand(1, 4, 2), torch.rand(1, 8, 4)
-        kp1, desc1 = torch.rand(1, 4, 2), torch.rand(1, 8, 4)
-        scores0, scores1 = torch.rand(4), torch.rand(4)
-        features0 = {"keypoints": kp0, "descriptors": desc0, "scores": scores0}
-        features1 = {"keypoints": kp1, "descriptors": desc1, "scores": scores1}
-
-        matcher._method.execute.return_value = "result"
-        matcher._correspondences(features0, features1)
-
-        (args,), _ = matcher._method.execute.call_args
-        called_kp0, called_kp1, called_desc0, called_desc1, called_s0, called_s1 = args
-        assert called_desc0.shape == (1, 4, 8)
-        assert called_desc1.shape == (1, 4, 8)
-        assert called_s0.shape == (1, 4)
-        assert called_s1.shape == (1, 4)

@@ -5,6 +5,7 @@ huggingface_hub
 transformers
 screeninfo
 flake8==7.3.0
+kornia==0.6.12
 opencv-python
 opencv-contrib-python
 matplotlib
