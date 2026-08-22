@@ -7,7 +7,7 @@ from logging import Logger
 
 from src.matchers import Matcher
 from src.feature_matcher import FeatureMatcherCV2
-from src.algorithms import DNN_ALGORITHMS, DESCRIPTOR_MATCHER_COMPATIBILITY
+from src.algorithms import DNN_ALGORITHMS, DESCRIPTOR_MATCHER_COMPATIBILITY, EXECUTORCH_ALGORITHMS
 
 
 @pytest.fixture
