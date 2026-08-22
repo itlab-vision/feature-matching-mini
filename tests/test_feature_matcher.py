@@ -137,6 +137,10 @@ class TestFeatureMatcherCompatibility:
 
     @pytest.mark.parametrize("det, des, mat, mode", valid_combinations)
     def test_known_compatible_pairs(self, det, des, mat, mode, mock_logger, load_img):
+        if det in EXECUTORCH_ALGORITHMS or des in EXECUTORCH_ALGORITHMS or mat in EXECUTORCH_ALGORITHMS:
+            pytest.skip("Model files in the torchexecut format are missing,"
+                        " so we are skipping these combinations")
+
         img1 = load_img("box.png")
         img2 = load_img("box_in_scene.png")
 

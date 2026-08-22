@@ -9,7 +9,7 @@ from src.detectors import Detector, SIFTDetector, OpenCVDetector
 from src.lightglue_pipeline import LightGlueFeatureExtractor  # noqa: F401
 from src.super_point import SuperPoint  # noqa: F401
 
-from src.algorithms import DNN_ALGORITHMS
+from src.algorithms import DNN_ALGORITHMS, EXECUTORCH_ALGORITHMS
 from src.image_utils import read_image
 
 
@@ -73,6 +73,10 @@ ALGORITHMS_CPU_ONLY = {'doghardnet_lightglue'}
 class TestDetectorDetect:
     @pytest.mark.parametrize("method_name", Detector._METHODS.keys())
     def test_all_methods_return_valid_tuple(self, method_name, mock_logger, load_img):
+        if method_name in EXECUTORCH_ALGORITHMS:
+            pytest.skip("Model files in the torchexecut format are missing,"
+                        " so we are skipping these combinations")
+
         if method_name in DNN_ALGORITHMS:
             img = load_img("box.png", input_type='tensor')
 
