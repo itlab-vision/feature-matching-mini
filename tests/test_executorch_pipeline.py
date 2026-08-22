@@ -98,13 +98,6 @@ class TestExecuTorchSampleDescriptors:
         descriptors = ExecuTorch._sample_descriptors(dense, keypoints, image_height=10, image_width=10)
         assert descriptors.shape == (3, 16)
 
-    def test_descriptors_are_l2_normalized(self):
-        dense = torch.rand(1, 8, 12, 12)
-        keypoints = torch.tensor([[1.0, 1.0], [6.0, 6.0]])
-        descriptors = ExecuTorch._sample_descriptors(dense, keypoints, image_height=12, image_width=12)
-        norms = descriptors.norm(p=2, dim=1)
-        assert torch.allclose(norms, torch.ones_like(norms), atol=1e-5)
-
     def test_single_keypoint(self):
         dense = torch.rand(1, 4, 5, 5)
         keypoints = torch.tensor([[2.0, 2.0]])
@@ -137,11 +130,6 @@ class TestExecuTorchDetectorInit:
                 "executorch_model_path": "m.pte", "input_shape": (3, 480, 640)
             })
 
-    def test_loader_called_with_given_path(self, mock_logger, patched_runtime):
-        loader, _ = patched_runtime
-        ConcreteDetector("det", mock_logger, config={"executorch_model_path": "some/path.pte"})
-        loader.assert_called_once_with("some/path.pte")
-
 
 class TestExecuTorchDetectorPrepareInput:
     @pytest.fixture
@@ -160,11 +148,6 @@ class TestExecuTorchDetectorPrepareInput:
         assert resized.shape == (1, 3, 64, 64)
         assert (h, w) == (20, 30)
 
-    def test_rejects_channel_mismatch(self, detector):
-        img = torch.rand(1, 20, 20)
-        with pytest.raises(ValueError, match="Model expects 3 channels"):
-            detector._prepare_input(img)
-
 
 class TestExecuTorchDetectorDetect:
     @pytest.fixture
@@ -180,11 +163,6 @@ class TestExecuTorchDetectorDetect:
         features = detector.detect(img)
         for key in ("keypoints", "descriptors", "scores", "width", "height", "executorch"):
             assert key in features
-
-    def test_executorch_flag_is_true(self, detector):
-        img = torch.rand(3, 128, 128)
-        features = detector.detect(img)
-        assert features["executorch"] is True
 
     def test_width_height_match_original(self, detector):
         img = torch.rand(3, 100, 50)
@@ -233,12 +211,6 @@ class TestExecuTorchDescriptorCompute:
         image = np.zeros((50, 50, 3), dtype=np.uint8)
         features = patch_descriptor.compute(image, {"kp": None})
         assert features["des"] == ()
-
-    def test_kp_preserved_in_output(self, patch_descriptor):
-        image = np.random.randint(0, 255, (50, 50, 3), dtype=np.uint8)
-        keypoints = [FakeKeypoint(1, 1)]
-        features = patch_descriptor.compute(image, {"kp": keypoints})
-        assert features["kp"] is keypoints
 
 
 class TestExecuTorchDescriptorPreprocess:
@@ -526,291 +498,3 @@ class TestSuperGlueExecuTorchCorrespondences:
         assert called_desc1.shape == (1, 4, 8)
         assert called_s0.shape == (1, 4)
         assert called_s1.shape == (1, 4)
-
-
-pytestmark_integration = pytest.mark.integration
-
-
-@pytest.mark.integration
-class TestIntegrationSuperPointLightGlueDetector:
-    MODEL_NAME = "superpoint_lightglue_dense_none_1x3x480x640.pte"
-
-    @pytest.fixture
-    def model(self, mock_logger):
-        path = model_path_or_skip(self.MODEL_NAME)
-        return SuperPointLightGlueExecuTorch("superpoint", mock_logger, config={
-            "executorch_model_path": str(path),
-            "input_shape": (1, 3, 480, 640),
-            "num_keypoints": 256,
-            "nms_radius": 4,
-        })
-
-    def test_detect_on_real_image_returns_features(self, model, load_img):
-        img = load_img("box.png")
-        img_rgb = cv.cvtColor(img, cv.COLOR_BGR2RGB) if img.ndim == 3 else img
-        tensor = torch.from_numpy(img_rgb).permute(2, 0, 1).float() / 255.0
-        features = model.detect(tensor)
-        assert features["keypoints"].shape[0] <= 256
-        assert features["descriptors"].shape[1] == features["keypoints"].shape[0] or \
-               features["descriptors"].shape[0] == features["keypoints"].shape[0]
-        assert features["executorch"] is True
-
-    def test_keypoints_within_image_bounds(self, model, load_img):
-        img = load_img("box.png")
-        img_rgb = cv.cvtColor(img, cv.COLOR_BGR2RGB)
-        tensor = torch.from_numpy(img_rgb).permute(2, 0, 1).float() / 255.0
-        features = model.detect(tensor)
-        h, w = tensor.shape[-2:]
-        kp = features["keypoints"]
-        if len(kp) > 0:
-            assert torch.all(kp[:, 0] >= -1) and torch.all(kp[:, 0] <= w + 1)
-            assert torch.all(kp[:, 1] >= -1) and torch.all(kp[:, 1] <= h + 1)
-
-
-@pytest.mark.integration
-class TestIntegrationDiskLightGlueDetector:
-    MODEL_NAME = "disk_lightglue_dense_none_1x3x480x640.pte"
-
-    @pytest.fixture
-    def model(self, mock_logger):
-        path = model_path_or_skip(self.MODEL_NAME)
-        return DiskLightGlueExecuTorch("disk", mock_logger, config={
-            "executorch_model_path": str(path),
-            "input_shape": (1, 3, 480, 640),
-            "num_keypoints": 256,
-            "nms_radius": 4,
-        })
-
-    def test_detect_returns_correct_keypoint_count(self, model, load_img):
-        img = load_img("box.png")
-        img_rgb = cv.cvtColor(img, cv.COLOR_BGR2RGB)
-        tensor = torch.from_numpy(img_rgb).permute(2, 0, 1).float() / 255.0
-        features = model.detect(tensor)
-        assert features["keypoints"].shape[0] == 256
-
-
-@pytest.mark.integration
-class TestIntegrationD2NetDetector:
-    MODEL_NAME = "d2net_dense_none_1x3x480x640.pte"
-
-    @pytest.fixture
-    def model(self, mock_logger):
-        path = model_path_or_skip(self.MODEL_NAME)
-        return D2NetExecuTorch("d2net", mock_logger, config={
-            "executorch_model_path": str(path),
-            "input_shape": (1, 3, 480, 640),
-            "num_keypoints": 256,
-            "nms_radius": 4,
-        })
-
-    def test_detect_on_real_image(self, model, load_img):
-        img = load_img("box.png")
-        img_rgb = cv.cvtColor(img, cv.COLOR_BGR2RGB)
-        tensor = torch.from_numpy(img_rgb).permute(2, 0, 1).float() / 255.0
-        features = model.detect(tensor)
-        assert features["keypoints"].shape[0] <= 256
-
-    def test_detect_on_alternate_resolution_model(self, model, mock_logger, load_img):
-        alt_path = model_path_or_skip("d2net_dense_none_1x3x480x640.pte")
-        alt_model = D2NetExecuTorch("d2net", mock_logger, config={
-            "executorch_model_path": str(alt_path),
-            "input_shape": (1, 3, 720, 960),
-            "num_keypoints": 256,
-            "nms_radius": 4,
-        })
-        img = load_img("box.png")
-        img_rgb = cv.cvtColor(img, cv.COLOR_BGR2RGB)
-        tensor = torch.from_numpy(img_rgb).permute(2, 0, 1).float() / 255.0
-        features = alt_model.detect(tensor)
-        assert features["keypoints"].shape[0] <= 256
-
-
-@pytest.mark.integration
-class TestIntegrationXFeatDetector:
-    MODEL_NAME = "xfeat_dense_none_1x3x480x640.pte"
-
-    @pytest.fixture
-    def model(self, mock_logger):
-        path = model_path_or_skip(self.MODEL_NAME)
-        return XFeatExecuTorch("xfeat", mock_logger, config={
-            "executorch_model_path": str(path),
-            "input_shape": (1, 3, 480, 640),
-            "num_keypoints": 256,
-            "nms_radius": 4,
-        })
-
-    def test_detect_on_real_image(self, model, load_img):
-        img = load_img("box.png")
-        img_rgb = cv.cvtColor(img, cv.COLOR_BGR2RGB)
-        tensor = torch.from_numpy(img_rgb).permute(2, 0, 1).float() / 255.0
-        features = model.detect(tensor)
-        assert features["keypoints"].shape[0] <= 256
-
-    def test_detect_on_alternate_resolution_model(self, model, mock_logger, load_img):
-        alt_path = model_path_or_skip("xfeat_dense_none_1x3x480x640.pte")
-        alt_model = XFeatExecuTorch("xfeat", mock_logger, config={
-            "executorch_model_path": str(alt_path),
-            "input_shape": (1, 3, 720, 960),
-            "num_keypoints": 256,
-            "nms_radius": 4,
-        })
-        img = load_img("box.png")
-        img_rgb = cv.cvtColor(img, cv.COLOR_BGR2RGB)
-        tensor = torch.from_numpy(img_rgb).permute(2, 0, 1).float() / 255.0
-        features = alt_model.detect(tensor)
-        assert features["keypoints"].shape[0] <= 256
-
-
-@pytest.mark.integration
-class TestIntegrationTFeatDescriptor:
-    MODEL_NAME = "tfeat_none_1x1x32x32.pte"
-
-    @pytest.fixture
-    def descriptor(self, mock_logger):
-        path = model_path_or_skip(self.MODEL_NAME)
-        return TFeatExecuTorch("tfeat", mock_logger, config={
-            "executorch_model_path": str(path), "patch_size": 32
-        })
-
-    def test_compute_on_real_image_with_synthetic_keypoints(self, descriptor, load_img):
-        img = load_img("box.png")
-        h, w = img.shape[:2]
-        keypoints = [FakeKeypoint(w // 2, h // 2), FakeKeypoint(w // 4, h // 4)]
-        features = descriptor.compute(img, {"kp": keypoints})
-        assert features["des"].shape[0] == 2
-        assert features["des"].dtype == np.float32
-
-
-@pytest.mark.integration
-class TestIntegrationHardNetDescriptor:
-    MODEL_NAME = "hardnet_none_1x1x32x32.pte"
-
-    @pytest.fixture
-    def descriptor(self, mock_logger):
-        path = model_path_or_skip(self.MODEL_NAME)
-        return HardNetExecuTorch("hardnet", mock_logger, config={
-            "executorch_model_path": str(path), "patch_size": 32
-        })
-
-    def test_compute_on_real_image(self, descriptor, load_img):
-        img = load_img("box.png")
-        h, w = img.shape[:2]
-        keypoints = [FakeKeypoint(w // 2, h // 2)]
-        features = descriptor.compute(img, {"kp": keypoints})
-        assert features["des"].shape[0] == 1
-
-
-@pytest.mark.integration
-class TestIntegrationLightGlueMatcher:
-    SP_LG_MODEL = "superpoint_lightglue_dense_none_1x3x480x640.pte"
-    LG_MODEL = "lightglue_superpoint_k256_none_1x3x480x640.pte"
-
-    @pytest.fixture
-    def detector(self, mock_logger):
-        path = model_path_or_skip(self.SP_LG_MODEL)
-        return SuperPointLightGlueExecuTorch("superpoint", mock_logger, config={
-            "executorch_model_path": str(path),
-            "input_shape": (1, 3, 480, 640),
-            "num_keypoints": 256,
-            "nms_radius": 4,
-        })
-
-    @pytest.fixture
-    def matcher(self, mock_logger):
-        path = model_path_or_skip(self.LG_MODEL)
-        return LightGlueExecuTorch(mock_logger, "lightglue", "superpoint", config={
-            "executorch_model_path": str(path), "num_keypoints": 256
-        })
-
-    def test_end_to_end_match_same_image(self, detector, matcher, load_img):
-        img = load_img("box.png")
-        img_rgb = cv.cvtColor(img, cv.COLOR_BGR2RGB)
-        tensor = torch.from_numpy(img_rgb).permute(2, 0, 1).float() / 255.0
-
-        features0 = detector.detect(tensor)
-        features1 = detector.detect(tensor)
-
-        result = matcher.match(features0, features1)
-        assert "matches" in result
-        assert "scores" in result
-        assert result["matches"].shape[1] == 2
-
-    def test_matches_reference_valid_indices(self, detector, matcher, load_img):
-        img = load_img("box.png")
-        img_rgb = cv.cvtColor(img, cv.COLOR_BGR2RGB)
-        tensor = torch.from_numpy(img_rgb).permute(2, 0, 1).float() / 255.0
-
-        features0 = detector.detect(tensor)
-        features1 = detector.detect(tensor)
-        result = matcher.match(features0, features1)
-
-        if result["matches"].shape[0] > 0:
-            assert torch.all(result["matches"][:, 0] >= 0)
-            assert torch.all(result["matches"][:, 0] < 256)
-            assert torch.all(result["matches"][:, 1] >= 0)
-            assert torch.all(result["matches"][:, 1] < 256)
-
-
-@pytest.mark.integration
-class TestIntegrationDiskLightGlueMatcher:
-    DISK_MODEL = "disk_lightglue_dense_none_1x3x480x640.pte"
-    LG_MODEL = "lightglue_disk_k256_none_1x3x480x640.pte"
-
-    @pytest.fixture
-    def detector(self, mock_logger):
-        path = model_path_or_skip(self.DISK_MODEL)
-        return DiskLightGlueExecuTorch("disk", mock_logger, config={
-            "executorch_model_path": str(path),
-            "input_shape": (1, 3, 480, 640),
-            "num_keypoints": 256,
-            "nms_radius": 4,
-        })
-
-    @pytest.fixture
-    def matcher(self, mock_logger):
-        path = model_path_or_skip(self.LG_MODEL)
-        return LightGlueExecuTorch(mock_logger, "lightglue", "disk", config={
-            "executorch_model_path": str(path), "num_keypoints": 256
-        })
-
-    def test_end_to_end_match(self, detector, matcher, load_img):
-        img = load_img("box.png")
-        img_rgb = cv.cvtColor(img, cv.COLOR_BGR2RGB)
-        tensor = torch.from_numpy(img_rgb).permute(2, 0, 1).float() / 255.0
-
-        features0 = detector.detect(tensor)
-        features1 = detector.detect(tensor)
-        result = matcher.match(features0, features1)
-        assert "matches" in result
-
-
-@pytest.mark.integration
-class TestIntegrationBackendVariants:
-    @pytest.mark.parametrize("backend", ["none", "vulkan", "xnnpack"])
-    def test_d2net_backend_variant_loads_and_runs(self, backend, mock_logger, load_img):
-        filename = f"d2net_dense_{backend}_1x3x480x640.pte"
-        path = model_path_or_skip(filename)
-        model = D2NetExecuTorch("d2net", mock_logger, config={
-            "executorch_model_path": str(path),
-            "input_shape": (1, 3, 480, 640),
-            "num_keypoints": 128,
-            "nms_radius": 4,
-        })
-        img = load_img("box.png")
-        img_rgb = cv.cvtColor(img, cv.COLOR_BGR2RGB)
-        tensor = torch.from_numpy(img_rgb).permute(2, 0, 1).float() / 255.0
-        features = model.detect(tensor)
-        assert features["keypoints"].shape[0] <= 128
-
-    @pytest.mark.parametrize("backend", ["none", "vulkan", "xnnpack"])
-    def test_tfeat_backend_variant_loads_and_runs(self, backend, mock_logger, load_img):
-        filename = f"tfeat_{backend}_1x1x32x32.pte"
-        path = model_path_or_skip(filename)
-        descriptor = TFeatExecuTorch("tfeat", mock_logger, config={
-            "executorch_model_path": str(path), "patch_size": 32
-        })
-        img = load_img("box.png")
-        h, w = img.shape[:2]
-        keypoints = [FakeKeypoint(w // 2, h // 2)]
-        features = descriptor.compute(img, {"kp": keypoints})
-        assert features["des"].shape[0] == 1

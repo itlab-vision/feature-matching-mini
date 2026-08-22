@@ -91,9 +91,6 @@ class ExecuTorchDetector(ExecuTorch, Detector, register=False):
 
         keypoints[:, 0] *= original_width / input_width
         keypoints[:, 1] *= original_height / input_height
-        self._logger.info(f"Descriptor stats: mean={descriptors.mean():.4f}, std={descriptors.std():.4f}, "
-                          f"norm_mean={descriptors.norm(dim=1).mean():.4f}")
-        self._logger.info(f"ExecuTorch {self._detector_name} found {len(keypoints)} keypoints")
         return {"keypoints": keypoints, "descriptors": descriptors, "scores": scores,
                 "width": original_width, "height": original_height, "executorch": True}
 
@@ -339,18 +336,4 @@ class LightGlueExecuTorch(ExecuTorchMatcher):
         keypoints0, descriptors0 = features0.get('keypoints', None), features0.get('descriptors', None)
         keypoints1, descriptors1 = features1.get('keypoints', None), features1.get('descriptors', None)
         outputs = self._method.execute((keypoints0, keypoints1, descriptors0, descriptors1))
-        return outputs
-
-
-class SuperGlueExecuTorch(ExecuTorchMatcher):
-    def __init__(self, logger, matcher_name, descriptor_name, config=None):
-        ExecuTorchMatcher.__init__(self, logger, matcher_name, descriptor_name, config)
-
-    def _correspondences(self, features0, features1):
-        keypoints0, descriptors0 = features0.get('keypoints', None), features0.get('descriptors', None)
-        keypoints1, descriptors1 = features1.get('keypoints', None), features1.get('descriptors', None)
-        scores0 = features0["scores"][None].cpu()
-        scores1 = features1["scores"][None].cpu()
-        outputs = self._method.execute((keypoints0, keypoints1, descriptors0.transpose(1, 2),
-                                        descriptors1.transpose(1, 2), scores0, scores1))
         return outputs
