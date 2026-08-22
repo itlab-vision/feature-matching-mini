@@ -1,11 +1,13 @@
 
 DNN_DETECTORS = {'superpoint', 'superpoint_lightglue', 'disk_lightglue', 'sift_lightglue', 'aliked_lightglue',
-                 'doghardnet_lightglue', 'xfeat', 'd2net'}
+                 'doghardnet_lightglue', 'd2net', 'xfeat', 'r2d2', 'loftr', 'roma'}
 
 DNN_DESCRIPTORS = {'superpoint', 'superpoint_lightglue', 'disk_lightglue', 'sift_lightglue', 'aliked_lightglue',
-                   'doghardnet_lightglue', 'xfeat', 'd2net'}
+                   'doghardnet_lightglue', 'd2net', 'xfeat', 'r2d2', 'loftr', 'roma'}
 
-DNN_MATCHERS = {'lightglue', 'superglue'}
+DNN_MATCHERS = {'lightglue', 'superglue', 'loftr', 'roma'}
+
+DNN_PIPELINES = {'loftr', 'roma'}
 
 OPENCV_DETECTORS = {'sift', 'orb', 'fast', 'akaze', 'brisk', 'kaze', 'gftt', 'mser', 'agast', 'blob', 'star',
                     'harrislaplace', 'msd', 'diskopencv', 'alikedopencv'}
@@ -73,6 +75,9 @@ DETECTOR_DESCRIPTOR_COMPATIBILITY = {
     'doghardnet_lightglue': ['doghardnet_lightglue'],
     'd2net': ['d2net'],
     'xfeat': ['xfeat'],
+    'r2d2': ['r2d2'],
+    'loftr': ['loftr'],
+    'roma': ['roma'],
     'superpoint_lightglue_executorch': ['superpoint_lightglue_executorch'],
     'disk_lightglue_executorch': ['disk_lightglue_executorch'],
     'd2net_executorch': ['d2net_executorch'],
@@ -106,6 +111,9 @@ DESCRIPTOR_MATCHER_COMPATIBILITY = {
     'tfeat': ['bf', 'flann'],
     'hardnet': ['bf', 'flann'],
     'd2net': ['bf', 'flann'],
+    'r2d2': ['bf', 'flann'],
+    'loftr': ['loftr'],
+    'roma': ['roma'],
     'superpoint_lightglue_executorch': ['lightglue_executorch'],
     'disk_lightglue_executorch': ['lightglue_executorch'],
     'd2net_executorch': ['bf', 'flann'],

@@ -44,7 +44,7 @@ def tmp_features(load_img):
 class TestLightGlueRegistration:
     def test_registered_in_factory(self, mock_logger):
         extractor = DISKOpenCV("disk", mock_logger, config={})
-        obj = Matcher.create("lightglueopencv", mock_logger, descriptor_name=extractor, config={})
+        obj = Matcher.create("lightglueopencv", mock_logger, config={}, descriptor_name=extractor)
         assert isinstance(obj, LightGlueOpenCVMatcher)
         assert "lightglueopencv" in Matcher._METHODS
 
@@ -52,43 +52,38 @@ class TestLightGlueRegistration:
 class TestLightGlueConfig:
     def test_default_score_threshold(self, mock_logger):
         extractor = DISKOpenCV("disk", mock_logger, config={})
-        matcher = LightGlueOpenCVMatcher(mock_logger, "lightglueopencv", extractor, config={})
+        matcher = LightGlueOpenCVMatcher("lightglueopencv", mock_logger, config={}, descriptor_name=extractor)
         assert matcher.scoreThreshold == 0.1
 
     def test_custom_score_threshold(self, mock_logger):
         extractor = DISKOpenCV("disk", mock_logger, config={})
-        matcher = LightGlueOpenCVMatcher(
-            mock_logger, "lightglueopencv", extractor,
-            config={'score_threshold': 0.5}
-        )
+        matcher = LightGlueOpenCVMatcher("lightglueopencv", mock_logger, descriptor_name=extractor,
+                                         config={'score_threshold': 0.5})
         assert matcher.scoreThreshold == 0.5
 
     def test_default_mode_is_simple(self, mock_logger):
         extractor = DISKOpenCV("disk", mock_logger, config={})
-        matcher = LightGlueOpenCVMatcher(mock_logger, "lightglueopencv", extractor, config={})
+        matcher = LightGlueOpenCVMatcher("lightglueopencv", mock_logger, descriptor_name=extractor, config={})
         assert matcher.mode == 'simple'
 
     def test_custom_mode_knn(self, mock_logger):
         extractor = DISKOpenCV("disk", mock_logger, config={})
-        matcher = LightGlueOpenCVMatcher(
-            mock_logger, "lightglueopencv", extractor,
-            config={'mode': 'knn'}
-        )
+        matcher = LightGlueOpenCVMatcher("lightglueopencv", mock_logger, descriptor_name=extractor,
+                                         config={'mode': 'knn'})
         assert matcher.mode == 'knn'
 
     def test_unknown_config_key_consumed(self, mock_logger):
         extractor = DISKOpenCV("disk", mock_logger, config={})
-        matcher = LightGlueOpenCVMatcher(
-            mock_logger, "lightglueopencv", extractor,
-            config={'unknown_key': 123, 'score_threshold': 0.2}
-        )
+        matcher = LightGlueOpenCVMatcher("lightglueopencv", mock_logger, descriptor_name=extractor,
+                                         config={'unknown_key': 123, 'score_threshold': 0.2})
         assert matcher.scoreThreshold == 0.2
 
 
 class TestLightGlueInference:
     def test_match_returns_dict_structure(self, mock_logger, tmp_features):
         extractor = DISKOpenCV("disk", mock_logger, config={})
-        matcher = LightGlueOpenCVMatcher(mock_logger, "lightglueopencv", extractor, config={})
+        matcher = LightGlueOpenCVMatcher("lightglueopencv", mock_logger,
+                                         descriptor_name=extractor, config={})
         result = matcher.match(tmp_features, tmp_features)
 
         assert isinstance(result, dict)
@@ -97,10 +92,8 @@ class TestLightGlueInference:
 
     def test_match_simple_mode_works(self, mock_logger, tmp_features):
         extractor = DISKOpenCV("disk", mock_logger, config={})
-        matcher = LightGlueOpenCVMatcher(
-            mock_logger, "lightglueopencv", extractor,
-            config={'mode': 'simple'}
-        )
+        matcher = LightGlueOpenCVMatcher("lightglueopencv", mock_logger, descriptor_name=extractor,
+                                         config={'mode': 'simple'})
         result = matcher.match(tmp_features, tmp_features)
 
         assert 'matches' in result
@@ -109,10 +102,8 @@ class TestLightGlueInference:
 
     def test_match_knn_mode_works(self, mock_logger, tmp_features):
         extractor = DISKOpenCV("disk", mock_logger, config={})
-        matcher = LightGlueOpenCVMatcher(
-            mock_logger, "lightglueopencv", extractor,
-            config={'mode': 'knn'}
-        )
+        matcher = LightGlueOpenCVMatcher("lightglueopencv", mock_logger, descriptor_name=extractor,
+                                         config={'mode': 'knn'})
         result = matcher.match(tmp_features, tmp_features)
 
         assert 'matches' in result
@@ -123,7 +114,8 @@ class TestLightGlueInference:
 
     def test_match_returns_empty_on_none_descriptors(self, mock_logger, tmp_features):
         extractor = DISKOpenCV("disk", mock_logger, config={})
-        matcher = LightGlueOpenCVMatcher(mock_logger, "lightglueopencv", extractor, config={})
+        matcher = LightGlueOpenCVMatcher("lightglueopencv", mock_logger, descriptor_name=extractor,
+                                         config={})
         features_no_des = {**tmp_features, 'des': None}
 
         result = matcher.match(features_no_des, tmp_features)
@@ -131,7 +123,8 @@ class TestLightGlueInference:
 
     def test_match_returns_empty_on_none_keypoints(self, mock_logger, tmp_features):
         extractor = DISKOpenCV("disk", mock_logger, config={})
-        matcher = LightGlueOpenCVMatcher(mock_logger, "lightglueopencv", extractor, config={})
+        matcher = LightGlueOpenCVMatcher("lightglueopencv", mock_logger, descriptor_name=extractor,
+                                         config={})
         features_no_kp = {**tmp_features, 'kp': None}
 
         result = matcher.match(features_no_kp, tmp_features)
@@ -141,7 +134,8 @@ class TestLightGlueInference:
 class TestLightGlueRobustness:
     def test_match_with_empty_keypoints(self, mock_logger, tmp_features):
         extractor = DISKOpenCV("disk", mock_logger, config={})
-        matcher = LightGlueOpenCVMatcher(mock_logger, "lightglueopencv", extractor, config={})
+        matcher = LightGlueOpenCVMatcher("lightglueopencv", mock_logger, descriptor_name=extractor,
+                                         config={})
         empty_features = {**tmp_features, 'kp': []}
 
         result = matcher.match(empty_features, tmp_features)
@@ -150,7 +144,8 @@ class TestLightGlueRobustness:
 
     def test_match_with_different_image_sizes(self, mock_logger, load_img):
         extractor = DISKOpenCV("disk", mock_logger, config={})
-        matcher = LightGlueOpenCVMatcher(mock_logger, "lightglueopencv", extractor, config={})
+        matcher = LightGlueOpenCVMatcher("lightglueopencv", mock_logger, descriptor_name=extractor,
+                                         config={})
 
         img1 = load_img("box.png")
         img2 = load_img("box_in_scene.png")

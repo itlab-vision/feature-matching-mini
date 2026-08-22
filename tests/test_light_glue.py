@@ -211,13 +211,13 @@ class TestLightGlueMatcherConfig:
         assert not matcher._matcher.training
 
     def test_none_config(self, session_logger):
-        matcher = LightGlueMatcher(session_logger, "lightglue",
-                                   "superpoint_lightglue", config=None)
+        matcher = LightGlueMatcher("lightglue", session_logger,
+                                   descriptor_name="superpoint_lightglue", config=None)
         assert isinstance(matcher, LightGlueMatcher)
 
     def test_empty_config(self, session_logger):
-        matcher = LightGlueMatcher(session_logger, "lightglue",
-                                   "superpoint_lightglue", config={})
+        matcher = LightGlueMatcher("lightglue", session_logger,
+                                   descriptor_name="superpoint_lightglue", config={})
         assert isinstance(matcher, LightGlueMatcher)
 
 

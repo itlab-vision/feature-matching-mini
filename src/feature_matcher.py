@@ -3,7 +3,7 @@ import numpy as np
 
 from src.preprocessor import Preprocessor
 from src.algorithms import (DETECTOR_DESCRIPTOR_COMPATIBILITY, DESCRIPTOR_MATCHER_COMPATIBILITY, DNN_MATCHERS,
-                            OPENCV_MATCHERS)
+                            OPENCV_MATCHERS, DNN_PIPELINES)
 
 from src.detectors import Detector
 from src.descriptors import Descriptor
@@ -18,6 +18,9 @@ from src.tfeat_descriptor import TFeat  # noqa: F401
 from src.hardnet_descriptor import HardNet  # noqa: F401
 from src.super_glue import SuperGlueMatcher  # noqa: F401
 from src.d2net import D2Net  # noqa: F401
+from src.r2d2 import R2D2  # noqa: F401
+from src.loftr import LoFTR  # noqa: F401
+from src.roma import RoMa  # noqa: F401
 from src.executorch_pipeline import (ExecuTorchDetector, ExecuTorchDescriptor, ExecuTorchMatcher)  # noqa: F401
 
 
@@ -57,6 +60,9 @@ class FeatureMatcherCV2:
                              f"Mode is only available for OpenCV matchers: {OPENCV_MATCHERS}")
 
     def _has_keypoints(self, features):
+        if self._detector in DNN_PIPELINES:
+            return True
+
         kp = features.get('kp') or features.get('keypoints')
         if kp is None:
             return False

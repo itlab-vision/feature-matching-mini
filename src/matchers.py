@@ -7,7 +7,10 @@ from src.algorithms import ALL_MATCHERS
 class Matcher(ABC):
     _METHODS = {}
 
-    def __init__(self, logger, matcher_name, descriptor_name):
+    def __init__(self, matcher_name, logger, config=None, descriptor_name=None):
+        if config is None:
+            config = {}
+
         self.matcher_name = matcher_name
         self.descriptor_name = descriptor_name
         self.logger = logger
@@ -26,16 +29,13 @@ class Matcher(ABC):
                 Matcher._METHODS[key] = cls
 
     @staticmethod
-    def create(matcher_name, logger, descriptor_name, config):
-        if config is None:
-            config = {}
-
-        matcher_class_name = matcher_name.lower()
-        if matcher_class_name not in Matcher._METHODS:
-            raise ValueError(f"Matcher '{matcher_class_name}' not found."
+    def create(matcher_name, logger, config, descriptor_name):
+        matcher_class_name = Matcher._METHODS.get(matcher_name.lower())
+        if not matcher_class_name:
+            raise ValueError(f"Matcher '{matcher_name}' not found."
                              f" Available: {list(Matcher._METHODS.keys())}")
 
-        return Matcher._METHODS[matcher_class_name](logger, matcher_class_name, descriptor_name, config)
+        return Matcher._METHODS[matcher_name](matcher_name, logger, config, descriptor_name)
 
     @abstractmethod
     def match(self, features1, features2):
@@ -49,8 +49,8 @@ class Matcher(ABC):
 class OpenCVMatcher(Matcher, register=False):
     _MODE = {'simple', 'knn'}
 
-    def __init__(self, logger, matcher_name, descriptor_name, config):
-        super().__init__(logger, matcher_name, descriptor_name)
+    def __init__(self, matcher_name, logger, config, descriptor_name):
+        super().__init__(matcher_name, logger, config, descriptor_name)
         self.mode = config.get('mode', 'simple')
         self.k = config.get('k', 1)
 
@@ -71,16 +71,16 @@ class OpenCVMatcher(Matcher, register=False):
 
 
 class BFMatcher(OpenCVMatcher):
-    def __init__(self, logger, matcher_name, descriptor_name, config):
-        super().__init__(logger, matcher_name, descriptor_name, config)
+    def __init__(self, matcher_name, logger, config, descriptor_name):
+        super().__init__(matcher_name, logger, config, descriptor_name)
 
     def _init_matcher(self):
         return cv.BFMatcher(self.descriptor_name.default_norm)
 
 
 class FLANNMatcher(OpenCVMatcher):
-    def __init__(self, logger, matcher_name, descriptor_name, config):
-        super().__init__(logger, matcher_name, descriptor_name, config)
+    def __init__(self, matcher_name, logger, config, descriptor_name):
+        super().__init__(matcher_name, logger, config, descriptor_name)
         self.index_params = config.get('index_params')
         self.search_params = config.get('search_params')
 
