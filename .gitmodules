@@ -16,9 +16,6 @@
 [submodule "3rdparty/loftr"]
 	path = 3rdparty/loftr
 	url = https://github.com/zju3dv/LoFTR
-[submodule "3rdparty/efficient_loftr"]
-	path = 3rdparty/efficient_loftr
-	url = https://github.com/zju3dv/EfficientLoFTR
 [submodule "3rdparty/roma"]
 	path = 3rdparty/roma
 	url = https://github.com/Parskatt/RoMa
