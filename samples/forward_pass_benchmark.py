@@ -44,11 +44,11 @@ def parser():
                             default=["image"],
                             help="Names for input layers. "
                                  "Use dot notation for nested dictionaries (e.g., 'image0.keypoints').")
-    arg_parser.add_argument("-sh", "--shape", nargs="+", type=int,
-                            default=[1, 3, 640, 640],
-                            help="Input tensor shapes. Use 0 as separator between different inputs. "
+    arg_parser.add_argument("-sh", "--shape", type=str,
+                            default="1 3 640 640",
+                            help="Input tensor shapes. Use ';' as separator between different inputs. "
                                  "Example: '1 3 640 640' for single input, "
-                                 "'1 500 2 0 1 500 128' for two inputs.")
+                                 "'1 500 2 ; 1 500 128' for two inputs.")
     arg_parser.add_argument("-w", "--warmup", type=int, default=5,
                             help="Number of warmup iterations before measurement")
     arg_parser.add_argument("-n", "--iterations", type=int, default=10,

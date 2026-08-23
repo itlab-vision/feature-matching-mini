@@ -22,17 +22,12 @@ class ForwardProfiler:
         self.iterations = iterations
 
     def _split_shape_list(self, shape):
+        groups = shape.split(';')
         res_list = []
-        tmp_list = []
-        for i in shape:
-            if i != 0:
-                tmp_list.append(i)
-            else:
-                res_list.append(tuple(tmp_list))
-                tmp_list = []
-
-        if tmp_list:
-            res_list.append(tuple(tmp_list))
+        for group in groups:
+            tokens = group.strip().split()
+            if tokens:
+                res_list.append(tuple(int(x) for x in tokens))
 
         return res_list
 
