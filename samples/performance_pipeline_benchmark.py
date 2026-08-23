@@ -19,6 +19,9 @@ from src.hardnet_descriptor import HardNet  # noqa: E402, F401
 from src.xfeat import XFeat  # noqa: E402, F401
 from src.super_glue import SuperGlueMatcher  # noqa: E402, F401
 from src.d2net import D2Net  # noqa: E402, F401
+from src.r2d2 import R2D2  # noqa: E402, F401
+from src.loftr import LoFTR  # noqa: E402, F401
+from src.roma import RoMa  # noqa: E402, F401
 
 
 logging.basicConfig(level=logging.INFO, format='[ %(levelname)s ] %(message)s')

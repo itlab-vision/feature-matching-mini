@@ -107,18 +107,18 @@ class TestMatcherRegistry:
 
     def test_factory_creation_types_bf(self, mock_logger, mock_descriptor):
         config = {'mode': 'simple'}
-        matcher = Matcher.create("bf", mock_logger, mock_descriptor, config)
+        matcher = Matcher.create("bf", mock_logger, config, mock_descriptor)
         assert isinstance(matcher, BFMatcher)
         assert isinstance(matcher, Matcher)
 
     def test_factory_creation_types_flann(self, mock_logger, mock_descriptor):
         config = {'mode': 'simple'}
-        matcher = Matcher.create("flann", mock_logger, mock_descriptor, config)
+        matcher = Matcher.create("flann", mock_logger, config, mock_descriptor)
         assert isinstance(matcher, FLANNMatcher)
         assert isinstance(matcher, Matcher)
 
     def test_factory_with_empty_config(self, mock_logger, mock_descriptor):
-        matcher = Matcher.create("bf", mock_logger, mock_descriptor, {})
+        matcher = Matcher.create("bf", mock_logger, {}, mock_descriptor)
         assert isinstance(matcher, BFMatcher)
         assert matcher.mode == 'simple'
         assert matcher.k == 1
@@ -127,7 +127,7 @@ class TestMatcherRegistry:
 class TestMatcherModes:
     def test_simple_mode_returns_list_of_dmatches(self, mock_logger, mock_descriptor, identical_features):
         config = {'mode': 'simple'}
-        matcher = BFMatcher(mock_logger, "bf", mock_descriptor, config)
+        matcher = BFMatcher("bf", mock_logger, config, mock_descriptor)
         features1, features2 = identical_features
         result = matcher.match(features1, features2)
 
@@ -140,7 +140,7 @@ class TestMatcherModes:
 
     def test_knn_mode_returns_list_of_lists(self, mock_logger, mock_descriptor, identical_features):
         config = {'mode': 'knn', 'k': 2}
-        matcher = BFMatcher(mock_logger, "bf", mock_descriptor, config)
+        matcher = BFMatcher("bf", mock_logger, config, mock_descriptor)
         features1, features2 = identical_features
         result = matcher.match(features1, features2)
 
@@ -155,7 +155,7 @@ class TestMatcherModes:
     def test_knn_returns_k_matches_per_query(self, mock_logger, mock_descriptor, identical_features):
         k_count = 3
         config = {'mode': 'knn', 'k': k_count}
-        matcher = BFMatcher(mock_logger, "bf", mock_descriptor, config)
+        matcher = BFMatcher("bf", mock_logger, config, mock_descriptor)
         features1, features2 = identical_features
         result = matcher.match(features1, features2)
         matches = result['matches']
@@ -167,13 +167,13 @@ class TestMatcherModes:
 class TestBFMatcher:
     def test_bf_initialization_with_norm(self, mock_logger, mock_descriptor):
         config = {'mode': 'simple'}
-        matcher = BFMatcher(mock_logger, "bf", mock_descriptor, config)
+        matcher = BFMatcher("bf", mock_logger, config, mock_descriptor)
         bf_matcher = matcher._init_matcher()
         assert isinstance(bf_matcher, cv.BFMatcher)
 
     def test_bf_simple_match_returns_valid_result(self, mock_logger, mock_descriptor, identical_features):
         config = {'mode': 'simple'}
-        matcher = BFMatcher(mock_logger, "bf", mock_descriptor, config)
+        matcher = BFMatcher("bf", mock_logger, config, mock_descriptor)
         features1, features2 = identical_features
         result = matcher.match(features1, features2)
 
@@ -183,7 +183,7 @@ class TestBFMatcher:
 
     def test_bf_knn_match_returns_valid_result(self, mock_logger, mock_descriptor, identical_features):
         config = {'mode': 'knn', 'k': 2}
-        matcher = BFMatcher(mock_logger, "bf", mock_descriptor, config)
+        matcher = BFMatcher("bf", mock_logger, config, mock_descriptor)
         features1, features2 = identical_features
         result = matcher.match(features1, features2)
 
@@ -193,7 +193,7 @@ class TestBFMatcher:
 
     def test_bf_reproducibility(self, mock_logger, mock_descriptor, test_features):
         config = {'mode': 'knn', 'k': 2}
-        matcher = BFMatcher(mock_logger, "bf", mock_descriptor, config)
+        matcher = BFMatcher("bf", mock_logger, config, mock_descriptor)
         features1, features2 = test_features
 
         result1 = matcher.match(features1, features2)
@@ -211,7 +211,7 @@ class TestBFMatcher:
 class TestFLANNMatcher:
     def test_flann_initialization_l2_norm(self, mock_logger, mock_descriptor):
         config = {'mode': 'simple'}
-        matcher = FLANNMatcher(mock_logger, "flann", mock_descriptor, config)
+        matcher = FLANNMatcher("flann", mock_logger, config, mock_descriptor)
         assert matcher.index_params['algorithm'] == 1
         assert 'trees' in matcher.index_params
         assert matcher.index_params['trees'] == 5

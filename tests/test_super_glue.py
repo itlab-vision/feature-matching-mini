@@ -55,36 +55,33 @@ class TestSuperGlueRegistration:
 class TestSuperGlueMatcherConfig:
     def test_extractor_type_from_descriptor_name(self, session_logger):
         matcher = Matcher.create("superglue", session_logger,
-                                 descriptor_name="superpoint",
-                                 config={'device': 'cpu'})
+                                 config={'device': 'cpu'}, descriptor_name="superpoint")
         assert matcher.descriptor_name == 'superpoint'
 
     def test_device_cpu(self, session_logger):
         matcher = Matcher.create("superglue", session_logger,
-                                 descriptor_name="superpoint",
-                                 config={'device': 'cpu'})
+                                 config={'device': 'cpu'}, descriptor_name="superpoint")
         assert matcher._device.type == 'cpu'
 
     def test_eval_mode(self, session_logger):
         matcher = Matcher.create("superglue", session_logger,
-                                 descriptor_name="superpoint",
-                                 config=None)
+                                 config=None, descriptor_name="superpoint")
         assert not matcher._matcher.training
 
     def test_none_config(self, session_logger):
-        matcher = SuperGlueMatcher(session_logger, "superglue",
-                                   "superpoint", config=None)
+        matcher = SuperGlueMatcher("superglue", session_logger,
+                                   config=None, descriptor_name="superpoint")
         assert isinstance(matcher, SuperGlueMatcher)
 
     def test_empty_config(self, session_logger):
-        matcher = SuperGlueMatcher(session_logger, "superglue",
-                                   "superpoint", config={})
+        matcher = SuperGlueMatcher("superglue", session_logger,
+                                   config={}, descriptor_name="superpoint")
         assert isinstance(matcher, SuperGlueMatcher)
 
     def test_weights_switching(self, session_logger):
         for w_type in ['indoor', 'outdoor']:
-            matcher = SuperGlueMatcher(session_logger, "superglue",
-                                       "superpoint", config={'weights': w_type})
+            matcher = SuperGlueMatcher("superglue", session_logger,
+                                       config={'weights': w_type}, descriptor_name="superpoint")
             assert matcher._matcher.config['weights'] == w_type
 
 
@@ -94,8 +91,7 @@ class TestSuperGlueMatcherInference:
         img2 = load_img("box_in_scene.png")
 
         matcher = Matcher.create("superglue", session_logger,
-                                 descriptor_name="superpoint",
-                                 config=None)
+                                 config=None, descriptor_name="superpoint")
 
         f0 = sp_instance.detectAndCompute(to_tensor(img1))
         f1 = sp_instance.detectAndCompute(to_tensor(img2))
@@ -140,8 +136,8 @@ class TestSuperGlueMatcherInference:
         assert torch.equal(result1['scores'], result2['scores'])
 
     def test_match_zero_keypoints(self, session_logger):
-        matcher = SuperGlueMatcher(session_logger, "superglue",
-                                   "superpoint", config={'device': 'cpu'})
+        matcher = SuperGlueMatcher("superglue", session_logger,
+                                   config={'device': 'cpu'}, descriptor_name="superpoint")
 
         f0 = {'keypoints': torch.empty((0, 2)), 'descriptors': torch.empty((256, 0)),
               'scores': torch.empty(0), 'width': 640, 'height': 480}
@@ -158,9 +154,9 @@ class TestSuperGlueMatcherInference:
         f0 = sp_instance.detectAndCompute(to_tensor(img1))
         f1 = sp_instance.detectAndCompute(to_tensor(img2))
 
-        strict_matcher = SuperGlueMatcher(session_logger, "superglue", "superpoint",
+        strict_matcher = SuperGlueMatcher("superglue", session_logger, descriptor_name="superpoint",
                                           config={'threshold': 0.99})
-        loose_matcher = SuperGlueMatcher(session_logger, "superglue", "superpoint",
+        loose_matcher = SuperGlueMatcher("superglue", session_logger, descriptor_name="superpoint",
                                          config={'threshold': 0.01})
 
         res_strict = strict_matcher.match(f0, f1)

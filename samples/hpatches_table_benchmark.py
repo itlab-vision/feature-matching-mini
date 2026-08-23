@@ -12,7 +12,7 @@ from src.matchers import OpenCVMatcher  # noqa: E402
 from src.algorithms import DETECTOR_DESCRIPTOR_COMPATIBILITY, DESCRIPTOR_MATCHER_COMPATIBILITY  # noqa: E402
 from src.feature_matcher import FeatureMatcherCV2  # noqa: E402
 
-from samples.utils import build_hpatches_benchmark_config, build_feature_matcher_config  # noqa: E402
+from samples.utils import build_hpatches_benchmark_config, build_hpatches_feature_matcher_config  # noqa: E402
 from samples.hpatches_task import HPatchesTask  # noqa: E402
 from samples.hpatches_data_manager import HPatchesDataManager  # noqa: E402
 
@@ -142,7 +142,7 @@ def table_benchmark(cli_args):
 
         tmp_args = copy.copy(cli_args)
         tmp_args.detector, tmp_args.descriptor, tmp_args.matcher = det, desc, mat
-        combo_fm_config = build_feature_matcher_config(tmp_args)
+        combo_fm_config = build_hpatches_feature_matcher_config(tmp_args)
         feature_matcher.__init__(detector=det, descriptor=desc, matcher=mat,
                                  logger=logger, config=combo_fm_config)
 

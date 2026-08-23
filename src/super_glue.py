@@ -14,15 +14,15 @@ from models.superglue import SuperGlue  # noqa: E402
 
 
 class SuperGlueMatcher(DNNMatcher):
-    def __init__(self, logger, matcher_name, descriptor_name, config=None):
+    def __init__(self, matcher_name, logger, config=None, descriptor_name=None):
         if config is None:
             config = {}
 
-        DNNMatcher.__init__(self, logger, matcher_name, descriptor_name, config)
+        DNNMatcher.__init__(self, matcher_name, logger, config, descriptor_name)
         sg_config = {
-            'weights': config.pop('weights', 'outdoor'),
-            'sinkhorn_iterations': config.pop('sinkhorn_iterations', 20),
-            'match_threshold': config.pop('threshold', 0.005),
+            'weights': config.get('weights', 'outdoor'),
+            'sinkhorn_iterations': config.get('sinkhorn_iterations', 20),
+            'match_threshold': config.get('threshold', 0.005),
         }
 
         self.logger.info(f"Loading SuperGlue ({sg_config.get('weights')}) onto {self._device}")
@@ -31,7 +31,7 @@ class SuperGlueMatcher(DNNMatcher):
     def _init_matcher(self):
         pass
 
-    def prep(self, feat):
+    def _preprocess(self, feat):
         kps = feat['keypoints']
         des = feat['descriptors']
         scores = feat['scores']
@@ -57,8 +57,8 @@ class SuperGlueMatcher(DNNMatcher):
         if len(features0['keypoints']) == 0 or len(features1['keypoints']) == 0:
             return {'matches': (), 'scores': ()}
 
-        data0 = self.prep(features0)
-        data1 = self.prep(features1)
+        data0 = self._preprocess(features0)
+        data1 = self._preprocess(features1)
 
         input_dict = {
             'keypoints0': data0['keypoints'],
