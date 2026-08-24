@@ -8,7 +8,8 @@ from pathlib import Path
 
 sys.path.append(str(Path(__file__).parent.parent))  # noqa: E402
 
-from src.algorithms import DETECTOR_DESCRIPTOR_COMPATIBILITY, DESCRIPTOR_MATCHER_COMPATIBILITY  # noqa: E402
+from src.algorithms import (DETECTOR_DESCRIPTOR_COMPATIBILITY, DESCRIPTOR_MATCHER_COMPATIBILITY,  # noqa: E402
+                            DNN_PIPELINES)
 
 logging.basicConfig(level=logging.INFO, format='[ %(levelname)s ] %(message)s')
 logger = logging.getLogger("PerformanceBenchmark")
@@ -35,6 +36,8 @@ def parse_performance_log(log_output, script_type):
         patterns = {
             'min_pipeline_ms': r'Min time pipeline test:\s*([\d\.eE\+\-]+)',
             'mean_pipeline_ms': r'Mean time pipeline test:\s*([\d\.eE\+\-]+)',
+            'num_keypoints_1': r'Number of key points 1:\s*(\d+)',
+            'num_keypoints_2': r'Number of key points 2:\s*(\d+)'
         }
 
     for key, pattern in patterns.items():
@@ -121,15 +124,17 @@ def table_benchmark(img1, img2, output_csv, device='cpu', iterations=10):
             'iterations': iterations,
         }
 
-        success_staged, staged_results = run_benchmark(
-            'samples.performance_staged_benchmark',
-            detector, descriptor, matcher,
-            img1, img2, device, iterations)
+        is_pipeline = detector in DNN_PIPELINES
+        if not is_pipeline:
+            success_staged, staged_results = run_benchmark(
+                'samples.performance_staged_benchmark',
+                detector, descriptor, matcher,
+                img1, img2, device, iterations)
 
-        if not success_staged:
-            continue
+            if not success_staged:
+                continue
 
-        combo_result.update(staged_results)
+            combo_result.update(staged_results)
 
         success_pipeline, pipeline_results = run_benchmark(
             'samples.performance_pipeline_benchmark',

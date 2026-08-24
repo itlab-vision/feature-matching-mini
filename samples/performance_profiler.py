@@ -61,3 +61,8 @@ class PerformanceProfiler:
         features1 = self.preprocessor.prepare_features(features1, from_algo=extractor_name, to_algo=matcher_name)
         res_match = matcher.match(features0, features1)
         return res_match
+
+    @measure_time
+    def profile_pipeline_methods(self, method, features0, features1):
+        result = method.match(features0, features1)
+        return result
