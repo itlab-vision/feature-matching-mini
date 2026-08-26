@@ -6,7 +6,7 @@ from unittest.mock import MagicMock
 from logging import Logger
 
 from src.image_utils import read_image
-from src.algorithms import DNN_ALGORITHMS
+from src.algorithms import DNN_ALGORITHMS, EXECUTORCH_ALGORITHMS
 
 from src.detectors import Detector
 from src.descriptors import Descriptor, SIFTDescriptor, OpenCVDescriptor
@@ -104,6 +104,10 @@ class TestDescriptorCompute:
     @pytest.mark.parametrize("detector_name", Detector._METHODS.keys())
     @pytest.mark.parametrize("descriptor_name", Descriptor._METHODS.keys())
     def test_all_methods_compute_descriptors(self, detector_name, descriptor_name, mock_logger, load_img, get_kp):
+        if detector_name in EXECUTORCH_ALGORITHMS or descriptor_name in EXECUTORCH_ALGORITHMS:
+            pytest.skip("Model files in the torchexecut format are missing,"
+                        " so we are skipping these combinations")
+
         if (detector_name in FeatureMatcherCV2._DETECTOR_DESCRIPTOR_COMPATIBILITY
                 and descriptor_name in FeatureMatcherCV2._DETECTOR_DESCRIPTOR_COMPATIBILITY[detector_name]):
             is_neural = detector_name in DNN_ALGORITHMS

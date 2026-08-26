@@ -1,6 +1,8 @@
 import cv2 as cv
 from abc import ABC, abstractmethod
 
+from src.algorithms import ALL_DETECTORS
+
 
 class Detector(ABC):
     _METHODS = {}
@@ -18,6 +20,12 @@ class Detector(ABC):
 
         elif register:
             key = cls.__name__.replace("Detector", "").lower()
+
+            for key_ in ALL_DETECTORS:
+                if key_.replace("_", "") == key:
+                    key = key_
+                    break
+
             if key:
                 Detector._METHODS[key] = cls
 
@@ -26,11 +34,12 @@ class Detector(ABC):
         if config is None:
             config = {}
 
-        if detector_name not in Detector._METHODS:
-            raise ValueError(f"Detector '{detector_name}' not found."
+        detector_class_name = detector_name.lower()
+        if detector_class_name not in Detector._METHODS:
+            raise ValueError(f"Detector '{detector_class_name}' not found."
                              f" Available: {list(Detector._METHODS.keys())}")
 
-        return Detector._METHODS[detector_name](detector_name, logger, config)
+        return Detector._METHODS[detector_class_name](detector_class_name, logger, config)
 
     @abstractmethod
     def detect(self, img):

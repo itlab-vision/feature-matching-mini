@@ -21,6 +21,7 @@ from src.d2net import D2Net  # noqa: F401
 from src.r2d2 import R2D2  # noqa: F401
 from src.loftr import LoFTR  # noqa: F401
 from src.roma import RoMa  # noqa: F401
+from src.executorch_pipeline import (ExecuTorchDetector, ExecuTorchDescriptor, ExecuTorchMatcher)  # noqa: F401
 
 
 class FeatureMatcherCV2:
