@@ -7,7 +7,7 @@ sys.path.append(str(Path(__file__).parent.parent))  # noqa: E402
 from src.image_utils import read_image  # noqa: E402
 from samples.utils import build_feature_matcher_config, performance_tests_parser  # noqa: E402
 from src.preprocessor import Preprocessor  # noqa: E402
-from src.algorithms import DNN_ALGORITHMS  # noqa: E402
+from src.algorithms import DNN_ALGORITHMS, DNN_PIPELINES  # noqa: E402
 from src.detectors import Detector  # noqa: E402
 from src.descriptors import Descriptor  # noqa: E402
 from src.matchers import Matcher  # noqa: E402
@@ -32,10 +32,18 @@ def pipeline_performance_test(logger, profiler, detector, detector_name, descrip
                               matcher, matcher_name, img0, img1, iterations):
     times = []
 
-    if detector_name in DNN_ALGORITHMS or descriptor_name in DNN_ALGORITHMS:
+    if detector_name in DNN_PIPELINES:
+        for _ in range(iterations):
+            res, time = profiler.profile_pipeline_methods(matcher, {'image': img0}, {'image': img1})
+            count_kp0 = len(res['keypoints0'])
+            count_kp1 = len(res['keypoints1'])
+            times.append(time)
+
+    elif detector_name in DNN_ALGORITHMS or descriptor_name in DNN_ALGORITHMS:
         for _ in range(iterations):
             res, time = profiler.profile_dnn_pipeline(descriptor, descriptor_name, matcher, matcher_name, img0, img1)
             times.append(time)
+
     else:
         for _ in range(iterations):
             res, time = profiler.profile_pipeline(detector, detector_name, descriptor, descriptor_name,
@@ -44,8 +52,14 @@ def pipeline_performance_test(logger, profiler, detector, detector_name, descrip
 
     min_time = np.min(times)
     mean_time = np.mean(times)
-    logger.info(f"\nMin time pipeline test: {min_time:.5f}\n"
-                f"Mean time pipeline test: {mean_time:.5f}")
+    if detector_name in DNN_PIPELINES:
+        logger.info(f"\nMin time pipeline test: {min_time:.5f}\n"
+                    f"Mean time pipeline test: {mean_time:.5f}\n"
+                    f"Number of key points 1: {count_kp0}\n"
+                    f"Number of key points 2: {count_kp1}\n")
+    else:
+        logger.info(f"\nMin time pipeline test: {min_time:.5f}\n"
+                    f"Mean time pipeline test: {mean_time:.5f}\n")
 
 
 def main():
