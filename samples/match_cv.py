@@ -4,7 +4,7 @@ import logging
 from pathlib import Path
 
 from feature_matching.image_utils import read_image, save_image, show_image
-from utils import build_feature_matcher_config
+from samples.utils import build_feature_matcher_config
 from feature_matching.detectors import Detector
 from feature_matching.descriptors import Descriptor
 from feature_matching.matchers import Matcher, OpenCVMatcher

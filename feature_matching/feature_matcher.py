@@ -9,6 +9,17 @@ from feature_matching.detectors import Detector
 from feature_matching.descriptors import Descriptor
 from feature_matching.matchers import Matcher
 
+from feature_matching.super_point import SuperPoint  # noqa: F401
+from feature_matching.opencv_dnn_extractors import ALIKEDOpenCV, DISKOpenCV  # noqa: F401
+from feature_matching.opencv_dnn_matchers import LightGlueOpenCVMatcher  # noqa: F401
+from feature_matching.lightglue_matcher import LightGlue  # noqa: F401
+from feature_matching.lightglue_pipeline import LightGlueFeatureExtractor  # noqa: F401
+from feature_matching.xfeat import XFeat  # noqa: F401
+from feature_matching.tfeat_descriptor import TFeat  # noqa: F401
+from feature_matching.hardnet_descriptor import HardNet  # noqa: F401
+from feature_matching.super_glue import SuperGlueMatcher  # noqa: F401
+from feature_matching.d2net import D2Net  # noqa: F401
+
 
 class FeatureMatcherCV2:
     _DETECTOR_DESCRIPTOR_COMPATIBILITY = DETECTOR_DESCRIPTOR_COMPATIBILITY
