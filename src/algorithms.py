@@ -67,7 +67,7 @@ DETECTOR_DESCRIPTOR_COMPATIBILITY = {
     'xfeat': ['xfeat'],
     'r2d2': ['r2d2'],
     'loftr': ['loftr'],
-    # 'roma': ['roma'],
+    'roma': ['roma'],
 }
 
 DESCRIPTOR_MATCHER_COMPATIBILITY = {
@@ -99,5 +99,5 @@ DESCRIPTOR_MATCHER_COMPATIBILITY = {
     'd2net': ['bf', 'flann'],
     'r2d2': ['bf', 'flann'],
     'loftr': ['loftr'],
-    # 'roma': ['roma'],
+    'roma': ['roma'],
 }
