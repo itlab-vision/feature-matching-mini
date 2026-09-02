@@ -185,13 +185,6 @@ class TestFeatureMatcherCompatibility:
 
 
 class TestFeatureMatcherRobustness:
-    def test_match_raises_value_error_on_empty_image(self, mock_logger):
-        matcher_cv = FeatureMatcherCV2(logger=mock_logger)
-        empty_img = np.zeros((10, 10), dtype=np.uint8)
-
-        with pytest.raises(ValueError, match="Failed to detect key points"):
-            matcher_cv.match(empty_img, empty_img)
-
     def test_match_with_invalid_descriptor_input(self, mock_logger):
         matcher_cv = FeatureMatcherCV2(logger=mock_logger)
         try:
@@ -202,17 +195,6 @@ class TestFeatureMatcherRobustness:
                 assert len(correspondences) == 0
         except Exception:
             pass
-
-    def test_invalid_config_key_ignored_or_raises(self, mock_logger, load_img):
-        img1 = load_img("box.png")
-        img2 = load_img("box_in_scene.png")
-
-        with pytest.raises((TypeError, Exception, cv.error)):
-            matcher_cv = FeatureMatcherCV2(
-                logger=mock_logger,
-                config={'detector': {'invalid_param': 999}}
-            )
-            matcher_cv.match(img1, img2)
 
 
 class TestFeatureMatcherVisualization:

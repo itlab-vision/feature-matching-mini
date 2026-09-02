@@ -144,6 +144,7 @@ class BEBLIDDescriptor(OpenCVDescriptor):
             cv_params['n_bits'] = config['n_bits']
         super().__init__(descriptor_name, logger, cv.xfeatures2d.BEBLID_create(**cv_params), config)
 
+
 class TEBLIDDescriptor(OpenCVDescriptor):
     def __init__(self, descriptor_name, logger, config):
         scale_factor = config.get('scale_factor', 0.75)

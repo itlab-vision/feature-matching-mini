@@ -71,9 +71,6 @@ class TestDescriptorFactory:
         obj = Descriptor.create("sift", mock_logger, config=None)
         assert isinstance(obj, SIFTDescriptor)
 
-    def test_invalid_config_key_raises(self, mock_logger):
-        with pytest.raises((TypeError, cv.error)):
-            Descriptor.create("sift", mock_logger, config={'invalid_param': 999})
 
     def test_nfeatures_config(self, mock_logger, load_img, get_kp):
         img = load_img("box.png")

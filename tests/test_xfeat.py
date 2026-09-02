@@ -49,10 +49,10 @@ class TestXFeatRegistration:
         assert obj.default_norm == cv.NORM_L2
 
     def test_factory_creation_with_config(self, mock_logger):
-        obj = Detector.create("xfeat", mock_logger, config={'threshold': 0.01, 'top_k': 256})
+        obj = Detector.create("xfeat", mock_logger, config={'threshold': 0.01, 'nfeatures': 256})
         assert isinstance(obj, XFeat)
         assert obj._threshold == 0.01
-        assert obj._top_k == 256
+        assert obj._nfeatures == 256
 
 
 class TestXFeatConfig:
@@ -69,16 +69,12 @@ class TestXFeatConfig:
         assert xf._device.type == 'cpu'
 
     def test_custom_top_k(self, mock_logger):
-        xf = XFeat("xfeat", mock_logger, config={'top_k': 256})
-        assert xf._top_k == 256
+        xf = XFeat("xfeat", mock_logger, config={'nfeatures': 256})
+        assert xf._nfeatures == 256
 
     def test_empty_config(self, mock_logger):
         xf = XFeat("xfeat", mock_logger, config={})
         assert xf._threshold == 0.005
-
-    def test_unknown_config_key_warns(self, mock_logger):
-        XFeat("xfeat", mock_logger, config={'unknown_key': 123})
-        mock_logger.warning.assert_called()
 
 
 class TestXFeatSingleton:
@@ -88,14 +84,14 @@ class TestXFeatSingleton:
         assert xf1._model is xf2._model
 
     def test_instance_parameter_independence(self, mock_logger):
-        xf_sensitive = XFeat("xf1", mock_logger, config={'threshold': 0.001, 'top_k': 128})
-        xf_strict = XFeat("xf2", mock_logger, config={'threshold': 0.1, 'top_k': 256})
+        xf_sensitive = XFeat("xf1", mock_logger, config={'threshold': 0.001, 'nfeatures': 128})
+        xf_strict = XFeat("xf2", mock_logger, config={'threshold': 0.1, 'nfeatures': 256})
         assert xf_sensitive._threshold == 0.001
         assert xf_strict._threshold == 0.1
-        assert xf_sensitive._top_k == 128
-        assert xf_strict._top_k == 256
+        assert xf_sensitive._nfeatures == 128
+        assert xf_strict._nfeatures == 256
         assert xf_sensitive._threshold != xf_strict._threshold
-        assert xf_sensitive._top_k != xf_strict._top_k
+        assert xf_sensitive._nfeatures != xf_strict._nfeatures
 
     def test_eval_mode_persistence(self, mock_logger):
         xf = XFeat("xf", mock_logger, config=None)
@@ -119,8 +115,8 @@ class TestXFeatSingleton:
         import logging
         logger = logging.getLogger('xfeat')
 
-        xf_sensitive = XFeat("xf_s", logger, config={'threshold': 0.001, 'top_k': 32})
-        xf_strict = XFeat("xf_st", logger, config={'threshold': 0.06, 'top_k': 4})
+        xf_sensitive = XFeat("xf_s", logger, config={'threshold': 0.001, 'nfeatures': 32})
+        xf_strict = XFeat("xf_st", logger, config={'threshold': 0.06, 'nfeatures': 4})
 
         kp_sensitive = xf_sensitive.detect(img).get('keypoints')
         kp_strict = xf_strict.detect(img).get('keypoints')

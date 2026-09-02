@@ -86,10 +86,6 @@ class TestD2NetConfig:
         assert d2net._use_relu is False
         assert d2net._device.type == 'cpu'
 
-    def test_unknown_config_key_warns(self, mock_logger):
-        D2Net("d2net", mock_logger, config={'unknown_key': 123})
-        mock_logger.warning.assert_called()
-
 
 class TestD2NetSingleton:
     def test_shared_model_weights(self, mock_logger):

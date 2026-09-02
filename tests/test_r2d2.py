@@ -49,10 +49,10 @@ class TestR2D2Registration:
         assert obj.default_norm == cv.NORM_L2
 
     def test_factory_creation_with_config(self, mock_logger):
-        obj = Detector.create("r2d2", mock_logger, config={'threshold': 0.01, 'top_k': 256})
+        obj = Detector.create("r2d2", mock_logger, config={'threshold': 0.01, 'nfeatures': 256})
         assert isinstance(obj, R2D2)
         assert obj._threshold == 0.01
-        assert obj._top_k == 256
+        assert obj._nfeatures == 256
 
 
 class TestR2D2Config:
@@ -79,11 +79,11 @@ class TestR2D2Config:
             config={
                 'device': 'cpu',
                 'threshold': 0.01,
-                'top_k': 128
+                'nfeatures': 128
             }
         )
         assert r2d2._threshold == 0.01
-        assert r2d2._top_k == 128
+        assert r2d2._nfeatures == 128
         assert r2d2._device.type == 'cpu'
 
 
