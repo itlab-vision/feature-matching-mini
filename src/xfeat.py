@@ -20,10 +20,6 @@ class XFeat(DNNFeatureExtractors):
 
         DNNFeatureExtractors.__init__(self, extractor_name, logger, config)
 
-        self._top_k = config.pop('top_k', 4096)
-        if config:
-            self._logger.warning(f"XFeat: unknown config keys ignored: {list(config.keys())}")
-
         if self._device == torch.device('mps'):
             self._device = torch.device('cpu')
 
@@ -52,7 +48,7 @@ class XFeat(DNNFeatureExtractors):
 
         try:
             with torch.no_grad():
-                output = self._model.detectAndCompute(input_tensor, top_k=self._top_k)[0]
+                output = self._model.detectAndCompute(input_tensor, top_k=self._nfeatures)[0]
 
             raw_kp = output['keypoints'].cpu()
             raw_des = output['descriptors'].cpu()

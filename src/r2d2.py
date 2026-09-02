@@ -20,8 +20,6 @@ class R2D2(DNNFeatureExtractors):
         config = config or {}
 
         DNNFeatureExtractors.__init__(self, extractor_name, logger, config)
-
-        self._top_k = config.pop("top_k", 8192)
         checkpoint = config.pop('checkpoint', "3rdparty/r2d2/models/r2d2_WASF_N16.pt")
 
         if R2D2._model is None:
@@ -66,8 +64,8 @@ class R2D2(DNNFeatureExtractors):
             mask = scores > self._threshold
             xys, desc, scores = xys[mask], desc[mask], scores[mask]
 
-            if len(scores) > self._top_k:
-                _, top_indices = torch.topk(scores, k=self._top_k)
+            if len(scores) > self._nfeatures:
+                _, top_indices = torch.topk(scores, k=self._nfeatures)
                 xys, desc, scores = xys[top_indices], desc[top_indices], scores[top_indices]
 
             extracted_data = {

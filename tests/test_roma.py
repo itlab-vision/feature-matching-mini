@@ -41,7 +41,7 @@ def roma_instance(session_logger):
         'device': 'cpu',
         'coarse_res': 128,
         'upsample_res': (160, 160),
-        'num_features': 10
+        'nfeatures': 10
     }
     return RoMa("roma", logger=session_logger, config=config)
 
@@ -58,10 +58,10 @@ class TestRoMaRegistration:
         assert obj.default_norm == cv.NORM_L2
 
     def test_factory_creation_with_config(self, mock_logger):
-        obj = Detector.create("roma", mock_logger, config={'threshold': 0.01, 'num_features': 256})
+        obj = Detector.create("roma", mock_logger, config={'threshold': 0.01, 'nfeatures': 256})
         assert isinstance(obj, RoMa)
         assert obj._threshold == 0.01
-        assert obj._num_features == 256
+        assert obj._nfeatures == 256
 
 
 class TestRoMaConfig:
@@ -87,12 +87,12 @@ class TestRoMaConfig:
             mock_logger,
             config={
                 'device': 'cpu',
-                'num_features': 256,
+                'nfeatures': 256,
                 'threshold': 0.01
             }
         )
         assert roma._threshold == 0.01
-        assert roma._num_features == 256
+        assert roma._nfeatures == 256
         assert roma._device.type == 'cpu'
 
 
@@ -130,7 +130,7 @@ class TestRoMaInference:
         assert 'image' in result
 
     def test_num_features_parameter(self, session_logger, load_img):
-        model = RoMa("roma", session_logger, config={'num_features': 64, 'device': 'cpu'})
+        model = RoMa("roma", session_logger, config={'nfeatures': 64, 'device': 'cpu'})
         img = load_img("box.png")
         res = model.match(model.detect(img), model.detect(img))
         assert len(res['matches']) <= 64

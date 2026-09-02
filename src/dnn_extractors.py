@@ -18,6 +18,7 @@ class DNNFeatureExtractors(Detector, Descriptor, register=False):
         Descriptor.__init__(self, logger, extractor_name)
 
         device = config.get('device', None)
+        self._nfeatures = config.get('nfeatures', 4096)
         self._threshold = config.get('threshold', 0.005)
 
         if device is None:

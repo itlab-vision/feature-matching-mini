@@ -1,6 +1,8 @@
 from abc import ABC, abstractmethod
 import cv2 as cv
 
+from src.algorithms import ALL_MATCHERS
+
 
 class Matcher(ABC):
     _METHODS = {}
@@ -18,6 +20,11 @@ class Matcher(ABC):
 
         if register:
             key = cls.__name__.replace("Matcher", "").lower()
+
+            for key_ in ALL_MATCHERS:
+                if key_.replace("_", "") == key:
+                    key = key_
+                    break
             if key:
                 Matcher._METHODS[key] = cls
 

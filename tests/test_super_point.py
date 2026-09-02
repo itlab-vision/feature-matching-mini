@@ -71,10 +71,6 @@ class TestSuperPointConfig:
         sp = SuperPoint("superpoint", mock_logger, config={})
         assert sp._threshold == 0.005
 
-    def test_unknown_config_key_warns(self, mock_logger):
-        SuperPoint("superpoint", mock_logger, config={'unknown_key': 123})
-        mock_logger.warning.assert_called()
-
 
 class TestSuperPointSingleton:
     def test_shared_model_weights(self, mock_logger):

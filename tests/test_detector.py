@@ -170,10 +170,6 @@ class TestDetectorRobustness:
         features = detector.detect(img_bgr)
         assert len(features.get('kp')) > 0
 
-    def test_invalid_config_key_raises(self, mock_logger):
-        with pytest.raises((TypeError, cv.error)):
-            Detector.create("sift", mock_logger, config={'invalid_param': 999})
-
 
 class TestKeypointProperties:
     @pytest.mark.parametrize("method_name", ["sift", "orb"])

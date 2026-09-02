@@ -50,6 +50,25 @@ class LightGlueFeatureExtractor(DNNFeatureExtractors, register=False):
 
             self._logger.info(f"Running inference with {self._detector_name}")
             extracted = self._extractor.extract(image_tensor.to(self._device))
+
+            num_found = extracted['keypoints'].shape[1]
+            if self._nfeatures is not None and num_found > self._nfeatures:
+                scores = extracted.get('keypoint_scores')
+                if scores is not None:
+                    _, indices = torch.topk(scores, k=self._nfeatures, dim=1)
+
+                    extracted['keypoints'] = torch.take_along_dim(
+                        extracted['keypoints'], indices.unsqueeze(-1), dim=1)
+                    extracted['descriptors'] = torch.take_along_dim(
+                        extracted['descriptors'], indices.unsqueeze(-1), dim=1)
+
+                    if 'keypoint_scores' in extracted:
+                        extracted['keypoint_scores'] = torch.take_along_dim(
+                            extracted['keypoint_scores'], indices, dim=1)
+                else:
+                    extracted['keypoints'] = extracted['keypoints'][:, :self._nfeatures]
+                    extracted['descriptors'] = extracted['descriptors'][:, :self._nfeatures]
+
             LightGlueFeatureExtractor._extracted_data = extracted
             self._logger.info(f"{self._detector_name} found"
                               f" {LightGlueFeatureExtractor._extracted_data['keypoints'].shape[1]} points")

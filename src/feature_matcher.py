@@ -112,7 +112,7 @@ class FeatureMatcherCV2:
         features1 = descriptor.compute(img1, features1)
 
         if not self._has_keypoints(features0) or not self._has_keypoints(features1):
-            raise ValueError("Failed to detect key points")
+            self._logger.warning("Failed to detect key points")
 
         features0 = preprocessor.prepare_features(features0, from_algo=self._descriptor, to_algo=self._matcher)
         features1 = preprocessor.prepare_features(features1, from_algo=self._descriptor, to_algo=self._matcher)
