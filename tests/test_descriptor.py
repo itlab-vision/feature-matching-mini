@@ -71,7 +71,6 @@ class TestDescriptorFactory:
         obj = Descriptor.create("sift", mock_logger, config=None)
         assert isinstance(obj, SIFTDescriptor)
 
-
     def test_nfeatures_config(self, mock_logger, load_img, get_kp):
         img = load_img("box.png")
         limit = 10
