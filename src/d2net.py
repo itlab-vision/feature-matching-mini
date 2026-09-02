@@ -30,8 +30,6 @@ class D2Net(DNNFeatureExtractors):
             torch.hub.download_url_to_file(self.WEIGHTS_URL, str(checkpoint))
 
         self._use_relu = config.pop('use_relu', True)
-        if config:
-            self._logger.warning(f"D2Net: unknown config keys ignored: {list(config.keys())}")
 
         if D2Net._model is None:
             self._logger.info(f"Loading D2Net weights onto {self._device}")
@@ -66,25 +64,34 @@ class D2Net(DNNFeatureExtractors):
                     self._model, scales=[1])
 
             mask = scores > self._threshold
-            raw_kp = keypoints[mask]
+            kp = keypoints[mask]
+            des = descriptors[mask]
+            sc = scores[mask]
 
-            if len(raw_kp) > 0:
-                xy_coords = raw_kp[:, [1, 0]].astype(np.float32)
+            if self._nfeatures is not None and len(kp) > self._nfeatures:
+                top_indices = np.argsort(sc)[::-1][:self._nfeatures]
+
+                kp = kp[top_indices]
+                des = des[top_indices]
+                sc = sc[top_indices]
+
+            if len(kp) > 0:
+                xy_coords = kp[:, [1, 0]].astype(np.float32)
 
                 extracted = {
                     'keypoints': torch.from_numpy(xy_coords),
-                    'descriptors': torch.from_numpy(descriptors[mask]),
-                    'scores': torch.from_numpy(scores[mask])
+                    'descriptors': torch.from_numpy(des),
+                    'scores': torch.from_numpy(sc)
                 }
                 D2Net._extracted_data = extracted
 
                 if len(keypoints[mask]) > 0:
-                    self._logger.info(f"{self._detector_name} found {len(keypoints[mask])} points")
+                    self._logger.info(f"{self._detector_name} found {len(kp)} points")
                 else:
                     self._logger.warning(f"{self._detector_name} found 0 points")
 
                 if descriptors[mask] is not None:
-                    self._logger.info(f"{self._descriptor_name} computed {len(descriptors[mask])} descriptors")
+                    self._logger.info(f"{self._descriptor_name} computed {len(des)} descriptors")
                 else:
                     self._logger.warning(f"{self._descriptor_name} computed 0 descriptors")
 

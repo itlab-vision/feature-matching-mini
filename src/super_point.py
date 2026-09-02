@@ -16,10 +16,7 @@ class SuperPoint(DNNFeatureExtractors):
         DNNFeatureExtractors.__init__(self, extractor_name, logger, config)
         checkpoint = config.pop('checkpoint', "weights/superpoint")
         local_files_only = config.pop('local_files_only', True)
-
         remote_repo = "magic-leap-community/superpoint"
-        if config:
-            self._logger.warning(f"SuperPoint: unknown config keys ignored: {list(config.keys())}")
 
         if SuperPoint._model is None:
             local_path = Path(checkpoint)
@@ -61,27 +58,36 @@ class SuperPoint(DNNFeatureExtractors):
                 outputs = self._model(**inputs)
 
             processed = self._processor.post_process_keypoint_detection(outputs, [[height, width]])[0]
-
             raw_kp = processed['keypoints']
             raw_scores = processed['scores']
             raw_des = processed['descriptors']
 
             mask = raw_scores > self._threshold
+            kp = raw_kp[mask]
+            des = raw_des[mask]
+            scores = raw_scores[mask]
+
+            if self._nfeatures is not None and len(kp) > self._nfeatures:
+                scores, indices = torch.topk(scores, k=self._nfeatures, sorted=True)
+
+                kp = kp[indices]
+                des = des[indices]
+
             extracted = {
-                'keypoints': raw_kp[mask],
-                'descriptors': raw_des[mask],
-                'scores': raw_scores[mask],
+                'keypoints': kp,
+                'descriptors': des,
+                'scores': scores,
                 'width': width,
                 'height': height
             }
             SuperPoint._extracted_data = extracted
             if len(raw_kp[mask]) > 0:
-                self._logger.info(f"{self._detector_name} found {len(raw_kp[mask])} points")
+                self._logger.info(f"{self._detector_name} found {len(kp)} points")
             else:
                 self._logger.warning(f"{self._detector_name} found 0 points")
 
             if raw_des[mask] is not None:
-                self._logger.info(f"{self._descriptor_name} computed {len(raw_des[mask])} descriptors")
+                self._logger.info(f"{self._descriptor_name} computed {len(des)} descriptors")
             else:
                 self._logger.warning(f"{self._descriptor_name} computed 0 descriptors")
 

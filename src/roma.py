@@ -20,7 +20,6 @@ class RoMa(DNNPipeline):
 
         DNNPipeline.__init__(self, extractor_name, logger, config)
 
-        self._num_features = config.get('num_features', 4096)
         self._coarse_res = config.get('coarse_res', 560)
         self._upsample_res = config.get('upsample_res', (864, 1152))
 
@@ -70,7 +69,7 @@ class RoMa(DNNPipeline):
         try:
             with torch.no_grad():
                 warp, certainty = self._model.match(pil0, pil1, device=self._device)
-                matches, conf = self._model.sample(warp, certainty, num=self._num_features)
+                matches, conf = self._model.sample(warp, certainty, num=self._nfeatures)
 
                 kp0, kp1 = self._model.to_pixel_coordinates(matches, h0_orig, w0_orig, h1_orig, w1_orig)
 

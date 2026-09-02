@@ -34,9 +34,6 @@ class LoFTR(DNNPipeline):
             checkpoint.parent.mkdir(parents=True, exist_ok=True)
             torch.hub.download_url_to_file(self.WEIGHTS_URLS[self._weights_type], str(checkpoint))
 
-        if config:
-            self._logger.warning(f"LoFTR: unknown config keys ignored: {list(config.keys())}")
-
         if LoFTR._model is None:
             try:
                 self._logger.info(f"Initializing LoFTR from {LOFTR_ROOT} onto {self._device}")
@@ -111,10 +108,17 @@ class LoFTR(DNNPipeline):
             mask = mconf > self._threshold
             mkp0, mkp1, mconf = mkp0[mask], mkp1[mask], mconf[mask]
 
+            if self._nfeatures is not None and len(mkp0) > self._nfeatures:
+                scores, indices = torch.topk(mconf, k=self._nfeatures, sorted=True)
+
+                mkp0 = mkp0[indices]
+                mkp1 = mkp1[indices]
+                mconf = scores
+
             num_matches = len(mkp0)
             indices = torch.arange(num_matches).view(-1, 1).repeat(1, 2)
 
-            self._logger.info(f"LoFTR found {num_matches} matches")
+            self._logger.info(f"LoFTR found {num_matches} matches {self._nfeatures} features.")
 
             return {
                 'keypoints0': mkp0.cpu(),

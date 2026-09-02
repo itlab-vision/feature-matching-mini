@@ -21,7 +21,11 @@ OPENCV_MATCHERS_MODE = {'simple', 'knn'}
 
 DNN_ALGORITHMS = DNN_DETECTORS | DNN_DESCRIPTORS | DNN_MATCHERS
 OPENCV_ALGORITHMS = OPENCV_DETECTORS | OPENCV_DESCRIPTORS | OPENCV_MATCHERS
-ALL_ALGORITHMS = DNN_ALGORITHMS | OPENCV_ALGORITHMS
+
+ALL_DETECTORS = DNN_DETECTORS | OPENCV_DETECTORS
+ALL_DESCRIPTORS = DNN_DESCRIPTORS | OPENCV_DESCRIPTORS
+ALL_MATCHERS = DNN_MATCHERS | OPENCV_MATCHERS
+ALL_ALGORITHMS = ALL_DETECTORS | ALL_DESCRIPTORS | ALL_MATCHERS
 
 DETECTOR_DESCRIPTOR_COMPATIBILITY = {
     'sift': ['sift', 'brisk', 'brief', 'freak', 'daisy', 'latch', 'beblid', 'teblid', 'vgg', 'boostdesc', 'tfeat',
@@ -63,7 +67,7 @@ DETECTOR_DESCRIPTOR_COMPATIBILITY = {
     'xfeat': ['xfeat'],
     'r2d2': ['r2d2'],
     'loftr': ['loftr'],
-    'roma': ['roma'],
+    # 'roma': ['roma'],
 }
 
 DESCRIPTOR_MATCHER_COMPATIBILITY = {
@@ -95,5 +99,5 @@ DESCRIPTOR_MATCHER_COMPATIBILITY = {
     'd2net': ['bf', 'flann'],
     'r2d2': ['bf', 'flann'],
     'loftr': ['loftr'],
-    'roma': ['roma'],
+    # 'roma': ['roma'],
 }
