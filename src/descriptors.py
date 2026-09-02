@@ -97,17 +97,22 @@ class ORBDescriptor(OpenCVDescriptor):
 
 class AKAZEDescriptor(OpenCVDescriptor):
     def __init__(self, descriptor_name, logger, config):
-        super().__init__(descriptor_name, logger, cv.xfeatures2d.AKAZE_create(**config), config)
+        cv_params = {}
+        super().__init__(descriptor_name, logger, cv.xfeatures2d.AKAZE_create(**cv_params), config)
 
 
 class BRISKDescriptor(OpenCVDescriptor):
     def __init__(self, descriptor_name, logger, config):
-        super().__init__(descriptor_name, logger, cv.xfeatures2d.BRISK_create(**config), config)
+        cv_params = {}
+        if 'threshold' in config:
+            cv_params['thresh'] = int(config['threshold'])
+        super().__init__(descriptor_name, logger, cv.xfeatures2d.BRISK_create(**cv_params), config)
 
 
 class KAZEDescriptor(OpenCVDescriptor):
     def __init__(self, descriptor_name, logger, config):
-        super().__init__(descriptor_name, logger, cv.xfeatures2d.KAZE_create(**config), config)
+        cv_params = {}
+        super().__init__(descriptor_name, logger, cv.xfeatures2d.KAZE_create(**cv_params), config)
 
 
 class BRIEFDescriptor(OpenCVDescriptor):
@@ -120,12 +125,14 @@ class BRIEFDescriptor(OpenCVDescriptor):
 
 class FREAKDescriptor(OpenCVDescriptor):
     def __init__(self, descriptor_name, logger, config):
-        super().__init__(descriptor_name, logger, cv.xfeatures2d.FREAK_create(**config), config)
+        cv_params = {}
+        super().__init__(descriptor_name, logger, cv.xfeatures2d.FREAK_create(**cv_params), config)
 
 
 class DAISYDescriptor(OpenCVDescriptor):
     def __init__(self, descriptor_name, logger, config):
-        super().__init__(descriptor_name, logger, cv.xfeatures2d.DAISY_create(**config), config)
+        cv_params = {}
+        super().__init__(descriptor_name, logger, cv.xfeatures2d.DAISY_create(**cv_params), config)
 
 
 class LATCHDescriptor(OpenCVDescriptor):
@@ -156,9 +163,11 @@ class TEBLIDDescriptor(OpenCVDescriptor):
 
 class VGGDescriptor(OpenCVDescriptor):
     def __init__(self, descriptor_name, logger, config):
-        super().__init__(descriptor_name, logger, cv.xfeatures2d.VGG_create(**config), config)
+        cv_params = {}
+        super().__init__(descriptor_name, logger, cv.xfeatures2d.VGG_create(**cv_params), config)
 
 
 class BoostDescDescriptor(OpenCVDescriptor):
     def __init__(self, descriptor_name, logger, config):
-        super().__init__(descriptor_name, logger, cv.xfeatures2d.BoostDesc_create(**config), config)
+        cv_params = {}
+        super().__init__(descriptor_name, logger, cv.xfeatures2d.BoostDesc_create(**cv_params), config)

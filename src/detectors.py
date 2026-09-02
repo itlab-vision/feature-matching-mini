@@ -152,7 +152,8 @@ class AGASTDetector(OpenCVDetector):
 
 class BlobDetector(OpenCVDetector):
     def __init__(self, detector_name, logger, config):
-        super().__init__(detector_name, logger, cv.SimpleBlobDetector_create(), config)
+        cv_params = {}
+        super().__init__(detector_name, logger, cv.SimpleBlobDetector_create(**cv_params), config)
 
 
 class StarDetector(OpenCVDetector):
