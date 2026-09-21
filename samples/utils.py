@@ -27,6 +27,12 @@ def build_detector_config(args):
         config['disk_model_path'] = args.disk_model_path
     if args.aliked_model_path is not None:
         config['aliked_model_path'] = args.aliked_model_path
+    if args.det_et_model:
+        config['executorch_model_path'] = args.det_et_model
+        if args.det_et_input_shape:
+            config['input_shape'] = args.det_et_input_shape
+        if args.det_et_num_keypoints:
+            config['num_keypoints'] = args.det_et_num_keypoints
     return config
 
 
@@ -54,6 +60,10 @@ def build_descriptor_config(args):
         config['batch_size'] = args.batch_size
     if args.magfactor is not None:
         config['magfactor'] = args.magfactor
+    if args.des_et_model:
+        config['executorch_model_path'] = args.des_et_model
+        if args.des_et_patch_size:
+            config['patch_size'] = args.des_et_patch_size
     return config
 
 
@@ -73,6 +83,9 @@ def build_matcher_config(args):
         config['score_threshold'] = args.mat_score_threshold
     if args.lightglue_model_path is not None:
         config['lightglue_model_path'] = args.lightglue_model_path
+    if args.mat_et_model is not None:
+        config['executorch_model_path'] = args.mat_et_model
+        config['num_keypoints'] = args.det_et_num_keypoints
     return config
 
 
