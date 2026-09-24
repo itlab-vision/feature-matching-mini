@@ -1,0 +1,122 @@
+import argparse
+import sys
+import logging
+from pathlib import Path
+
+sys.path.append(str(Path(__file__).parent.parent))  # noqa: E402
+
+from src.image_utils import save_image, show_image  # noqa: E402
+from src.detectors import Detector  # noqa: E402
+from src.descriptors import Descriptor  # noqa: E402
+from src.matchers import Matcher, OpenCVMatcher  # noqa: E402
+from stitching.utils import build_stitch_config, read_images  # noqa: E402
+from stitching.stitcher import Stitcher  # noqa: E402
+
+logging.basicConfig(format='[ %(levelname)s ] %(message)s', level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
+def parser():
+    arg_parser = argparse.ArgumentParser(
+        description="Stitching images into a single panorama",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+
+    available_detectors = list(Detector._METHODS.keys())
+    available_descriptors = list(Descriptor._METHODS.keys())
+    available_matchers = list(Matcher._METHODS.keys())
+    available_matchers_modes = list(OpenCVMatcher._MODE)
+    available_devices = ['cpu', 'cuda', 'mps']
+
+    arg_parser.add_argument('-det', '--detector', type=str, default='sift',
+                            choices=available_detectors, help='Detector algorithm')
+    arg_parser.add_argument('-des', '--descriptor', type=str, default='sift',
+                            choices=available_descriptors, help='Descriptor algorithm')
+    arg_parser.add_argument('-mat', '--matcher', type=str, default='bf',
+                            choices=available_matchers, help='Matching algorithm')
+
+    arg_parser.add_argument('-i', '--img-dir', type=str, dest='img_dir', required=True,
+                            help='Directory that contains sequence of overlapped images')
+    arg_parser.add_argument('-d', '--device', type=str, default=None,
+                            choices=available_devices, help='The device on which the script will be run')
+    arg_parser.add_argument('-o', '--out', help='File name for saving the stitched panoramas',
+                            type=Path, dest='out_file_name', default=None)
+    arg_parser.add_argument('-hm', '--homography-method', type=str, default='ransac',
+                            choices=['ransac', 'magsac', 'lmeds', 'rho'], help='Homography estimation method')
+    arg_parser.add_argument('-ht', '--homography-threshold', type=float, default=3.0,
+                            help='Threshold for homography estimation')
+
+    det_group = arg_parser.add_argument_group('Detector config')
+    det_group.add_argument('-dn', '--det-nfeatures', type=int, default=None,
+                           help='Max number of features to detect')
+    det_group.add_argument('-do', '--det-noctave', type=int, default=None,
+                           help='Number of octave layers')
+    det_group.add_argument('-dt', '--det-threshold', type=float, default=None,
+                           help='Detection threshold')
+    det_group.add_argument('-mpd', '--disk-model-path', type=str, default=None,
+                           help='Path to DISK opencv model')
+    det_group.add_argument('-mpa', '--aliked-model-path', type=str, default=None,
+                           help='Path to ALIKED opencv model')
+
+    des_group = arg_parser.add_argument_group('Descriptor config')
+    des_group.add_argument('-dsen', '--des-nfeatures', type=int, default=None,
+                           help='Max number of features for descriptor')
+    des_group.add_argument('-dsdt', '--des-threshold', type=float, default=None,
+                           help='Descriptor threshold')
+    des_group.add_argument('-dss', '--des-scale', type=float, default=None,
+                           help='Scale factor')
+    des_group.add_argument('-mpt', '--tfeat-model-path', type=str, default=None,
+                           help='Path to TFeat model')
+    des_group.add_argument('-mphn', '--hardnet-model-path', type=str, default=None,
+                           help='Path to HardNet model')
+    des_group.add_argument('-psize', '--patch-size', type=int, default=None,
+                           help='Patch size for HardNet model')
+    des_group.add_argument('-bsize', '--batch-size', type=int, default=None,
+                           help='Batch size for HardNet model')
+    des_group.add_argument('-mag', '--magfactor', type=int, default=None,
+                           help='MagFactor for TFeat')
+
+    mat_group = arg_parser.add_argument_group('Matcher config')
+    mat_group.add_argument('-mat_m', '--matcher_mode', type=str, default='simple',
+                           choices=available_matchers_modes, help='Matching mode')
+    mat_group.add_argument('-k', '--k_knn', type=int, default=None,
+                           help='K for knn mode')
+    mat_group.add_argument('-mr', '--mat-ratio', type=float, default=None,
+                           help='Ratio threshold for KNN')
+    mat_group.add_argument('-mc', '--mat-cross-check', action='store_true', default=None,
+                           help='Enable cross-check for BF matcher')
+    mat_group.add_argument('-mst', '--mat-score-threshold', type=float, default=None,
+                           help='scoreThreshold for LightGlue matcher')
+    mat_group.add_argument('-mplg', '--lightglue-model-path', type=str, default=None,
+                           help='Path to LightGlue opencv model')
+    return arg_parser.parse_args()
+
+
+def main():
+    args = parser()
+
+    try:
+        logger.info("Starting pipeline for panorama stitching")
+        config = build_stitch_config(args)
+        logger.info(f"Config: {config}")
+
+        imgs = read_images(args.img_dir)
+
+        stitcher = Stitcher(detector=args.detector, descriptor=args.descriptor, matcher=args.matcher,
+                            logger=logger, config=config)
+        panorama = stitcher.stitch_panorama(imgs)
+
+        if args.out_file_name:
+            save_image(panorama, args.out_file_name)
+            logger.info(f"Result successfully saved to: {args.out_file_name}")
+
+        show_image(panorama, title="Stitched Panorama")
+        logger.info("Pipeline finished successfully")
+        return 0
+
+    except Exception as e:
+        logger.exception(f"An error occurred: {e}")
+        return 1
+
+
+if __name__ == '__main__':
+    sys.exit(main() or 0)

@@ -66,6 +66,8 @@ def save_single_result(output_path, new_result, tasks, thresholds):
                 metric_columns.extend([f'matchingscore_mean_ms_{threshold}', f'matchingscore_mean_prec_{threshold}'])
             elif t == 'homographyauc':
                 metric_columns.append(f'homographyauc_mean_auc_{threshold}')
+            elif t == 'frobeniushomographynorm':
+                metric_columns.append(f'frobeniushomographynorm_mean_frobenius_error_{threshold}')
 
     columns_order = base_columns + metric_columns
 
