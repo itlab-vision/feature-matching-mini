@@ -7,7 +7,8 @@ from logging import Logger
 
 from src.matchers import Matcher
 from src.feature_matcher import FeatureMatcherCV2
-from src.algorithms import DNN_ALGORITHMS, DESCRIPTOR_MATCHER_COMPATIBILITY
+from src.dnn_pipeline import DNNPipeline
+from src.algorithms import DNN_ALGORITHMS, DESCRIPTOR_MATCHER_COMPATIBILITY, ALL_MATCHERS
 
 
 @pytest.fixture
@@ -35,19 +36,19 @@ class TestFeatureMatcherInit:
             matcher='bf',
             config={'matcher': {'mode': 'knn'}}
         )
-        assert matcher._detector == 'orb'
-        assert matcher._descriptor == 'orb'
-        assert matcher._matcher == 'bf'
+        assert matcher._detector_name == 'orb'
+        assert matcher._descriptor_name == 'orb'
+        assert matcher._matcher_name == 'bf'
         assert matcher._matcher_config.get('mode') == 'knn'
 
     def test_init_empty_config(self, mock_logger):
         matcher = FeatureMatcherCV2(logger=mock_logger, config={})
-        assert matcher._detector == 'sift'
-        assert matcher._descriptor == 'sift'
+        assert matcher._detector_name == 'sift'
+        assert matcher._descriptor_name == 'sift'
 
     def test_init_none_config(self, mock_logger):
         matcher = FeatureMatcherCV2(logger=mock_logger, config=None)
-        assert matcher._detector == 'sift'
+        assert matcher._detector_name == 'sift'
 
     def test_init_full_config(self, mock_logger):
         config = {
@@ -106,7 +107,7 @@ class TestFeatureMatcherMatch:
             config={'detector': {'nfeatures': limit}}
         )
         features0, features1, correspondences = matcher_cv.match(img1, img2)
-        kp = features0.get('kp')
+        kp = features0.get('keypoints')
         assert kp is not None
         assert len(kp) <= limit + 5
 
@@ -129,7 +130,7 @@ class TestFeatureMatcherCompatibility:
         (det, des, mat, mode)
         for det, descriptors in FeatureMatcherCV2._DETECTOR_DESCRIPTOR_COMPATIBILITY.items()
         for des in descriptors
-        for mat in Matcher._METHODS.keys()
+        for mat in ALL_MATCHERS
         for mode in ['simple', 'knn']
         if det not in DNN_ALGORITHMS
         if mat in DESCRIPTOR_MATCHER_COMPATIBILITY.get(des, [])
@@ -217,7 +218,7 @@ class TestFeatureMatcherVisualization:
         img2 = load_img("box_in_scene.png")
 
         matcher_cv = FeatureMatcherCV2(logger=mock_logger)
-        empty_features = {'kp': [], 'des': None}
+        empty_features = {'keypoints': [], 'descriptors': None}
         empty_correspondences = {'matches': [], 'scores': None}
         res_img = matcher_cv.visualize_matches(img1, empty_features,
                                                img2, empty_features,

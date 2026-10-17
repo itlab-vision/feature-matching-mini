@@ -1,7 +1,7 @@
 import cv2 as cv
 from abc import ABC, abstractmethod
 
-from src.algorithms import ALL_DESCRIPTORS
+from src.algorithms import ALL_DESCRIPTORS, DNN_DESCRIPTORS, DNN_PIPELINES
 
 
 class Descriptor(ABC):
@@ -30,6 +30,12 @@ class Descriptor(ABC):
 
     @staticmethod
     def create(descriptor_name, logger, config=None):
+        if descriptor_name in DNN_PIPELINES:
+            return Descriptor._METHODS["dnnpipeline"](descriptor_name, logger, config)
+
+        if descriptor_name in DNN_DESCRIPTORS and descriptor_name in DNN_DESCRIPTORS:
+            return Descriptor._METHODS["dnnfeatureextractors"](descriptor_name, logger, config)
+
         if config is None:
             config = {}
 
@@ -63,10 +69,10 @@ class OpenCVDescriptor(Descriptor, register=False):
     def compute(self, img, features):
         if img is None:
             self._logger.error("Input image is None. Detection aborted.")
-            return {'kp': (), 'des': ()}
+            return {'keypoints': (), 'descriptors': ()}
 
         self._logger.info(f"Computing {self._descriptor_name} descriptors")
-        kp, des = self._extractor.compute(img, features.get('kp'))
+        kp, des = self._extractor.compute(img, features.get('keypoints'))
 
         if des is not None and self._nfeatures is not None and len(des) > self._nfeatures:
             kp = kp[:self._nfeatures]
@@ -76,7 +82,7 @@ class OpenCVDescriptor(Descriptor, register=False):
             self._logger.info(f"{self._descriptor_name} computed {len(des)} descriptors")
         else:
             self._logger.warning(f"{self._descriptor_name} computed 0 descriptors")
-        return {'kp': kp, 'des': des}
+        return {'keypoints': kp, 'descriptors': des}
 
 
 class SIFTDescriptor(OpenCVDescriptor):

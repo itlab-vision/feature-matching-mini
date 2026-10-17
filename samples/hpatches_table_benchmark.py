@@ -8,8 +8,8 @@ from pathlib import Path
 
 sys.path.append(str(Path(__file__).parent.parent))  # noqa: E402
 
-from src.matchers import OpenCVMatcher  # noqa: E402
-from src.algorithms import DETECTOR_DESCRIPTOR_COMPATIBILITY, DESCRIPTOR_MATCHER_COMPATIBILITY  # noqa: E402
+from src.algorithms import DETECTOR_DESCRIPTOR_COMPATIBILITY, DESCRIPTOR_MATCHER_COMPATIBILITY, \
+                           OPENCV_MATCHERS_MODE  # noqa: E402
 from src.feature_matcher import FeatureMatcherCV2  # noqa: E402
 
 from samples.utils import build_hpatches_benchmark_config, build_hpatches_feature_matcher_config  # noqa: E402
@@ -114,6 +114,23 @@ def table_benchmark(cli_args):
     base_config = build_hpatches_benchmark_config(cli_args)
     _, existing_combos = load_existing_results(cli_args.output)
 
+    if not cli_args.no_skip:
+        combinations = [c for c in all_combinations if c not in existing_combos]
+    else:
+        combinations = all_combinations
+
+    if not combinations:
+        logger.info("All combinations already computed")
+        return
+
+    det, desc, mat = combinations[0]
+
+    tmp_args = copy.copy(cli_args)
+    tmp_args.detector = det
+    tmp_args.descriptor = desc
+    tmp_args.matcher = mat
+    combo_fm_config = build_hpatches_feature_matcher_config(tmp_args)
+
     logger.info(f"Found {len(all_combinations)} valid combinations")
     logger.info(f"Tasks to run: {cli_args.tasks}")
     logger.info(f"Thresholds: {cli_args.eval_thresholds}")
@@ -130,8 +147,8 @@ def table_benchmark(cli_args):
 
     task_objects = {name: HPatchesTask.create(task_name=name, logger=logger, config=base_config['task'])
                     for name in cli_args.tasks}
-    feature_matcher = FeatureMatcherCV2(detector=combinations[0][0], descriptor=combinations[0][1],
-                                        matcher=combinations[0][2], logger=logger, config=base_config)
+    feature_matcher = FeatureMatcherCV2(detector=det, descriptor=desc, matcher=mat, logger=logger,
+                                        config=combo_fm_config)
     dm = HPatchesDataManager(logger=logger, config=base_config['dataset'])
 
     for idx, combo in enumerate(combinations, 1):
@@ -158,8 +175,18 @@ def table_benchmark(cli_args):
 
                     for i, target in scene_data['targets'].items():
                         features_ref, features_tgt, correspondences = feature_matcher.match(img_ref, target['image'])
+                        if 'keypoints0' in correspondences and 'keypoints1' in correspondences:
+                            keypoints0 = correspondences['keypoints0']
+                            keypoints1 = correspondences['keypoints1']
+                        elif 'keypoints' in features_ref and 'keypoints' in features_tgt:
+                            keypoints0 = features_ref['keypoints']
+                            keypoints1 = features_tgt['keypoints']
+                        else:
+                            logger.error(f"Could not find keypoints for scene {scene_name}")
+                            raise
+
                         scene_matching_data[scene_name][i] = {
-                            'kp_ref': features_ref['kp'], 'kp_tgt': features_tgt['kp'],
+                            'kp_ref': keypoints0, 'kp_tgt': keypoints1,
                             'matches': correspondences['matches'], 'H': target['H'],
                             'ref_shape': scene_data['ref_shape'], 'tgt_shape': target['tgt_shape'],
                         }
@@ -185,6 +212,7 @@ def table_benchmark(cli_args):
 
             save_single_result(cli_args.output, combo_row, cli_args.tasks, cli_args.eval_thresholds)
             logger.info(f"Combination {det}+{desc}+{mat} finished and saved")
+            feature_matcher.close()
 
         except Exception as e:
             logger.error(f"Failed combination {det}+{desc}+{mat}: {e}")
@@ -198,7 +226,6 @@ def parse_args():
 
     available_devices = ['cpu', 'cuda', 'mps']
     available_tasks = list(HPatchesTask._TASKS.keys())
-    available_matchers_modes = list(OpenCVMatcher._MODE)
 
     parser.add_argument('-p', '--path', type=Path, required=True,
                         help='Path to hpatches-sequences-release folder')
@@ -227,6 +254,7 @@ def parse_args():
                             help='Threshold for homography estimation')
 
     det_group = parser.add_argument_group('Detector config')
+    det_group.add_argument('-detb', '--det-backend', type=str, default=None, help='Backend for detector')
     det_group.add_argument('-dn', '--det-nfeatures', type=int, default=None,
                            help='Max number of features to detect')
     det_group.add_argument('-do', '--det-noctave', type=int, default=None,
@@ -235,6 +263,8 @@ def parse_args():
                            help='Detection threshold')
 
     des_group = parser.add_argument_group('Descriptor config')
+    des_group.add_argument('-desb', '--des-backend', type=str, default=None,
+                           help='Backend for descriptor')
     des_group.add_argument('-dsen', '--des-nfeatures', type=int, default=None,
                            help='Max number of features for descriptor')
     des_group.add_argument('-dsdt', '--des-threshold', type=float, default=None,
@@ -243,8 +273,10 @@ def parse_args():
                            help='Scale factor')
 
     mat_group = parser.add_argument_group('Matcher config')
+    mat_group.add_argument('-matb', '--mat-backend', type=str, default=None,
+                           help='Backend for matcher')
     mat_group.add_argument('-mat_m', '--matcher_mode', type=str, default='simple',
-                           choices=available_matchers_modes, help='Matching mode')
+                           choices=OPENCV_MATCHERS_MODE, help='Matching mode')
     mat_group.add_argument('-mr', '--mat-ratio', type=float, default=None,
                            help='Ratio threshold for KNN')
     mat_group.add_argument('-mc', '--mat-cross-check', action='store_true', default=None,
