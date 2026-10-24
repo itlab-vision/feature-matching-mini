@@ -1,8 +1,8 @@
 import cv2 as cv
 import numpy as np
 
-from src.algorithms import (DETECTOR_DESCRIPTOR_COMPATIBILITY, DESCRIPTOR_MATCHER_COMPATIBILITY, DNN_MATCHERS,
-                            OPENCV_MATCHERS, DNN_PIPELINES)
+from src.algorithms import (DETECTOR_DESCRIPTOR_COMPATIBILITY, DESCRIPTOR_MATCHER_COMPATIBILITY, TORCH_MATCHERS,
+                            OPENCV_MATCHERS, TORCH_PIPELINES)
 
 from src.detectors import Detector
 from src.descriptors import Descriptor
@@ -54,12 +54,12 @@ class FeatureMatcherCV2:
                                  f"Matcher '{self._matcher_name}'"
                                  f"Available: {DESCRIPTOR_MATCHER_COMPATIBILITY[self._descriptor_name]}")
 
-        if self._matcher_name in DNN_MATCHERS and 'mode' in self._matcher_config:
+        if self._matcher_name not in OPENCV_MATCHERS and 'mode' in self._matcher_config:
             raise ValueError(f"Matcher '{self._matcher_name}' does not support 'mode' parameter. "
                              f"Mode is only available for OpenCV matchers: {OPENCV_MATCHERS}")
 
     def _has_keypoints(self, features):
-        if self._detector_name in DNN_PIPELINES:
+        if self._detector_name in TORCH_PIPELINES:
             return True
 
         kp = features.get('kp')

@@ -1,0 +1,1 @@
+from src.backend.executorch.io_adapter.d2net import D2NetExecuTorchIOAdapter

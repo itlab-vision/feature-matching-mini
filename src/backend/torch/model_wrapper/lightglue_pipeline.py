@@ -40,7 +40,7 @@ class LightGlueFeatureExtractorTorchModelWrapper(TorchModelWrapper):
                 if img.ndim == 3:
                     image_tensor = img[None]
 
-                self._logger.info(f"Running inference with {self._model_name}")
+                self._logger.info(f"Running inference with {self._model_name} on torch backend")
                 extracted = model.extract(image_tensor.to(self._device))
             return extracted
 

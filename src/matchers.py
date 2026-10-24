@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 import cv2 as cv
 
-from src.algorithms import ALL_MATCHERS, DNN_MATCHERS, DNN_PIPELINES
+from src.algorithms import ALL_MATCHERS, TORCH_MATCHERS, TORCH_PIPELINES, DNN_PIPELINES, DNN_MATCHERS
 
 
 class Matcher(ABC):

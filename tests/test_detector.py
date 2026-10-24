@@ -14,7 +14,7 @@ from src.opencv_dnn_matchers import LightGlueOpenCVMatcher  # noqa: F401
 import src.backend.opencv.model_loader  # noqa: F401
 import src.backend.opencv.inference_api  # noqa: F401
 import src.backend.opencv.io_adapter  # noqa: F401
-from src.algorithms import DNN_ALGORITHMS, ALL_DETECTORS, DNN_PIPELINES
+from src.algorithms import DNN_ALGORITHMS, ALL_DETECTORS, TORCH_PIPELINES
 from src.image_utils import read_image
 
 
@@ -78,7 +78,7 @@ ALGORITHMS_CPU_ONLY = {'doghardnet_lightglue'}
 class TestDetectorDetect:
     @pytest.mark.parametrize("method_name", ALL_DETECTORS)
     def test_all_methods_return_valid_tuple(self, method_name, mock_logger, load_img):
-        if method_name in DNN_PIPELINES:
+        if method_name in TORCH_PIPELINES:
             return
 
         if method_name in DNN_ALGORITHMS:

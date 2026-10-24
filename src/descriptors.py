@@ -1,7 +1,8 @@
 import cv2 as cv
 from abc import ABC, abstractmethod
 
-from src.algorithms import ALL_DESCRIPTORS, DNN_DESCRIPTORS, DNN_PIPELINES
+from src.algorithms import ALL_DESCRIPTORS, TORCH_DESCRIPTORS, TORCH_PIPELINES, DNN_PIPELINES, DNN_DETECTORS, \
+    DNN_DESCRIPTORS
 
 
 class Descriptor(ABC):
@@ -33,7 +34,7 @@ class Descriptor(ABC):
         if descriptor_name in DNN_PIPELINES:
             return Descriptor._METHODS["dnnpipeline"](descriptor_name, logger, config)
 
-        if descriptor_name in DNN_DESCRIPTORS and descriptor_name in DNN_DESCRIPTORS:
+        if descriptor_name in DNN_DETECTORS and descriptor_name in DNN_DESCRIPTORS:
             return Descriptor._METHODS["dnnfeatureextractors"](descriptor_name, logger, config)
 
         if config is None:

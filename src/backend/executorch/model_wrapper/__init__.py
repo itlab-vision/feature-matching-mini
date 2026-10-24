@@ -1,0 +1,1 @@
+from src.backend.executorch.model_wrapper.d2net import D2NetExecuTorchModelWrapper

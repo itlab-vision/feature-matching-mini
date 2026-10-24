@@ -9,7 +9,7 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).parent.parent))  # noqa: E402
 
 from src.algorithms import (DETECTOR_DESCRIPTOR_COMPATIBILITY, DESCRIPTOR_MATCHER_COMPATIBILITY,  # noqa: E402
-                            DNN_PIPELINES)
+                            TORCH_PIPELINES)
 
 logging.basicConfig(level=logging.INFO, format='[ %(levelname)s ] %(message)s')
 logger = logging.getLogger("PerformanceBenchmark")
@@ -124,7 +124,7 @@ def table_benchmark(img1, img2, output_csv, device='cpu', iterations=10):
             'iterations': iterations,
         }
 
-        is_pipeline = detector in DNN_PIPELINES
+        is_pipeline = detector in TORCH_PIPELINES
         if not is_pipeline:
             success_staged, staged_results = run_benchmark(
                 'samples.performance_staged_benchmark',

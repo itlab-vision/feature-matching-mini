@@ -5,12 +5,12 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).parent.parent))  # noqa: E402
 
 from src.algorithms import (ALL_DETECTORS, ALL_DESCRIPTORS, ALL_MATCHERS, OPENCV_MATCHERS_MODE,  # noqa: E402
-                            DNN_DETECTORS, DNN_DESCRIPTORS, DNN_MATCHERS, OPENCV_MATCHERS)
+                            TORCH_DETECTORS, TORCH_DESCRIPTORS, TORCH_MATCHERS, OPENCV_MATCHERS)
 
 
 def build_detector_config(args):
     config = dict()
-    if (args.device is not None) and (args.detector in DNN_DETECTORS):
+    if (args.device is not None) and (args.detector in TORCH_DETECTORS):
         config['device'] = args.device
     if args.det_backend is not None:
         config['backend'] = args.det_backend
@@ -24,12 +24,18 @@ def build_detector_config(args):
         config['disk_model_path'] = args.disk_model_path
     if args.aliked_model_path is not None:
         config['aliked_model_path'] = args.aliked_model_path
+    if args.det_et_model:
+        config['executorch_model_path'] = args.det_et_model
+        if args.det_et_input_shape:
+            config['input_shape'] = args.det_et_input_shape
+        if args.det_et_num_keypoints:
+            config['num_keypoints'] = args.det_et_num_keypoints
     return config
 
 
 def build_descriptor_config(args):
     config = dict()
-    if (args.device is not None) and (args.descriptor in DNN_DESCRIPTORS or args.descriptor in ['tfeat', 'hardnet']):
+    if (args.device is not None) and (args.descriptor in TORCH_DESCRIPTORS or args.descriptor in ['tfeat', 'hardnet']):
         config['device'] = args.device
     if args.des_backend is not None:
         config['backend'] = args.des_backend
@@ -53,12 +59,16 @@ def build_descriptor_config(args):
         config['batch_size'] = args.batch_size
     if args.magfactor is not None:
         config['magfactor'] = args.magfactor
+    if args.des_et_model:
+        config['executorch_model_path'] = args.des_et_model
+        if args.des_et_patch_size:
+            config['patch_size'] = args.des_et_patch_size
     return config
 
 
 def build_matcher_config(args):
     config = dict()
-    if (args.device is not None) and (args.matcher in DNN_MATCHERS):
+    if (args.device is not None) and (args.matcher in TORCH_MATCHERS):
         config['device'] = args.device
     if args.mat_backend is not None:
         config['backend'] = args.mat_backend
@@ -74,6 +84,9 @@ def build_matcher_config(args):
         config['score_threshold'] = args.mat_score_threshold
     if args.lightglue_model_path is not None:
         config['lightglue_model_path'] = args.lightglue_model_path
+    if args.mat_et_model is not None:
+        config['executorch_model_path'] = args.mat_et_model
+        config['num_keypoints'] = args.det_et_num_keypoints
     return config
 
 
@@ -194,7 +207,7 @@ def build_hpatches_task_config(args):
 
 def build_hpatches_detector_config(args):
     config = dict()
-    if (args.device is not None) and (args.detector in DNN_DETECTORS):
+    if (args.device is not None) and (args.detector in TORCH_DETECTORS):
         config['device'] = args.device
     if args.det_nfeatures is not None:
         config['nfeatures'] = args.det_nfeatures
@@ -207,7 +220,7 @@ def build_hpatches_detector_config(args):
 
 def build_hpatches_descriptor_config(args):
     config = dict()
-    if (args.device is not None) and (args.descriptor in DNN_DESCRIPTORS or args.descriptor in ['tfeat', 'hardnet']):
+    if (args.device is not None) and (args.descriptor in TORCH_DESCRIPTORS or args.descriptor in ['tfeat', 'hardnet']):
         config['device'] = args.device
     if args.des_nfeatures is not None:
         config['nfeatures'] = args.des_nfeatures
@@ -220,7 +233,7 @@ def build_hpatches_descriptor_config(args):
 
 def build_hpatches_matcher_config(args):
     config = dict()
-    if (args.device is not None) and (args.matcher in DNN_MATCHERS):
+    if (args.device is not None) and (args.matcher in TORCH_MATCHERS):
         config['device'] = args.device
     if args.matcher in OPENCV_MATCHERS:
         config['mode'] = args.matcher_mode

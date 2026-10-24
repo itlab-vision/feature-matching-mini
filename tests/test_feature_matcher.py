@@ -6,7 +6,7 @@ from unittest.mock import MagicMock
 from logging import Logger
 
 from src.feature_matcher import FeatureMatcherCV2
-from src.algorithms import DESCRIPTOR_MATCHER_COMPATIBILITY, ALL_MATCHERS, DNN_MATCHERS
+from src.algorithms import DESCRIPTOR_MATCHER_COMPATIBILITY, ALL_MATCHERS, TORCH_MATCHERS
 import src.backend.opencv.model_loader  # noqa: F401
 import src.backend.opencv.inference_api  # noqa: F401
 import src.backend.opencv.io_adapter  # noqa: F401
@@ -132,7 +132,7 @@ class TestFeatureMatcherCompatibility:
         for det, descriptors in FeatureMatcherCV2._DETECTOR_DESCRIPTOR_COMPATIBILITY.items()
         for des in descriptors
         for mat in ALL_MATCHERS
-        for mode in ([None] if mat in DNN_MATCHERS or 'opencv' in mat else ['simple', 'knn'])
+        for mode in ([None] if mat in TORCH_MATCHERS or 'opencv' in mat else ['simple', 'knn'])
         if mat in DESCRIPTOR_MATCHER_COMPATIBILITY.get(des, [])
         and mat != 'superglue'
     ]
