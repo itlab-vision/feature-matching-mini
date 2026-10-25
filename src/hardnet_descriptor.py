@@ -1,15 +1,12 @@
 import cv2 as cv
 import torch
-import sys
 import numpy as np
 from pathlib import Path
 
-HARDNET_ROOT = Path(__file__).parent.parent / "3rdparty"
-if str(HARDNET_ROOT) not in sys.path:
-    sys.path.append(str(HARDNET_ROOT))
-
 from src.descriptors import Descriptor  # noqa: E402
-from hardnet.examples.extract_hardnet_desc_from_hpatches_file import HardNet as HardNetModel  # noqa: E402
+from thirdparty.hardnet.examples.extract_hardnet_desc_from_hpatches_file import HardNet as HardNetModel  # noqa: E402
+
+HARDNET_ROOT = Path(__file__).parent.parent / "thirdparty"
 
 
 class HardNet(Descriptor):
@@ -51,19 +48,19 @@ class HardNet(Descriptor):
     def compute(self, img, features):
         if img is None:
             self._logger.error("Input image is None. Detection aborted.")
-            return {'kp': (), 'des': ()}
+            return {'keypoints': (), 'descriptors': ()}
 
         kp = features.get('kp')
         if kp is None or len(kp) == 0:
             self._logger.info("No keypoints provided. Returning empty descriptors.")
-            return {'kp': (), 'des': np.empty((0, 128), dtype=np.float32)}
+            return {'keypoints': (), 'descriptors': np.empty((0, 128), dtype=np.float32)}
 
         if len(img.shape) == 3:
             img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
         self._logger.info(f"Running inference with {self._descriptor_name}")
         keypoints, descriptors = self._extract_descriptors(img, kp)
         self._logger.info(f"{self._descriptor_name} computed {len(descriptors)} descriptors")
-        return {'kp': keypoints, 'des': descriptors}
+        return {'keypoints': keypoints, 'descriptors': descriptors}
 
     def _extract_descriptors(self, img, kps):
         h, w = img.shape

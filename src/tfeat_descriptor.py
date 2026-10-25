@@ -1,16 +1,13 @@
 import cv2 as cv
 import torch
-import sys
 import numpy as np
 from pathlib import Path
 
-TFEAT_ROOT = Path(__file__).parent.parent / "3rdparty"
-if str(TFEAT_ROOT) not in sys.path:
-    sys.path.append(str(TFEAT_ROOT))
-
 from src.descriptors import Descriptor  # noqa: E402
-from tfeat.tfeat_model import TNet  # noqa: E402
-from tfeat.tfeat_utils import describe_opencv  # noqa: E402
+from thirdparty.tfeat.tfeat_model import TNet  # noqa: E402
+from thirdparty.tfeat.tfeat_utils import describe_opencv  # noqa: E402
+
+TFEAT_ROOT = Path(__file__).parent.parent / "thirdparty"
 
 
 class TFeat(Descriptor):
@@ -43,12 +40,12 @@ class TFeat(Descriptor):
     def compute(self, img, features):
         if img is None:
             self._logger.error("Input image is None. Detection aborted.")
-            return {'kp': (), 'des': ()}
+            return {'keypoints': (), 'descriptors': ()}
 
         kp = features.get('kp')
         if kp is None or len(kp) == 0:
             self._logger.info("No keypoints provided. Returning empty descriptors.")
-            return {'kp': (), 'des': np.empty((0, 128), dtype=np.float32)}
+            return {'keypoints': (), 'descriptors': np.empty((0, 128), dtype=np.float32)}
 
         if len(img.shape) == 3:
             img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
@@ -58,4 +55,4 @@ class TFeat(Descriptor):
         use_gpu = (self._device.type == 'cuda')
         desc_tfeat = describe_opencv(self.model, img, kp, 32, self.mag_factor, use_gpu=use_gpu)
         self._logger.info(f"{self._descriptor_name} computed {len(desc_tfeat)} descriptors")
-        return {'kp': kp, 'des': desc_tfeat}
+        return {'keypoints': kp, 'descriptors': desc_tfeat}

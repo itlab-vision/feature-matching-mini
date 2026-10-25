@@ -1,14 +1,12 @@
 import pytest
 import cv2 as cv
 import numpy as np
-import torch
 from pathlib import Path
 from unittest.mock import patch, MagicMock
 import tempfile
 import shutil
 
-from src.image_utils import read_image, save_image, show_image, to_numpy_bgr
-from src.converter import Converter
+from src.image_utils import read_image, save_image, show_image
 
 
 @pytest.fixture
@@ -20,185 +18,136 @@ def temp_dir():
 
 @pytest.fixture
 def test_image_path(temp_dir):
-    img_path = temp_dir / "test_image.jpg"
-    test_img = np.random.randint(0, 255, (100, 100, 3), dtype=np.uint8)
+    img_path = temp_dir / "test_image.png"
+    test_img = np.random.randint(0, 256, (100, 100, 3), dtype=np.uint8)
     cv.imwrite(str(img_path), test_img)
     return img_path
 
 
 @pytest.fixture
 def sample_numpy():
-    return np.random.randint(0, 255, (100, 100, 3), dtype=np.uint8)
-
-
-@pytest.fixture
-def sample_tensor():
-    return torch.rand(3, 100, 100)
-
-
-@pytest.fixture
-def sample_tensor_grayscale():
-    return torch.rand(1, 100, 100)
+    return np.random.randint(0, 256, (100, 100, 3), dtype=np.uint8)
 
 
 class TestReadImage:
-    def test_read_numpy(self, test_image_path):
-        img = read_image(test_image_path, input_type='numpy')
+    def test_read_image(self, test_image_path):
+        img = read_image(test_image_path)
+
         assert isinstance(img, np.ndarray)
         assert img.shape == (100, 100, 3)
-
-    def test_read_tensor(self, test_image_path):
-        img = read_image(test_image_path, input_type='tensor')
-        assert isinstance(img, torch.Tensor)
-        assert img.shape == (3, 100, 100)
-        assert img.max() <= 1.0
-        assert img.min() >= 0.0
+        assert img.dtype == np.uint8
 
     def test_read_none_path(self):
-        with pytest.raises(ValueError, match="Empty path"):
+        with pytest.raises(ValueError, match="Empty path to the image"):
             read_image(None)
 
-    def test_read_nonexistent_path(self):
-        with pytest.raises(ValueError, match="Incorrect path"):
-            read_image(Path("/nonexistent.jpg"))
+    def test_read_nonexistent_path(self, temp_dir):
+        nonexistent_path = temp_dir / "nonexistent.png"
+
+        with pytest.raises(ValueError, match="Incorrect path to the image"):
+            read_image(nonexistent_path)
+
+    def test_read_invalid_image(self, temp_dir):
+        invalid_path = temp_dir / "invalid.png"
+        invalid_path.write_text("not an image")
+
+        with pytest.raises(ValueError, match="Failed to read image from"):
+            read_image(invalid_path)
 
 
 class TestSaveImage:
     def test_save_numpy(self, sample_numpy, temp_dir):
-        save_path = temp_dir / "output.jpg"
-        result = save_image(sample_numpy, save_path, input_type='numpy')
+        save_path = temp_dir / "output.png"
+        result = save_image(sample_numpy, save_path)
 
         assert result is True
         assert save_path.exists()
 
-    def test_save_tensor(self, sample_tensor, temp_dir):
-        save_path = temp_dir / "output.jpg"
-        result = save_image(sample_tensor, save_path, input_type='tensor')
-
-        assert result is True
-        assert save_path.exists()
+        saved_img = cv.imread(str(save_path))
+        assert saved_img is not None
+        assert saved_img.shape == sample_numpy.shape
+        np.testing.assert_array_equal(saved_img, sample_numpy)
 
     def test_save_creates_directory(self, sample_numpy, temp_dir):
-        save_path = temp_dir / "nested" / "deep" / "output.jpg"
-        result = save_image(sample_numpy, save_path, input_type='numpy')
+        save_path = temp_dir / "nested" / "deep" / "output.png"
+        result = save_image(sample_numpy, save_path)
 
         assert result is True
         assert save_path.exists()
+        assert save_path.parent.exists()
 
-    def test_save_none_image(self):
+    def test_save_none_image(self, temp_dir):
+        save_path = temp_dir / "output.png"
+
         with pytest.raises(ValueError, match="Empty image"):
-            save_image(None, "output.jpg")
+            save_image(None, save_path)
 
     def test_save_none_path(self, sample_numpy):
-        with pytest.raises(ValueError, match="Empty path"):
+        with pytest.raises(ValueError, match="Empty path to save"):
             save_image(sample_numpy, None)
 
 
 class TestShowImage:
-    @patch('cv2.destroyAllWindows')
-    @patch('cv2.waitKey')
-    @patch('cv2.imshow')
-    @patch('cv2.resizeWindow')
-    @patch('cv2.namedWindow')
-    @patch('src.image_utils.get_monitors')
-    def test_show_numpy(self, mock_get_monitors, mock_named, mock_resize,
-                        mock_imshow, mock_wait, mock_destroy, sample_numpy):
+    @patch("src.image_utils.cv.destroyAllWindows")
+    @patch("src.image_utils.cv.waitKey")
+    @patch("src.image_utils.cv.imshow")
+    @patch("src.image_utils.cv.resizeWindow")
+    @patch("src.image_utils.cv.namedWindow")
+    @patch("src.image_utils.get_monitors")
+    def test_show_numpy(self, mock_get_monitors, mock_named, mock_resize, mock_imshow, mock_wait, mock_destroy,
+                        sample_numpy):
         mock_monitor = MagicMock()
         mock_monitor.width = 1920
         mock_monitor.height = 1080
         mock_get_monitors.return_value = [mock_monitor]
         mock_wait.return_value = 27
 
-        show_image(sample_numpy, title="Test", input_type='numpy')
+        show_image(sample_numpy, title="Test")
 
-        mock_imshow.assert_called_once()
+        mock_named.assert_called_once_with("Test", cv.WINDOW_NORMAL)
+        mock_resize.assert_called_once_with("Test", 100, 100)
+        mock_imshow.assert_called_once_with("Test", sample_numpy)
         mock_wait.assert_called_once_with(0)
+        mock_destroy.assert_called_once()
 
-    @patch('cv2.destroyAllWindows')
-    @patch('cv2.waitKey')
-    @patch('cv2.imshow')
-    @patch('cv2.resizeWindow')
-    @patch('cv2.namedWindow')
-    @patch('src.image_utils.get_monitors')
-    def test_show_tensor(self, mock_get_monitors, mock_named, mock_resize,
-                         mock_imshow, mock_wait, mock_destroy, sample_tensor):
+    @patch("src.image_utils.cv.destroyAllWindows")
+    @patch("src.image_utils.cv.waitKey")
+    @patch("src.image_utils.cv.imshow")
+    @patch("src.image_utils.cv.resizeWindow")
+    @patch("src.image_utils.cv.namedWindow")
+    @patch("src.image_utils.get_monitors")
+    def test_show_resizes_to_monitor(self, mock_get_monitors, mock_named, mock_resize, mock_imshow, mock_wait,
+                                     mock_destroy, temp_dir):
         mock_monitor = MagicMock()
-        mock_monitor.width = 1920
-        mock_monitor.height = 1080
+        mock_monitor.width = 800
+        mock_monitor.height = 600
         mock_get_monitors.return_value = [mock_monitor]
-        mock_wait.return_value = 27
 
-        show_image(sample_tensor, title="Test", input_type='tensor')
-
-        mock_imshow.assert_called_once()
-        mock_wait.assert_called_once_with(0)
+        large_img = np.zeros((1000, 1200, 3), dtype=np.uint8)
+        show_image(large_img, title="Large image")
+        mock_resize.assert_called_once_with("Large image", 800, 600)
 
     def test_show_none_image(self):
-        with pytest.raises(ValueError, match="Empty image"):
+        with pytest.raises(ValueError, match="Empty image to show"):
             show_image(None)
-
-
-class TestNumpyBGR:
-    def test_numpy_input_rgb_to_bgr(self):
-        rgb_img = np.zeros((1, 1, 3), dtype=np.uint8)
-        rgb_img[0, 0] = [255, 0, 0]
-        result = to_numpy_bgr(rgb_img, input_type='numpy')
-        assert result[0, 0, 0] == 0
-        assert result[0, 0, 1] == 0
-        assert result[0, 0, 2] == 255
-        assert result.shape == (1, 1, 3)
-
-    def test_numpy_input_grayscale_to_bgr(self):
-        gray_img = np.array([[128]], dtype=np.uint8)
-        result = to_numpy_bgr(gray_img, input_type='numpy')
-        assert result.shape == (1, 1, 3)
-        assert result[0, 0, 0] == 128
-        assert result[0, 0, 1] == 128
-        assert result[0, 0, 2] == 128
-
-    def test_tensor_input_to_bgr(self):
-        tensor = torch.zeros(3, 1, 1)
-        tensor[0] = 1.0
-        tensor[1] = 0.0
-        tensor[2] = 0.0
-        result = to_numpy_bgr(tensor, input_type='tensor')
-        assert isinstance(result, np.ndarray)
-        assert result.shape == (1, 1, 3)
-        assert result[0, 0, 0] == 0
-        assert result[0, 0, 1] == 0
-        assert result[0, 0, 2] == 255
 
 
 class TestIntegration:
     def test_read_save_roundtrip(self, test_image_path, temp_dir):
-        img = read_image(test_image_path, input_type='numpy')
-
+        img = read_image(test_image_path)
         save_path = temp_dir / "roundtrip.png"
-        save_image(img, save_path, input_type='numpy')
-
-        img2 = read_image(save_path, input_type='numpy')
+        result = save_image(img, save_path)
+        assert result is True
+        img2 = read_image(save_path)
 
         assert img.shape == img2.shape
         np.testing.assert_array_equal(img, img2)
 
-    def test_numpy_tensor_consistency(self, test_image_path):
-        img_np = read_image(test_image_path, input_type='numpy')
-        img_tensor = read_image(test_image_path, input_type='tensor')
+    def test_read_save_preserves_dtype(self, test_image_path, temp_dir):
+        img = read_image(test_image_path)
+        save_path = temp_dir / "copy.png"
+        save_image(img, save_path)
+        img2 = read_image(save_path)
 
-        converter = Converter.create('image')
-        img_back = converter.convert(img_tensor, 'tensor', 'opencv')
-
-        assert img_np.shape == img_back.shape
-        diff = np.abs(img_np.astype(np.float32) - img_back.astype(np.float32))
-        assert diff.mean() < 5.0
-
-    def test_tensor_numpy_consistency(self, test_image_path):
-        img_np = read_image(test_image_path, input_type='numpy')
-        img_tensor = read_image(test_image_path, input_type='tensor')
-
-        converter = Converter.create('image')
-        img_back = converter.convert(img_np, 'opencv', 'tensor')
-
-        assert img_tensor.shape == img_back.shape
-        diff = torch.abs(img_tensor - img_back)
-        assert diff.mean().item() < 5.0
+        assert img.dtype == np.uint8
+        assert img2.dtype == np.uint8

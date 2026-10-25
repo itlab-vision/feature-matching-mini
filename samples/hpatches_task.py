@@ -124,7 +124,7 @@ class BaseMatchingTask(HPatchesTask, register=False):
         matches = data['matches']
         H = data['H']
 
-        if not matches:
+        if matches is None:
             return None
 
         pts_ref = np.array([kp_ref[m.queryIdx].pt for m in matches], dtype=np.float32).reshape(-1, 1, 2)
@@ -174,7 +174,7 @@ class MatchingAPTask(BaseMatchingTask):
 
             for i in self._img_indices:
                 data = matching_data[seq].get(i)
-                if not data:
+                if not data or data['matches'] is None or len(data['matches']) == 0:
                     self._logger.warning(f"Image pair 1-{i} in scene '{seq}' has no matching data. "
                                          f"Skipping for all thresholds.")
                     continue
@@ -230,7 +230,7 @@ class MatchingScoreTask(BaseMatchingTask):
 
             for i in self._img_indices:
                 data = matching_data[seq].get(i)
-                if not data:
+                if not data or data['matches'] is None or len(data['matches']) == 0:
                     self._logger.warning(f"Image pair 1-{i} in scene '{seq}' has no matching data. "
                                          f"Skipping for all thresholds.")
                     continue
@@ -315,7 +315,7 @@ class HomographyAUCTask(HPatchesTask):
 
                 for i in self._img_indices:
                     data = matching_data[seq].get(i)
-                    if not data or not data['matches']:
+                    if not data or data['matches'] is None or len(data['matches']) == 0:
                         self._logger.warning(f"Image pair 1-{i} in scene '{seq}' has no matching data. "
                                              f"Skipping for all thresholds.")
                         continue

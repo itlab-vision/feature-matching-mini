@@ -1,20 +1,8 @@
 from screeninfo import get_monitors
-from src.converter import Converter
 import cv2 as cv
 
 
-def to_numpy_bgr(data, input_type='numpy'):
-    if input_type == 'numpy':
-        if data.ndim == 2:
-            return cv.cvtColor(data, cv.COLOR_GRAY2BGR)
-
-        return cv.cvtColor(data, cv.COLOR_RGB2BGR)
-    else:
-        converter = Converter.create('image')
-        return converter.convert(data, 'tensor', 'opencv')
-
-
-def read_image(path, input_type='numpy'):
+def read_image(path):
     if path is None:
         raise ValueError('Empty path to the image')
     if not path.exists():
@@ -23,40 +11,25 @@ def read_image(path, input_type='numpy'):
     if image is None:
         raise ValueError(f'Failed to read image from {path}')
 
-    if input_type == 'numpy':
-        return image
-    else:
-        converter = Converter.create('image')
-        return converter.convert(image, 'opencv', 'tensor')
+    return image
 
 
-def save_image(img, save_path, input_type='numpy'):
+def save_image(img, save_path):
     if img is None:
         raise ValueError('Empty image')
     if save_path is None:
         raise ValueError('Empty path to save')
     save_path.parent.mkdir(parents=True, exist_ok=True)
-    if input_type == 'numpy':
-        success = cv.imwrite(str(save_path), img)
-    else:
-        converter = Converter.create('image')
-        img_np = converter.convert(img, 'tensor', 'opencv')
-
-        success = cv.imwrite(str(save_path), img_np)
+    success = cv.imwrite(str(save_path), img)
 
     return success
 
 
-def show_image(img, title='Result', input_type='numpy'):
+def show_image(img, title='Result'):
     if img is None:
         raise ValueError('Empty image to show')
 
-    if input_type == 'numpy':
-        img_to_show = img
-    else:
-        converter = Converter.create('image')
-        img_to_show = converter.convert(img, 'tensor', 'opencv')
-
+    img_to_show = img
     img_height, img_width = img_to_show.shape[:2]
 
     monitors = get_monitors()

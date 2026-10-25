@@ -1,7 +1,7 @@
 import cv2 as cv
 from abc import ABC, abstractmethod
 
-from src.algorithms import ALL_DETECTORS
+from src.algorithms import ALL_DETECTORS, DNN_DETECTORS, DNN_PIPELINES, DNN_DESCRIPTORS
 
 
 class Detector(ABC):
@@ -31,6 +31,12 @@ class Detector(ABC):
 
     @staticmethod
     def create(detector_name, logger, config=None):
+        if detector_name in DNN_PIPELINES:
+            return Detector._METHODS["dnnpipeline"](detector_name, logger, config)
+
+        if detector_name in DNN_DETECTORS and detector_name in DNN_DESCRIPTORS:
+            return Detector._METHODS["dnnfeatureextractors"](detector_name, logger, config)
+
         if config is None:
             config = {}
 
@@ -55,7 +61,7 @@ class OpenCVDetector(Detector, register=False):
     def detect(self, img):
         if img is None:
             self._logger.error("Input image is None. Detection aborted.")
-            return {'kp': ()}
+            return {'keypoints': ()}
 
         self._logger.info(f"Detecting keypoints with {self._detector_name}")
         kp = self._extractor.detect(img, None)
@@ -67,7 +73,7 @@ class OpenCVDetector(Detector, register=False):
             self._logger.info(f"{self._detector_name} found {len(kp)} points")
         else:
             self._logger.warning(f"{self._detector_name} found 0 points")
-        return {'kp': kp}
+        return {'keypoints': kp}
 
 
 class SIFTDetector(OpenCVDetector):

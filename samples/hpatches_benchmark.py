@@ -5,9 +5,7 @@ from pathlib import Path
 
 sys.path.append(str(Path(__file__).parent.parent))  # noqa: E402
 
-from src.detectors import Detector  # noqa: E402
-from src.descriptors import Descriptor  # noqa: E402
-from src.matchers import Matcher, OpenCVMatcher  # noqa: E402
+from src.algorithms import ALL_DETECTORS, ALL_DESCRIPTORS, ALL_MATCHERS, OPENCV_MATCHERS_MODE  # noqa: E402
 from src.feature_matcher import FeatureMatcherCV2  # noqa: E402
 
 from samples.utils import build_hpatches_benchmark_config  # noqa: E402
@@ -23,19 +21,15 @@ def parser():
         description="HPatches Benchmark Pipeline",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
-    available_detectors = list(Detector._METHODS.keys())
-    available_descriptors = list(Descriptor._METHODS.keys())
-    available_matchers = list(Matcher._METHODS.keys())
-    available_matchers_modes = list(OpenCVMatcher._MODE)
     available_tasks = list(HPatchesTask._TASKS.keys())
     available_devices = ['cpu', 'cuda', 'mps']
 
     arg_parser.add_argument('-det', '--detector', type=str, default='sift',
-                            choices=available_detectors, help='Detector algorithm')
+                            choices=ALL_DETECTORS, help='Detector algorithm')
     arg_parser.add_argument('-des', '--descriptor', type=str, default='sift',
-                            choices=available_descriptors, help='Descriptor algorithm')
+                            choices=ALL_DESCRIPTORS, help='Descriptor algorithm')
     arg_parser.add_argument('-mat', '--matcher', type=str, default='bf',
-                            choices=available_matchers, help='Matching algorithm')
+                            choices=ALL_MATCHERS, help='Matching algorithm')
 
     arg_parser.add_argument('-t', '--tasks', type=str, nargs='+', default=available_tasks,
                             choices=available_tasks, help='Tasks to evaluate (default: run all available tasks)')
@@ -61,6 +55,7 @@ def parser():
                             help='Threshold for homography estimation (inlier classification)')
 
     det_group = arg_parser.add_argument_group('Detector config')
+    det_group.add_argument('-detb', '--det-backend', type=str, default=None, help='Backend for detector')
     det_group.add_argument('-dn', '--det-nfeatures', type=int, default=None,
                            help='Max number of features to detect')
     det_group.add_argument('-do', '--det-noctave', type=int, default=None,
@@ -69,6 +64,8 @@ def parser():
                            help='Detection threshold')
 
     des_group = arg_parser.add_argument_group('Descriptor config')
+    des_group.add_argument('-desb', '--des-backend', type=str, default=None,
+                           help='Backend for descriptor')
     des_group.add_argument('-dsen', '--des-nfeatures', type=int, default=None,
                            help='Max number of features for descriptor')
     des_group.add_argument('-dsdt', '--des-threshold', type=float, default=None,
@@ -77,8 +74,10 @@ def parser():
                            help='Scale factor')
 
     mat_group = arg_parser.add_argument_group('Matcher config')
+    mat_group.add_argument('-matb', '--mat-backend', type=str, default=None,
+                           help='Backend for matcher')
     mat_group.add_argument('-mat_m', '--matcher_mode', type=str, default='simple',
-                           choices=available_matchers_modes, help='Matching mode')
+                           choices=OPENCV_MATCHERS_MODE, help='Matching mode')
     mat_group.add_argument('-mr', '--mat-ratio', type=float, default=None,
                            help='Ratio threshold for KNN')
     mat_group.add_argument('-mc', '--mat-cross-check', action='store_true', default=None,
@@ -122,9 +121,19 @@ def main():
                     H = target['H']
 
                     features_ref, features_tgt, correspondences = feature_matcher.match(img_ref, img_tgt)
+                    if 'keypoints0' in correspondences and 'keypoints1' in correspondences:
+                        keypoints0 = correspondences['keypoints0']
+                        keypoints1 = correspondences['keypoints1']
+                    elif 'keypoints' in features_ref and 'keypoints' in features_tgt:
+                        keypoints0 = features_ref['keypoints']
+                        keypoints1 = features_tgt['keypoints']
+                    else:
+                        logger.error(f"Could not find keypoints for scene {scene_name}")
+                        raise
+
                     scene_matching_data[scene_name][i] = {
-                        'kp_ref': features_ref['kp'],
-                        'kp_tgt': features_tgt['kp'],
+                        'kp_ref': keypoints0,
+                        'kp_tgt': keypoints1,
                         'matches': correspondences['matches'],
                         'H': H,
                         'ref_shape': data['ref_shape'],

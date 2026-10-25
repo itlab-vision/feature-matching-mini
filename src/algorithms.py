@@ -10,12 +10,12 @@ DNN_MATCHERS = {'lightglue', 'superglue', 'loftr', 'roma'}
 DNN_PIPELINES = {'loftr', 'roma'}
 
 OPENCV_DETECTORS = {'sift', 'orb', 'fast', 'akaze', 'brisk', 'kaze', 'gftt', 'mser', 'agast', 'blob', 'star',
-                    'harrislaplace', 'msd', 'diskopencv', 'alikedopencv'}
+                    'harrislaplace', 'msd', 'disk_opencv', 'aliked_opencv'}
 
 OPENCV_DESCRIPTORS = {'sift', 'orb', 'akaze', 'brisk', 'kaze', 'brief', 'freak', 'daisy', 'latch', 'beblid', 'teblid',
-                      'vgg', 'boostdesc', 'diskopencv', 'alikedopencv', 'tfeat', 'hardnet'}
+                      'vgg', 'boostdesc', 'disk_opencv', 'aliked_opencv', 'tfeat', 'hardnet'}
 
-OPENCV_MATCHERS = {'bf', 'flann', 'lightglueopencv'}
+OPENCV_MATCHERS = {'bf', 'flann', 'lightglue_opencv'}
 OPENCV_MATCHERS_MODE = {'simple', 'knn'}
 
 
@@ -58,10 +58,10 @@ DETECTOR_DESCRIPTOR_COMPATIBILITY = {
     'superpoint': ['superpoint'],
     'superpoint_lightglue': ['superpoint_lightglue'],
     'disk_lightglue': ['disk_lightglue'],
-    'diskopencv': ['diskopencv'],
+    'disk_opencv': ['disk_opencv'],
     'sift_lightglue': ['sift_lightglue'],
     'aliked_lightglue': ['aliked_lightglue'],
-    'alikedopencv': ['alikedopencv'],
+    'aliked_opencv': ['aliked_opencv'],
     'doghardnet_lightglue': ['doghardnet_lightglue'],
     'd2net': ['d2net'],
     'xfeat': ['xfeat'],
@@ -88,10 +88,10 @@ DESCRIPTOR_MATCHER_COMPATIBILITY = {
     'superpoint': ['bf', 'flann', 'superglue'],
     'superpoint_lightglue': ['lightglue'],
     'disk_lightglue': ['lightglue'],
-    'diskopencv': ['bf', 'flann', 'lightglueopencv'],
+    'disk_opencv': ['bf', 'flann', 'lightglue_opencv'],
     'sift_lightglue': ['lightglue'],
     'aliked_lightglue': ['lightglue'],
-    'alikedopencv': ['bf', 'flann', 'lightglueopencv'],
+    'aliked_opencv': ['bf', 'flann', 'lightglue_opencv'],
     'doghardnet_lightglue': ['lightglue'],
     'xfeat': ['bf', 'flann'],
     'tfeat': ['bf', 'flann'],

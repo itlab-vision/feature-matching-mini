@@ -12,9 +12,6 @@ def measure_time(func):
 
 
 class PerformanceProfiler:
-    def __init__(self, preprocessor):
-        self.preprocessor = preprocessor
-
     @measure_time
     def profile_detection(self, detector, img):
         kp = detector.detect(img)
@@ -31,20 +28,14 @@ class PerformanceProfiler:
         return res_match
 
     @measure_time
-    def profile_pipeline(self, detector, detector_name, descriptor, descriptor_name,
-                         matcher, matcher_name, img0, img1):
-        kp0 = detector.detect(img0)
-        kp0 = self.preprocessor.prepare_features(kp0, from_algo=detector_name, to_algo=descriptor_name)
-        des0 = descriptor.compute(img0, kp0)['des']
-        des0 = self.preprocessor.prepare_features(des0, from_algo=descriptor_name, to_algo=matcher_name)
+    def profile_pipeline(self, detector, descriptor, matcher, img0, img1):
+        features0 = detector.detect(img0)
+        features0 = descriptor.compute(img0, features0)
 
-        kp1 = detector.detect(img1)
-        kp1 = self.preprocessor.prepare_features(kp1, from_algo=detector_name, to_algo=descriptor_name)
-        des1 = descriptor.compute(img1, kp1)['des']
-        des1 = self.preprocessor.prepare_features(des1, from_algo=descriptor_name, to_algo=matcher_name)
+        features1 = detector.detect(img1)
+        features1 = descriptor.compute(img1, features1)
 
-        res_match = matcher.match({'kp': kp0.get('kp'), 'des': des0, 'img_shape': img0.shape},
-                                  {'kp': kp1.get('kp'), 'des': des1, 'img_shape': img1.shape})
+        res_match = matcher.match(features0, features1)
         return res_match
 
     @measure_time
@@ -53,12 +44,11 @@ class PerformanceProfiler:
         return features
 
     @measure_time
-    def profile_dnn_pipeline(self, extractor, extractor_name,
-                             matcher, matcher_name, img0, img1):
+    def profile_dnn_pipeline(self, extractor,
+                             matcher, img0, img1):
         features0 = extractor.detectAndCompute(img0)
         features1 = extractor.detectAndCompute(img1)
-        features0 = self.preprocessor.prepare_features(features0, from_algo=extractor_name, to_algo=matcher_name)
-        features1 = self.preprocessor.prepare_features(features1, from_algo=extractor_name, to_algo=matcher_name)
+
         res_match = matcher.match(features0, features1)
         return res_match
 
