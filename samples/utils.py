@@ -4,9 +4,8 @@ from pathlib import Path
 
 sys.path.append(str(Path(__file__).parent.parent))  # noqa: E402
 
-from src.algorithms import get_default_backend  # noqa: E402
 from src.algorithms import (ALL_DETECTORS, ALL_DESCRIPTORS, ALL_MATCHERS, OPENCV_MATCHERS_MODE,  # noqa: E402
-                            TORCH_DETECTORS, TORCH_DESCRIPTORS, TORCH_MATCHERS, OPENCV_MATCHERS)
+                            OPENCV_MATCHERS, TORCH_DETECTORS, TORCH_DESCRIPTORS, get_default_backend)
 
 
 def build_detector_config(args):
@@ -33,6 +32,12 @@ def build_detector_config(args):
         config['disk_model_path'] = args.disk_model_path
     if args.aliked_model_path is not None:
         config['aliked_model_path'] = args.aliked_model_path
+    if args.det_et_model:
+        config['executorch_model_path'] = args.det_et_model
+        if args.det_et_input_shape:
+            config['input_shape'] = args.det_et_input_shape
+        if args.det_et_num_keypoints is not None:
+            config['num_keypoints'] = args.det_et_num_keypoints
     return config
 
 
@@ -70,20 +75,20 @@ def build_descriptor_config(args):
         config['batch_size'] = args.batch_size
     if args.magfactor is not None:
         config['magfactor'] = args.magfactor
+    if args.des_et_model:
+        config['executorch_model_path'] = args.des_et_model
+        if args.des_et_patch_size:
+            config['patch_size'] = args.des_et_patch_size
     return config
 
 
 def build_matcher_config(args):
     config = dict()
-    if (args.device is not None) and (args.matcher in TORCH_MATCHERS):
+    matcher_backend = args.mat_backend or get_default_backend(args.matcher, 2)
+    if args.device is not None and matcher_backend == 'torch':
         config['device'] = args.device
     if args.mat_backend is not None:
         config['backend'] = args.mat_backend
-
-    matcher_backend = args.mat_backend
-    if matcher_backend is None:
-        matcher_backend = get_default_backend(args.matcher, 2)
-
     if matcher_backend == 'opencv':
         if args.matcher in OPENCV_MATCHERS:
             config['mode'] = args.matcher_mode
@@ -106,6 +111,9 @@ def build_matcher_config(args):
         config['score_threshold'] = args.mat_score_threshold
     if args.lightglue_model_path is not None:
         config['lightglue_model_path'] = args.lightglue_model_path
+    if args.mat_et_model is not None:
+        config['executorch_model_path'] = args.mat_et_model
+        config['num_keypoints'] = args.det_et_num_keypoints
     return config
 
 
@@ -168,6 +176,12 @@ def performance_tests_parser():
                            help='Path to DISK opencv model')
     det_group.add_argument('-mpa', '--aliked-model-path', type=str, default=None,
                            help='Path to ALIKED opencv model')
+    det_group.add_argument('--det-et-model', type=Path,
+                           help='Path to a detector .pte file')
+    det_group.add_argument('--det-et-input-shape', type=int, nargs=4, metavar=('N', 'C', 'H', 'W'),
+                           help='Static detector .pte input shape')
+    det_group.add_argument('--det-et-num-keypoints', type=int, default=None,
+                           help='Number of keypoints emitted by the ExecuTorch detector')
 
     des_group = arg_parser.add_argument_group('Descriptor config')
     des_group.add_argument('-desb', '--des-backend', type=str, default=None,
@@ -188,6 +202,10 @@ def performance_tests_parser():
                            help='Batch size for HardNet model')
     des_group.add_argument('-mag', '--magfactor', type=int, default=None,
                            help='MagFactor for TFeat')
+    des_group.add_argument('--des-et-model', type=Path,
+                           help='Path to a descriptor .pte file')
+    des_group.add_argument('--des-et-patch-size', type=int, default=32,
+                           help='Patch size for descriptor model')
 
     mat_group = arg_parser.add_argument_group('Matcher config')
     mat_group.add_argument('-matb', '--mat-backend', type=str, default=None,
@@ -204,6 +222,10 @@ def performance_tests_parser():
                            help='scoreThreshold for LightGlue matcher')
     mat_group.add_argument('-mplg', '--lightglue-model-path', type=str, default=None,
                            help='Path to LightGlue opencv model')
+    mat_group.add_argument('--mat-et-model', type=Path,
+                           help='Path to a fixed-K matcher .pte file')
+    mat_group.add_argument('--mat-et-num-keypoints', type=int, default=None,
+                           help='Number of keypoints expected by the ExecuTorch matcher')
 
     arg_parser.add_argument('-n', '--iterations', type=int, default=10,
                             help='Number of iterations for performance testing (default: 10)')
@@ -236,12 +258,24 @@ def build_hpatches_detector_config(args):
     config = dict()
     if (args.device is not None) and (args.detector in TORCH_DETECTORS):
         config['device'] = args.device
+    if args.det_backend is not None:
+        config['backend'] = args.det_backend
     if args.det_nfeatures is not None:
         config['nfeatures'] = args.det_nfeatures
     if args.det_noctave is not None:
         config['nOctaveLayers'] = args.det_noctave
     if args.det_threshold is not None:
         config['threshold'] = args.det_threshold
+    if getattr(args, 'disk_model_path', None) is not None:
+        config['disk_model_path'] = args.disk_model_path
+    if getattr(args, 'aliked_model_path', None) is not None:
+        config['aliked_model_path'] = args.aliked_model_path
+    if args.det_et_model is not None:
+        config['executorch_model_path'] = args.det_et_model
+        if args.det_et_input_shape is not None:
+            config['input_shape'] = args.det_et_input_shape
+        if args.det_et_num_keypoints is not None:
+            config['num_keypoints'] = args.det_et_num_keypoints
     return config
 
 
@@ -249,25 +283,41 @@ def build_hpatches_descriptor_config(args):
     config = dict()
     if (args.device is not None) and (args.descriptor in TORCH_DESCRIPTORS or args.descriptor in ['tfeat', 'hardnet']):
         config['device'] = args.device
+    if args.des_backend is not None:
+        config['backend'] = args.des_backend
     if args.des_nfeatures is not None:
         config['nfeatures'] = args.des_nfeatures
     if args.des_threshold is not None:
         config['threshold'] = args.des_threshold
     if args.des_scale is not None:
         config['scale_factor'] = args.des_scale
+    if args.des_et_model is not None:
+        config['executorch_model_path'] = args.des_et_model
+        config['patch_size'] = args.des_et_patch_size
     return config
 
 
 def build_hpatches_matcher_config(args):
     config = dict()
-    if (args.device is not None) and (args.matcher in TORCH_MATCHERS):
+    matcher_backend = args.mat_backend or get_default_backend(args.matcher, 2)
+    if args.device is not None and matcher_backend == 'torch':
         config['device'] = args.device
-    if args.matcher in OPENCV_MATCHERS:
+    if args.mat_backend is not None:
+        config['backend'] = args.mat_backend
+    if matcher_backend == 'opencv':
         config['mode'] = args.matcher_mode
     if args.mat_ratio is not None:
         config['ratio'] = args.mat_ratio
     if args.mat_cross_check is not None:
         config['cross_check'] = args.mat_cross_check
+    if getattr(args, 'lightglue_model_path', None) is not None:
+        config['lightglue_model_path'] = args.lightglue_model_path
+    if args.mat_et_model is not None:
+        config['executorch_model_path'] = args.mat_et_model
+        num_keypoints = args.mat_et_num_keypoints
+        if num_keypoints is None:
+            num_keypoints = args.det_et_num_keypoints
+        config['num_keypoints'] = num_keypoints if num_keypoints is not None else 256
     return config
 
 

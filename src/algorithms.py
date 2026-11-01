@@ -30,99 +30,119 @@ ONNX_DESCRIPTORS = {'disk', 'aliked'}
 ONNX_MATCHERS = {'lightglue'}
 OPENCV_MATCHERS_MODE = {'simple', 'knn'}
 
+EXECUTORCH_DETECTORS = {'superpoint_lightglue', 'disk_lightglue', 'd2net', 'xfeat'}
+EXECUTORCH_DESCRIPTORS = {'superpoint_lightglue', 'disk_lightglue', 'd2net', 'xfeat', 'tfeat', 'hardnet'}
+EXECUTORCH_MATCHERS = {'lightglue'}
 
 TORCH_ALGORITHMS = TORCH_DETECTORS | TORCH_DESCRIPTORS | TORCH_MATCHERS | TORCH_PIPELINES
 OPENCV_ALGORITHMS = OPENCV_DETECTORS | OPENCV_DESCRIPTORS | OPENCV_MATCHERS
+EXECUTORCH_ALGORITHMS = EXECUTORCH_DETECTORS | EXECUTORCH_DESCRIPTORS | EXECUTORCH_MATCHERS
 ONNX_ALGORITHMS = ONNX_DETECTORS | ONNX_DESCRIPTORS | ONNX_MATCHERS
 
-DNN_DETECTORS = TORCH_DETECTORS | OPENCV_DNN_DETECTORS | ONNX_DETECTORS
-DNN_DESCRIPTORS = TORCH_DESCRIPTORS | OPENCV_DNN_DESCRIPTORS | ONNX_DESCRIPTORS
-DNN_MATCHERS = TORCH_MATCHERS | OPENCV_DNN_MATCHERS | ONNX_MATCHERS
+DNN_DETECTORS = TORCH_DETECTORS | OPENCV_DNN_DETECTORS | ONNX_DETECTORS | EXECUTORCH_DETECTORS
+DNN_DESCRIPTORS = TORCH_DESCRIPTORS | OPENCV_DNN_DESCRIPTORS | ONNX_DESCRIPTORS | EXECUTORCH_DESCRIPTORS
+DNN_MATCHERS = TORCH_MATCHERS | OPENCV_DNN_MATCHERS | ONNX_MATCHERS | EXECUTORCH_MATCHERS
 DNN_PIPELINES = TORCH_PIPELINES
 DNN_ALGORITHMS = DNN_DETECTORS | DNN_DESCRIPTORS | DNN_MATCHERS | DNN_PIPELINES
 
-ALL_DETECTORS = TORCH_DETECTORS | OPENCV_DETECTORS | ONNX_DETECTORS
-ALL_DESCRIPTORS = TORCH_DESCRIPTORS | OPENCV_DESCRIPTORS | ONNX_DESCRIPTORS
-ALL_MATCHERS = TORCH_MATCHERS | OPENCV_MATCHERS | ONNX_MATCHERS
+ALL_DETECTORS = TORCH_DETECTORS | OPENCV_DETECTORS | ONNX_DETECTORS | EXECUTORCH_DETECTORS
+ALL_DESCRIPTORS = TORCH_DESCRIPTORS | OPENCV_DESCRIPTORS | ONNX_DESCRIPTORS | EXECUTORCH_DESCRIPTORS
+ALL_MATCHERS = TORCH_MATCHERS | OPENCV_MATCHERS | ONNX_MATCHERS | EXECUTORCH_MATCHERS
 ALL_PIPELINES = TORCH_PIPELINES
 ALL_ALGORITHMS = ALL_DETECTORS | ALL_DESCRIPTORS | ALL_MATCHERS | ALL_PIPELINES
 
 BACKEND_ALGORITHMS = {
     'opencv': (OPENCV_DETECTORS, OPENCV_DESCRIPTORS, OPENCV_MATCHERS),
     'torch': (TORCH_DETECTORS, TORCH_DESCRIPTORS, TORCH_MATCHERS),
-    'onnx': (ONNX_DETECTORS, ONNX_DESCRIPTORS, ONNX_MATCHERS)
+    'executorch': (EXECUTORCH_DETECTORS, EXECUTORCH_DESCRIPTORS, EXECUTORCH_MATCHERS),
+    'onnx': (ONNX_DETECTORS, ONNX_DESCRIPTORS, ONNX_MATCHERS),
 }
 
 DETECTOR_DESCRIPTOR_COMPATIBILITY = {
     'sift': {'opencv': {
         'opencv': ['sift', 'brisk', 'brief', 'freak', 'daisy', 'latch', 'beblid', 'teblid', 'vgg', 'boostdesc'],
         'torch': ['tfeat', 'hardnet'],
+        'executorch': ['tfeat', 'hardnet'],
     }},
     'orb': {'opencv': {
         'opencv': ['sift', 'orb', 'brisk', 'brief', 'freak', 'daisy', 'latch', 'beblid', 'teblid', 'vgg',
                    'boostdesc'],
         'torch': ['tfeat', 'hardnet'],
+        'executorch': ['tfeat', 'hardnet'],
     }},
     'fast': {'opencv': {
         'opencv': ['sift', 'orb', 'brisk', 'brief', 'freak', 'daisy', 'latch', 'beblid', 'teblid', 'vgg',
                    'boostdesc'],
         'torch': ['tfeat', 'hardnet'],
+        'executorch': ['tfeat', 'hardnet'],
     }},
     'akaze': {'opencv': {
         'opencv': ['sift', 'orb', 'akaze', 'brisk', 'kaze', 'brief', 'freak', 'daisy', 'latch', 'beblid',
                    'teblid', 'vgg', 'boostdesc'],
         'torch': ['tfeat', 'hardnet'],
+        'executorch': ['tfeat', 'hardnet'],
     }},
     'brisk': {'opencv': {
         'opencv': ['sift', 'orb', 'brisk', 'brief', 'freak', 'daisy', 'latch', 'beblid', 'teblid', 'vgg',
                    'boostdesc'],
         'torch': ['tfeat', 'hardnet'],
+        'executorch': ['tfeat', 'hardnet'],
     }},
     'kaze': {'opencv': {
         'opencv': ['sift', 'orb', 'brisk', 'kaze', 'brief', 'freak', 'daisy', 'latch', 'beblid', 'teblid',
                    'vgg', 'boostdesc'],
         'torch': ['tfeat', 'hardnet'],
+        'executorch': ['tfeat', 'hardnet'],
     }},
     'gftt': {'opencv': {
         'opencv': ['sift', 'orb', 'brisk', 'brief', 'freak', 'daisy', 'latch', 'beblid', 'teblid', 'vgg',
                    'boostdesc'],
         'torch': ['tfeat', 'hardnet'],
+        'executorch': ['tfeat', 'hardnet'],
     }},
     'mser': {'opencv': {
         'opencv': ['sift', 'orb', 'brisk', 'brief', 'freak', 'daisy', 'latch', 'beblid', 'teblid', 'vgg',
                    'boostdesc'],
         'torch': ['tfeat', 'hardnet'],
+        'executorch': ['tfeat', 'hardnet'],
     }},
     'agast': {'opencv': {
         'opencv': ['sift', 'orb', 'brisk', 'brief', 'freak', 'daisy', 'latch', 'beblid', 'teblid', 'vgg',
                    'boostdesc'],
         'torch': ['tfeat', 'hardnet'],
+        'executorch': ['tfeat', 'hardnet'],
     }},
     'blob': {'opencv': {
         'opencv': ['sift', 'orb', 'brisk', 'brief', 'freak', 'daisy', 'latch', 'beblid', 'teblid', 'vgg',
                    'boostdesc'],
         'torch': ['tfeat', 'hardnet'],
+        'executorch': ['tfeat', 'hardnet'],
     }},
     'star': {'opencv': {
         'opencv': ['sift', 'orb', 'brisk', 'brief', 'freak', 'daisy', 'latch', 'beblid', 'teblid', 'vgg',
                    'boostdesc'],
         'torch': ['tfeat', 'hardnet'],
+        'executorch': ['tfeat', 'hardnet'],
     }},
     'harrislaplace': {'opencv': {
         'opencv': ['sift', 'orb', 'brisk', 'brief', 'freak', 'daisy', 'latch', 'beblid', 'teblid', 'vgg',
                    'boostdesc'],
         'torch': ['tfeat', 'hardnet'],
+        'executorch': ['tfeat', 'hardnet'],
     }},
     'msd': {'opencv': {
         'opencv': ['orb', 'brisk', 'brief', 'freak', 'daisy', 'latch', 'beblid', 'teblid', 'vgg', 'boostdesc'],
         'torch': ['tfeat', 'hardnet'],
+        'executorch': ['tfeat', 'hardnet'],
     }},
     'superpoint': {'torch': {'torch': ['superpoint']}},
     'superpoint_lightglue': {
         'torch': {'torch': ['superpoint_lightglue']},
+        'executorch': {'executorch': ['superpoint_lightglue']},
     },
     'disk_lightglue': {
         'torch': {'torch': ['disk_lightglue']},
+        'executorch': {'executorch': ['disk_lightglue']},
     },
     'disk': {'opencv': {'opencv': ['disk']}, 'onnx': {'onnx': ['disk']}},
     'sift_lightglue': {'torch': {'torch': ['sift_lightglue']}},
@@ -131,9 +151,11 @@ DETECTOR_DESCRIPTOR_COMPATIBILITY = {
     'doghardnet_lightglue': {'torch': {'torch': ['doghardnet_lightglue']}},
     'd2net': {
         'torch': {'torch': ['d2net']},
+        'executorch': {'executorch': ['d2net']},
     },
     'xfeat': {
         'torch': {'torch': ['xfeat']},
+        'executorch': {'executorch': ['xfeat']},
     },
     'r2d2': {'torch': {'torch': ['r2d2']}},
     'loftr': {'torch': {'torch': ['loftr']}},
@@ -160,9 +182,11 @@ DESCRIPTOR_MATCHER_COMPATIBILITY = {
     }},
     'superpoint_lightglue': {
         'torch': {'torch': ['lightglue']},
+        'executorch': {'executorch': ['lightglue']},
     },
     'disk_lightglue': {
         'torch': {'torch': ['lightglue']},
+        'executorch': {'executorch': ['lightglue']},
     },
     'disk': {'opencv': {'opencv': ['bf', 'flann', 'lightglue']},
              'onnx': {'opencv': ['bf', 'flann'], 'onnx': ['lightglue']}},
@@ -173,15 +197,19 @@ DESCRIPTOR_MATCHER_COMPATIBILITY = {
     'doghardnet_lightglue': {'torch': {'torch': ['lightglue']}},
     'xfeat': {
         'torch': {'opencv': ['bf', 'flann']},
+        'executorch': {'opencv': ['bf', 'flann']},
     },
     'tfeat': {
         'torch': {'opencv': ['bf', 'flann']},
+        'executorch': {'opencv': ['bf', 'flann']},
     },
     'hardnet': {
         'torch': {'opencv': ['bf', 'flann']},
+        'executorch': {'opencv': ['bf', 'flann']},
     },
     'd2net': {
         'torch': {'opencv': ['bf', 'flann']},
+        'executorch': {'opencv': ['bf', 'flann']},
     },
     'r2d2': {'torch': {'opencv': ['bf', 'flann']}},
     'loftr': {'torch': {'torch': ['loftr']}},
@@ -194,6 +222,8 @@ def get_default_backend(algorithm_name, algorithm_index):
         return 'torch'
     if algorithm_name in BACKEND_ALGORITHMS['opencv'][algorithm_index]:
         return 'opencv'
+    if algorithm_name in BACKEND_ALGORITHMS['executorch'][algorithm_index]:
+        return 'executorch'
     if algorithm_name in BACKEND_ALGORITHMS['onnx'][algorithm_index]:
         return 'onnx'
     return None

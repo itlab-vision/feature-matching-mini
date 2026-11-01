@@ -96,9 +96,6 @@ class TestDescriptorFactory:
         assert features_limited.get('descriptors') is not None
 
 
-ALGORITHMS_CPU_ONLY = {'doghardnet_lightglue'}
-
-
 class TestDescriptorCompute:
     @pytest.mark.parametrize("detector_name", ALL_DETECTORS)
     @pytest.mark.parametrize("descriptor_name", ALL_DESCRIPTORS)
@@ -111,29 +108,21 @@ class TestDescriptorCompute:
             descriptor_backend,
         )
         if descriptor_name in compatible_descriptors:
-            is_neural = detector_name in DNN_ALGORITHMS
+            if detector_name in DNN_ALGORITHMS:
+                pytest.skip("Neural backends are covered by backend-specific tests")
 
-            if is_neural:
-                img = load_img("box.png", input_type='tensor')
-                config = {'device': 'cpu', 'backend': detector_backend} \
-                    if detector_name in ALGORITHMS_CPU_ONLY else {'backend': detector_backend}
-                features = get_kp("box.png", detector_name, input_type='tensor', config=config)
+            img = load_img("box.png")
+            features = get_kp("box.png", detector_name)
 
-                assert isinstance(features, dict)
-                assert 'keypoints' in features or 'keypoints' in features
-            else:
-                img = load_img("box.png")
-                features = get_kp("box.png", detector_name)
+            descriptor = Descriptor.create(descriptor_name, mock_logger)
+            features = descriptor.compute(img, features)
 
-                descriptor = Descriptor.create(descriptor_name, mock_logger)
-                features = descriptor.compute(img, features)
+            assert isinstance(features.get('keypoints'), (tuple, list, np.ndarray))
+            if features.get('descriptors') is not None:
+                assert isinstance(features.get('descriptors'), np.ndarray)
+                assert len(features.get('descriptors')) == len(features.get('keypoints'))
 
-                assert isinstance(features.get('keypoints'), (tuple, list, np.ndarray))
-                if features.get('descriptors') is not None:
-                    assert isinstance(features.get('descriptors'), np.ndarray)
-                    assert len(features.get('descriptors')) == len(features.get('keypoints'))
-
-                assert mock_logger.info.called
+            assert mock_logger.info.called
 
     def test_sift_descriptor_size(self, mock_logger, load_img, get_kp):
         img = load_img("box.png")

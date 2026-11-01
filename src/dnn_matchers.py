@@ -2,6 +2,9 @@ from src.matchers import Matcher
 import src.backend.torch.model_wrapper  # noqa: E402, F401
 import src.backend.torch.inference_api  # noqa: E402, F401
 import src.backend.torch.io_adapter  # noqa: E402, F401
+import src.backend.executorch.model_wrapper  # noqa: E402, F401
+import src.backend.executorch.inference_api  # noqa: E402, F401
+import src.backend.executorch.io_adapter  # noqa: E402, F401
 from src.backend.io_adapter_base import IOAdapter
 from src.backend.inference_api_base import InferenceAPI
 from src.backend.model_wrapper_base import ModelWrapper

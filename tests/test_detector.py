@@ -15,7 +15,7 @@ import src.backend.opencv.io_adapter  # noqa: F401
 import src.backend.onnx.model_loader  # noqa: F401
 import src.backend.onnx.inference_api  # noqa: F401
 import src.backend.onnx.io_adapter  # noqa: F401
-from src.algorithms import DNN_ALGORITHMS, ALL_DETECTORS, TORCH_PIPELINES
+from src.algorithms import ALL_DETECTORS, DNN_ALGORITHMS
 from src.image_utils import read_image
 
 
@@ -73,38 +73,20 @@ class TestDetectorFactory:
         assert isinstance(detector, SIFTDetector)
 
 
-ALGORITHMS_CPU_ONLY = {'doghardnet_lightglue'}
-
-
 class TestDetectorDetect:
     @pytest.mark.parametrize("method_name", ALL_DETECTORS)
     def test_all_methods_return_valid_tuple(self, method_name, mock_logger, load_img):
-        if method_name in TORCH_PIPELINES:
-            return
-
         if method_name in DNN_ALGORITHMS:
-            img = load_img("box.png", input_type='tensor')
+            pytest.skip("Neural backends are covered by backend-specific tests")
 
-            if method_name in ALGORITHMS_CPU_ONLY:
-                config = {'device': 'cpu'}
-            else:
-                config = {}
-
-            detector = Detector.create(method_name, mock_logger, config=config)
-        else:
-            img = load_img("box.png")
-            detector = Detector.create(method_name, mock_logger)
-
+        img = load_img("box.png")
+        detector = Detector.create(method_name, mock_logger)
         features = detector.detect(img)
 
-        if method_name in DNN_ALGORITHMS:
-            assert 'keypoints' in features
-            assert features.get('keypoints') is not None
-        else:
-            kp = features.get('keypoints')
-            assert isinstance(kp, (tuple, list, np.ndarray))
-            if len(kp) > 0:
-                assert isinstance(kp[0], cv.KeyPoint)
+        kp = features.get('keypoints')
+        assert isinstance(kp, (tuple, list, np.ndarray))
+        if len(kp) > 0:
+            assert isinstance(kp[0], cv.KeyPoint)
 
     def test_reproducibility(self, mock_logger, load_img):
         img = load_img("box.png")

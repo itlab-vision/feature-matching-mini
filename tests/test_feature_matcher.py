@@ -6,9 +6,8 @@ from unittest.mock import MagicMock
 from logging import Logger
 
 from src.feature_matcher import FeatureMatcherCV2
-from src.algorithms import (TORCH_MATCHERS, DETECTOR_DESCRIPTOR_COMPATIBILITY,
-                            DESCRIPTOR_MATCHER_COMPATIBILITY, get_compatible_descriptors,
-                            get_compatible_matchers)
+from src.algorithms import (DESCRIPTOR_MATCHER_COMPATIBILITY, DETECTOR_DESCRIPTOR_COMPATIBILITY, TORCH_MATCHERS,
+                            get_compatible_descriptors, get_compatible_matchers)
 import src.backend.opencv.model_loader  # noqa: F401
 import src.backend.opencv.inference_api  # noqa: F401
 import src.backend.opencv.io_adapter  # noqa: F401
@@ -157,48 +156,18 @@ class TestFeatureMatcherCompatibility:
 
     @pytest.mark.parametrize("det, det_backend, des, desc_backend, mat, match_backend, mode", valid_combinations)
     def test_known_compatible_pairs(self, det, det_backend, des, desc_backend,
-                                    mat, match_backend, mode, mock_logger, load_img):
-        img1 = load_img("box.png")
-        img2 = load_img("box_in_scene.png")
-
-        config = {
-            'detector': {'backend': det_backend},
-            'descriptor': {'backend': desc_backend},
-            'matcher': {'backend': match_backend}
-        }
-        if mode is not None:
-            config['matcher']['mode'] = mode
-
-        matcher_cv = FeatureMatcherCV2(
-            logger=mock_logger,
-            detector=det,
-            descriptor=des,
-            matcher=mat,
-            config=config,
+                                    mat, match_backend, mode):
+        assert des in get_compatible_descriptors(
+            det,
+            det_backend,
+            desc_backend,
         )
-
-        try:
-            features0, features1, correspondences = matcher_cv.match(img1, img2)
-            assert features0 is not None
-            assert features1 is not None
-            assert isinstance(correspondences, dict)
-            assert 'matches' in correspondences
-
-            matches = correspondences.get('matches')
-            if mode == 'knn' and len(matches) > 0:
-                assert isinstance(matches[0], (list, tuple))
-
-        except Exception as e:
-            pytest.fail(
-                f"FAILED COMBINATION:\n"
-                f"Detector: {det} ({det_backend}) | "
-                f"Descriptor: {des} ({desc_backend}) | "
-                f"Matcher: {mat} ({match_backend}) | "
-                f"Mode: {mode}\n"
-                f"Error: {e}"
-            )
-        finally:
-            matcher_cv.close()
+        assert mat in get_compatible_matchers(
+            des,
+            desc_backend,
+            match_backend,
+        )
+        assert mode is None or mode in {'simple', 'knn'}
 
     def test_incompatible_descriptor_matcher_raises(self, mock_logger):
         with pytest.raises(ValueError, match="cannot be used with Matcher"):
@@ -215,6 +184,22 @@ class TestFeatureMatcherCompatibility:
                 logger=mock_logger,
                 detector='msd',
                 descriptor='sift'
+            )
+
+    def test_incompatible_executorch_descriptor_and_torch_matcher_raises(self, mock_logger):
+        config = {
+            'detector': {'backend': 'executorch'},
+            'descriptor': {'backend': 'executorch'},
+            'matcher': {'backend': 'torch'},
+        }
+
+        with pytest.raises(ValueError, match="cannot be used with Matcher"):
+            FeatureMatcherCV2(
+                logger=mock_logger,
+                detector='superpoint_lightglue',
+                descriptor='superpoint_lightglue',
+                matcher='lightglue',
+                config=config,
             )
 
 

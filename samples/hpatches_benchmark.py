@@ -62,6 +62,12 @@ def parser():
                            help='Number of octave layers')
     det_group.add_argument('-dt', '--det-threshold', type=float, default=None,
                            help='Detection threshold')
+    det_group.add_argument('--det-et-model', type=Path,
+                           help='Path to a detector .pte file')
+    det_group.add_argument('--det-et-input-shape', type=int, nargs=4, metavar=('N', 'C', 'H', 'W'),
+                           help='Static detector .pte input shape')
+    det_group.add_argument('--det-et-num-keypoints', type=int, default=None,
+                           help='Number of keypoints emitted by the ExecuTorch detector')
 
     des_group = arg_parser.add_argument_group('Descriptor config')
     des_group.add_argument('-desb', '--des-backend', type=str, default=None,
@@ -72,6 +78,10 @@ def parser():
                            help='Descriptor threshold')
     des_group.add_argument('-dss', '--des-scale', type=float, default=None,
                            help='Scale factor')
+    des_group.add_argument('--des-et-model', type=Path,
+                           help='Path to a descriptor .pte file')
+    des_group.add_argument('--des-et-patch-size', type=int, default=32,
+                           help='Patch size for descriptor model')
 
     mat_group = arg_parser.add_argument_group('Matcher config')
     mat_group.add_argument('-matb', '--mat-backend', type=str, default=None,
@@ -82,6 +92,10 @@ def parser():
                            help='Ratio threshold for KNN')
     mat_group.add_argument('-mc', '--mat-cross-check', action='store_true', default=None,
                            help='Enable cross-check for BF matcher')
+    mat_group.add_argument('--mat-et-model', type=Path,
+                           help='Path to a fixed-K matcher .pte file')
+    mat_group.add_argument('--mat-et-num-keypoints', type=int, default=None,
+                           help='Number of keypoints expected by the ExecuTorch matcher')
     return arg_parser.parse_args()
 
 

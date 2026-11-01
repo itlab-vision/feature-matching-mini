@@ -1,6 +1,7 @@
 import argparse
 import copy
 import sys
+from itertools import product
 import numpy as np
 import logging
 import pandas as pd
@@ -8,10 +9,23 @@ from pathlib import Path
 
 sys.path.append(str(Path(__file__).parent.parent))  # noqa: E402
 
-from src.algorithms import DETECTOR_DESCRIPTOR_COMPATIBILITY, DESCRIPTOR_MATCHER_COMPATIBILITY, \
-                           OPENCV_MATCHERS_MODE  # noqa: E402
+from src.algorithms import (BACKEND_ALGORITHMS, OPENCV_MATCHERS_MODE,  # noqa: E402
+                            get_compatible_descriptors, get_compatible_matchers)
 from src.feature_matcher import FeatureMatcherCV2  # noqa: E402
 
+from src.backend.executorch.model_wrapper.model_wrapper import (  # noqa: E402
+    EXECUTORCH_DESCRIPTOR_MODELS,
+    EXECUTORCH_DETECTOR_MODELS,
+    EXECUTORCH_MATCHER_MODELS,
+)
+from src.backend.opencv.model_loader.model_loader import (  # noqa: E402
+    OPENCV_DESCRIPTOR_MODELS, OPENCV_DETECTOR_MODELS, OPENCV_MATCHER_MODELS,
+)
+import src.backend.opencv.inference_api  # noqa: E402, F401
+import src.backend.opencv.io_adapter  # noqa: E402, F401
+import src.backend.onnx.model_loader  # noqa: E402, F401
+import src.backend.onnx.inference_api  # noqa: E402, F401
+import src.backend.onnx.io_adapter  # noqa: E402, F401
 from samples.utils import build_hpatches_benchmark_config, build_hpatches_feature_matcher_config  # noqa: E402
 from samples.hpatches_task import HPatchesTask  # noqa: E402
 from samples.hpatches_data_manager import HPatchesDataManager  # noqa: E402
@@ -23,13 +37,38 @@ logger = logging.getLogger("HPatchesTableBenchmark")
 
 def get_all_combinations():
     combinations = []
-    for detector in DETECTOR_DESCRIPTOR_COMPATIBILITY:
-        descriptors = DETECTOR_DESCRIPTOR_COMPATIBILITY.get(detector, [])
-        for descriptor in descriptors:
-            matchers = DESCRIPTOR_MATCHER_COMPATIBILITY.get(descriptor, [])
-            for matcher in matchers:
-                combinations.append((detector, descriptor, matcher))
+    backends = BACKEND_ALGORITHMS.keys()
+
+    for detector_backend, descriptor_backend, matcher_backend in product(backends, repeat=3):
+        detectors = BACKEND_ALGORITHMS[detector_backend][0]
+        for detector in sorted(detectors):
+            descriptors = get_compatible_descriptors(detector, detector_backend, descriptor_backend)
+            for descriptor in descriptors:
+                matchers = get_compatible_matchers(descriptor, descriptor_backend, matcher_backend)
+                for matcher in matchers:
+                    combinations.append((detector, detector_backend, descriptor, descriptor_backend,
+                                         matcher, matcher_backend))
     return combinations
+
+
+def configure_model_paths(args):
+    model_path = args.modelpath or Path('models')
+
+    if args.det_backend == 'executorch':
+        args.det_et_model = model_path / EXECUTORCH_DETECTOR_MODELS[args.detector]
+    elif args.det_backend == 'opencv' and args.detector in OPENCV_DETECTOR_MODELS:
+        setattr(args, f'{args.detector}_model_path', model_path / OPENCV_DETECTOR_MODELS[args.detector])
+
+    if args.des_backend == 'executorch':
+        args.des_et_model = model_path / EXECUTORCH_DESCRIPTOR_MODELS[args.descriptor]
+    elif args.des_backend == 'opencv' and args.descriptor in OPENCV_DESCRIPTOR_MODELS:
+        setattr(args, f'{args.descriptor}_model_path', model_path / OPENCV_DESCRIPTOR_MODELS[args.descriptor])
+
+    if args.mat_backend == 'executorch':
+        args.mat_et_model = model_path / EXECUTORCH_MATCHER_MODELS[args.descriptor]
+        args.mat_et_num_keypoints = 256
+    elif args.mat_backend == 'opencv' and args.matcher == 'lightglue':
+        args.lightglue_model_path = model_path / OPENCV_MATCHER_MODELS[args.descriptor]
 
 
 def load_existing_results(output_path):
@@ -42,9 +81,17 @@ def load_existing_results(output_path):
         logger.info(f"Loaded {len(df)} existing results from {output_path}")
 
         existing_combos = set()
-        for _, row in df.iterrows():
-            combo = (row['detector'], row['descriptor'], row['matcher'])
-            existing_combos.add(combo)
+        backend_columns = {'detector_backend', 'descriptor_backend', 'matcher_backend'}
+        if backend_columns.issubset(df.columns):
+            for _, row in df.iterrows():
+                combo = (
+                    row['detector'], row['detector_backend'],
+                    row['descriptor'], row['descriptor_backend'],
+                    row['matcher'], row['matcher_backend'],
+                )
+                existing_combos.add(combo)
+        elif len(df) > 0:
+            logger.warning("Existing results do not contain backend columns and will not be skipped")
 
         logger.info(f"Found {len(existing_combos)} unique combinations already computed")
         return df, existing_combos
@@ -55,7 +102,12 @@ def load_existing_results(output_path):
 
 
 def save_single_result(output_path, new_result, tasks, thresholds):
-    base_columns = ['detector', 'descriptor', 'matcher', 'device', 'num_scenes']
+    base_columns = [
+        'detector', 'detector_backend',
+        'descriptor', 'descriptor_backend',
+        'matcher', 'matcher_backend',
+        'device', 'num_scenes',
+    ]
     metric_columns = []
     for task in tasks:
         t = task.lower()
@@ -107,29 +159,15 @@ def table_benchmark(cli_args):
         logger.error("No combinations found in algorithms.py")
         return
 
-    cli_args.detector = all_combinations[0][0]
-    cli_args.descriptor = all_combinations[0][1]
-    cli_args.matcher = all_combinations[0][2]
+    first_combination = all_combinations[0]
+    base_args = copy.copy(cli_args)
+    base_args.detector, base_args.det_backend = first_combination[:2]
+    base_args.descriptor, base_args.des_backend = first_combination[2:4]
+    base_args.matcher, base_args.mat_backend = first_combination[4:]
+    configure_model_paths(base_args)
 
-    base_config = build_hpatches_benchmark_config(cli_args)
+    base_config = build_hpatches_benchmark_config(base_args)
     _, existing_combos = load_existing_results(cli_args.output)
-
-    if not cli_args.no_skip:
-        combinations = [c for c in all_combinations if c not in existing_combos]
-    else:
-        combinations = all_combinations
-
-    if not combinations:
-        logger.info("All combinations already computed")
-        return
-
-    det, desc, mat = combinations[0]
-
-    tmp_args = copy.copy(cli_args)
-    tmp_args.detector = det
-    tmp_args.descriptor = desc
-    tmp_args.matcher = mat
-    combo_fm_config = build_hpatches_feature_matcher_config(tmp_args)
 
     logger.info(f"Found {len(all_combinations)} valid combinations")
     logger.info(f"Tasks to run: {cli_args.tasks}")
@@ -147,23 +185,28 @@ def table_benchmark(cli_args):
 
     task_objects = {name: HPatchesTask.create(task_name=name, logger=logger, config=base_config['task'])
                     for name in cli_args.tasks}
-    feature_matcher = FeatureMatcherCV2(detector=det, descriptor=desc, matcher=mat, logger=logger,
-                                        config=combo_fm_config)
     dm = HPatchesDataManager(logger=logger, config=base_config['dataset'])
 
     for idx, combo in enumerate(combinations, 1):
-        det, desc, mat = combo
-        logger.info(f"{idx}/{len(combinations)} Processing: {det} + {desc} + {mat}")
+        det, det_backend, desc, des_backend, mat, mat_backend = combo
+        logger.info(f"{idx}/{len(combinations)} Processing: "
+                    f"{det}[{det_backend}] + {desc}[{des_backend}] + {mat}[{mat_backend}]")
 
         current_combo_results = {task: {} for task in cli_args.tasks}
 
         tmp_args = copy.copy(cli_args)
         tmp_args.detector, tmp_args.descriptor, tmp_args.matcher = det, desc, mat
+        tmp_args.det_backend = det_backend
+        tmp_args.des_backend = des_backend
+        tmp_args.mat_backend = mat_backend
+        configure_model_paths(tmp_args)
         combo_fm_config = build_hpatches_feature_matcher_config(tmp_args)
-        feature_matcher.__init__(detector=det, descriptor=desc, matcher=mat,
-                                 logger=logger, config=combo_fm_config)
+        feature_matcher = None
 
         try:
+            feature_matcher = FeatureMatcherCV2(detector=det, descriptor=desc, matcher=mat,
+                                                logger=logger, config=combo_fm_config)
+
             while dm.has_more_data():
                 current_batch = dm.load_batch()
                 if not current_batch:
@@ -199,9 +242,10 @@ def table_benchmark(cli_args):
                                 current_combo_results[name][threshold] = {}
                             current_combo_results[name][threshold].update(res_scene[threshold])
 
-            dm.reset()
             combo_row = {
-                'detector': det, 'descriptor': desc, 'matcher': mat,
+                'detector': det, 'detector_backend': det_backend,
+                'descriptor': desc, 'descriptor_backend': des_backend,
+                'matcher': mat, 'matcher_backend': mat_backend,
                 'device': cli_args.device or 'cpu',
                 'num_scenes': cli_args.num_scenes,
             }
@@ -211,12 +255,17 @@ def table_benchmark(cli_args):
                 combo_row.update(flatten_metrics(name, per_threshold_metrics))
 
             save_single_result(cli_args.output, combo_row, cli_args.tasks, cli_args.eval_thresholds)
-            logger.info(f"Combination {det}+{desc}+{mat} finished and saved")
-            feature_matcher.close()
+            logger.info(f"Combination {det}[{det_backend}]+{desc}[{des_backend}]+"
+                        f"{mat}[{mat_backend}] finished and saved")
 
         except Exception as e:
-            logger.error(f"Failed combination {det}+{desc}+{mat}: {e}")
+            logger.error(f"Failed combination {det}[{det_backend}]+{desc}[{des_backend}]+"
+                         f"{mat}[{mat_backend}]: {e}")
             continue
+        finally:
+            dm.reset()
+            if feature_matcher is not None:
+                feature_matcher.close()
 
 
 def parse_args():
@@ -254,33 +303,42 @@ def parse_args():
                             help='Threshold for homography estimation')
 
     det_group = parser.add_argument_group('Detector config')
-    det_group.add_argument('-detb', '--det-backend', type=str, default=None, help='Backend for detector')
     det_group.add_argument('-dn', '--det-nfeatures', type=int, default=None,
                            help='Max number of features to detect')
     det_group.add_argument('-do', '--det-noctave', type=int, default=None,
                            help='Number of octave layers')
     det_group.add_argument('-dt', '--det-threshold', type=float, default=None,
                            help='Detection threshold')
+    det_group.add_argument('--det-et-model', type=Path,
+                           help='Path to a detector .pte file')
+    det_group.add_argument('--det-et-input-shape', type=int, nargs=4, metavar=('N', 'C', 'H', 'W'),
+                           help='Static detector .pte input shape')
+    det_group.add_argument('--det-et-num-keypoints', type=int, default=None,
+                           help='Number of keypoints emitted by the ExecuTorch detector')
 
     des_group = parser.add_argument_group('Descriptor config')
-    des_group.add_argument('-desb', '--des-backend', type=str, default=None,
-                           help='Backend for descriptor')
     des_group.add_argument('-dsen', '--des-nfeatures', type=int, default=None,
                            help='Max number of features for descriptor')
     des_group.add_argument('-dsdt', '--des-threshold', type=float, default=None,
                            help='Descriptor threshold')
     des_group.add_argument('-dss', '--des-scale', type=float, default=None,
                            help='Scale factor')
+    des_group.add_argument('--des-et-model', type=Path,
+                           help='Path to a descriptor .pte file')
+    des_group.add_argument('--des-et-patch-size', type=int, default=32,
+                           help='Patch size for descriptor model')
 
     mat_group = parser.add_argument_group('Matcher config')
-    mat_group.add_argument('-matb', '--mat-backend', type=str, default=None,
-                           help='Backend for matcher')
     mat_group.add_argument('-mat_m', '--matcher_mode', type=str, default='simple',
                            choices=OPENCV_MATCHERS_MODE, help='Matching mode')
     mat_group.add_argument('-mr', '--mat-ratio', type=float, default=None,
                            help='Ratio threshold for KNN')
     mat_group.add_argument('-mc', '--mat-cross-check', action='store_true', default=None,
                            help='Enable cross-check for BF matcher')
+    mat_group.add_argument('--mat-et-model', type=Path,
+                           help='Path to a fixed-K matcher .pte file')
+    mat_group.add_argument('--mat-et-num-keypoints', type=int, default=None,
+                           help='Number of keypoints expected by the ExecuTorch matcher')
 
     return parser.parse_args()
 
