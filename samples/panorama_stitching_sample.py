@@ -18,45 +18,22 @@ def cli_argument_parser():
                         type=str,
                         dest='config',
                         help='Path for yaml config for detailed stitching')
-    parser.add_argument('-t', '--stitcher_type',
-                        type=str,
-                        choices=['OpenCVStitcher',
-                                 'SuperPointLightGlueStitcher',
-                                 'DetailedStitcher'],
-                        default='OpenCVStitcher',
-                        dest='stitcher_type',
-                        help='Stitcher type')
-    parser.add_argument('-d', '--images_dir',
-                        type=str,
-                        default='../images/kitchen',
-                        dest='images_dir',
-                        help='Directory that contains sequence of indoor images')
-    parser.add_argument('-kp', '--keypoints_num',
-                        help='Number of keypoints (for SuperPoint)',
-                        type=int,
-                        dest='keypoints_num',
-                        default=2048)
-    parser.add_argument('-o', '--out_file_name',
-                        type=str,
-                        default='panorama.jpg',
-                        dest='out_file_name',
-                        help='File name to save stitched panorama')
 
     return parser.parse_args()
-
-
-def get_parameters_dict(args):
-    yaml_reader = YamlReader(logger, args.config)
-    return yaml_reader.get_config()[0]
 
 
 def main():
     args = cli_argument_parser()
     try:
-        images = read_images(logger, args.images_dir)
-        stitcher = PanoramaStitcher.create(logger, args.stitcher_type, get_parameters_dict(args))
+        config = YamlReader(logger, args.config).get_config()[0]
+        images = read_images(logger, config['images_dir'])
+        stitcher = PanoramaStitcher.create(
+            logger, config.get('stitcher_type', 'DetailedStitcher'), config)
         panorama = stitcher.stitch(images)
-        save_image(logger, panorama, args.out_file_name)
+        save_image(logger, panorama, config.get('out_file_name', 'panorama.jpg'))
+        if getattr(stitcher, 'perf_report', None) is not None:
+            report_file_name = config.get('report_file_name', 'stitching_report.yaml')
+            YamlReader(logger).save(stitcher.perf_report, report_file_name)
     except Exception as ex:
         logger.error((f'{str(ex)}'))
 

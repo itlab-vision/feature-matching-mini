@@ -21,3 +21,21 @@ def _init_thirdparty_routes():
 
 
 _init_thirdparty_routes()
+
+# Backend: base classes + registered implementations (torch, opencv)
+from src.backend import InferenceAPI, IOAdapter, ModelWrapper  # noqa: E402, F401
+
+# Src base classes (OpenCV built-ins live in the same modules and register
+# themselves via __init_subclass__)
+from src.detectors import Detector  # noqa: E402, F401
+from src.descriptors import Descriptor  # noqa: E402, F401
+from src.matchers import Matcher  # noqa: E402, F401
+
+# DNN detector/descriptor/matcher implementations (registered via __init_subclass__/register)
+from src.dnn_extractors import DNNFeatureExtractors  # noqa: E402, F401
+from src.dnn_matchers import DNNMatcher  # noqa: E402, F401
+from src.dnn_pipeline import DNNPipeline  # noqa: E402, F401
+from src.opencv_dnn_extractors import ALIKEDOpenCV, DISKOpenCV  # noqa: E402, F401
+from src.opencv_dnn_matchers import LightGlueOpenCVMatcher  # noqa: E402, F401
+from src.hardnet_descriptor import HardNet  # noqa: E402, F401
+from src.tfeat_descriptor import TFeat  # noqa: E402, F401

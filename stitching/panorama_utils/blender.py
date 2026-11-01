@@ -25,7 +25,10 @@ class Blender(ABC):
         self.blender.feed(img, mask, corner)
 
     def blend(self, result=None, result_mask=None):
-        return self.blender.blend(result, result_mask)
+        try:
+            return self.blender.blend(result, result_mask)
+        finally:
+            self.prepared = False
 
     def _compute_blend_width(self, dst_sz):
         return np.sqrt(dst_sz[2] * dst_sz[3]) * self.parameters['blend_strength'] / 100

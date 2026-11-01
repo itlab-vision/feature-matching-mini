@@ -36,6 +36,10 @@ class OpenCVSubsetSelector(SubsetSelector):
 
     def select(self, features, pairs, scaled_imgs, full_images, full_img_sizes):
         indices = cv2.detail.leaveBiggestComponent(features, pairs, self.conf_thresh)
+        if self.logger is not None:
+            self.logger.info(
+                f'Subset: kept {len(indices)} of {len(features)} images '
+                f'(conf_thresh={self.conf_thresh}): {indices}')
         img_subset = [scaled_imgs[i] for i in indices]
         full_img_sizes_subset = [full_img_sizes[i] for i in indices]
         full_images_subset = [full_images[i] for i in indices]

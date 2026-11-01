@@ -7,8 +7,8 @@ from pathlib import Path
 def read_images(logger, images_dir):
     logger.info(f'START: Read images from {images_dir}')
     imgs = []
-    files = [os.path.join(images_dir, f)
-             for f in os.listdir(images_dir) if os.path.isfile(os.path.join(images_dir, f))]
+    files = sorted(os.path.join(images_dir, f)
+                   for f in os.listdir(images_dir) if os.path.isfile(os.path.join(images_dir, f)))
     logger.info(f'Available images: {files}')
     for file in files:
         logger.info(f'Read image {file}')
@@ -42,7 +42,21 @@ class YamlReader:
                 raise ValueError(f'File {config_path} does not exists.')
 
     def get_config(self):
-        return self.config
+        return self._flatten_config(self.config)
+
+    @staticmethod
+    def _flatten_config(config):
+        if isinstance(config, list):
+            return [YamlReader._flatten_config(item) for item in config]
+        if not isinstance(config, dict):
+            return config
+        flat = {}
+        for key, value in config.items():
+            if isinstance(value, dict):
+                flat.update(YamlReader._flatten_config(value))
+            else:
+                flat[key] = value
+        return flat
 
     def save(self, dictionary, path):
         self.logger.info(f'Dumping dictionary to {path}')

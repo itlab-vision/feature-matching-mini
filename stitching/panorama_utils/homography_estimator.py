@@ -70,6 +70,8 @@ class OpenCVHomographyEstimator(HomographyEstimator):
         adjusted = [self._copy_camera(cam) for cam in cameras]
         try:
             status, refined = self.adjuster.apply(features, pairs, adjusted)
+            if status:
+                return refined
         except cv2.error as error:
             if self.logger is not None:
                 self.logger.warning(f'Bundle adjuster failed, cameras left unrefined: {error}')

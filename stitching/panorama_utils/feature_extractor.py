@@ -3,6 +3,16 @@ import cv2
 import numpy as np
 import importlib
 
+from stitching.panorama_utils.utils import (
+    SRC_EXTRACTOR_NAMES,
+    SRC_PIPELINES,
+    import_src,
+    resolve_src_names,
+    src_config,
+    src_features_to_image_features,
+    validate_detector_descriptor,
+)
+
 
 class FeatureExtractor(ABC):
     _registry = {}
@@ -109,3 +119,48 @@ class SuperPointFeatureExtractor(FeatureExtractor):
         features_cv.img_idx = 80
         features_cv.img_size = (image.shape[1], image.shape[0])
         return features_cv
+
+
+@FeatureExtractor.register('pipeline')
+class PipelineFeatureExtractor(FeatureExtractor):
+    """Feature extractor backed by the src feature-matching library.
+
+    Usage in config:
+        detector: 'xfeat'                 # src detector name
+        descriptor: 'xfeat'               # src descriptor name
+        src_config:
+          detector: {nfeatures: 2000}     # optional detector params
+          descriptor: {}                  # optional descriptor params
+
+    Methods that bundle a detector+descriptor pair (e.g. xfeat,
+    disk_lightglue) are given for both detector and descriptor.
+    Legacy keys `features` / `src_detector` / `src_descriptor` are still
+    supported (e.g. features: 'xfeat', features: 'fast', features: 'hardnet').
+    """
+
+    def __init__(self, parameters, logger):
+        super().__init__(parameters, logger)
+        self.detector_name, self.descriptor_name = resolve_src_names(parameters)
+        self.cfg = src_config(parameters)
+        self.is_pipeline = self.detector_name in SRC_PIPELINES
+        if not self.is_pipeline:
+            Detector, Descriptor, _ = import_src()
+            validate_detector_descriptor(self.detector_name, self.descriptor_name)
+            detector_cfg = dict(self.cfg.get('detector', {}) or {})
+            descriptor_cfg = dict(self.cfg.get('descriptor', {}) or {})
+            self.logger.info(
+                f'Src feature extractor: detector={self.detector_name} descriptor={self.descriptor_name}')
+            self.detector = Detector.create(self.detector_name, self.logger, detector_cfg)
+            self.descriptor = Descriptor.create(self.descriptor_name, self.logger, descriptor_cfg)
+
+    def extract(self, image):
+        if self.is_pipeline:
+            return src_features_to_image_features({'keypoints': (), 'descriptors': ()},
+                                                  image, 80)
+        features = self.detector.detect(image)
+        features = self.descriptor.compute(image, features)
+        return src_features_to_image_features(features, image, 80)
+
+
+for _src_extractor_name in SRC_EXTRACTOR_NAMES:
+    FeatureExtractor.register(_src_extractor_name)(PipelineFeatureExtractor)

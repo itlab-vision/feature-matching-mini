@@ -51,6 +51,8 @@ class HardNet(Descriptor):
             return {'keypoints': (), 'descriptors': ()}
 
         kp = features.get('kp')
+        if kp is None:
+            kp = features.get('keypoints')
         if kp is None or len(kp) == 0:
             self._logger.info("No keypoints provided. Returning empty descriptors.")
             return {'keypoints': (), 'descriptors': np.empty((0, 128), dtype=np.float32)}

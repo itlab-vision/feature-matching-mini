@@ -6,6 +6,7 @@ class PanoramaStitcher(ABC):
 
     def __init__(self, logger, parameters=None):
         self.logger = logger
+        self.perf_report = None
         self.parameters = {}
         if parameters is not None:
             self.parameters = parameters
