@@ -1,0 +1,39 @@
+- stitching_params:
+    stitcher_type: 'DetailedStitcher'
+    images_dir: 'test_panorama/test_panorama1-1'
+    out_file_name: 'panorama_src_aliked.jpg'
+    report_file_name: 'stitching_report.yaml'
+
+  matching_params:
+    detector: 'aliked_lightglue'
+    descriptor: 'aliked_lightglue'
+    matcher: 'lightglue'
+    sequential_matching: true
+    keypoints_num: 5000
+
+  processing_params:
+    try_cuda: false
+    work_megapix: 0.6
+    seam_megapix: 0.1
+    compose_megapix: -1
+    range_width: -1
+
+  estimation_params:
+    estimator: 'homography'
+    match_conf: 0.3
+    conf_thresh: 0.3
+    ba: 'ray'
+    ba_refine_mask: 'xxxxx'
+
+  warping_params:
+    wave_correct: 'horiz'
+    warp: 'spherical'
+
+  blending_params:
+    seam: 'gc_color'
+    expos_comp: 'gain_blocks'
+    expos_comp_nr_feeds: 1
+    expos_comp_nr_filtering: 2
+    expos_comp_block_size: 32
+    blend: 'multiband'
+    blend_strength: 5
