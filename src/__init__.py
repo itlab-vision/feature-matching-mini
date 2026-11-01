@@ -35,7 +35,5 @@ from src.matchers import Matcher  # noqa: E402, F401
 from src.dnn_extractors import DNNFeatureExtractors  # noqa: E402, F401
 from src.dnn_matchers import DNNMatcher  # noqa: E402, F401
 from src.dnn_pipeline import DNNPipeline  # noqa: E402, F401
-from src.opencv_dnn_extractors import ALIKEDOpenCV, DISKOpenCV  # noqa: E402, F401
-from src.opencv_dnn_matchers import LightGlueOpenCVMatcher  # noqa: E402, F401
 from src.hardnet_descriptor import HardNet  # noqa: E402, F401
 from src.tfeat_descriptor import TFeat  # noqa: E402, F401

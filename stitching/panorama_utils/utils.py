@@ -79,6 +79,9 @@ def resolve_src_matcher(parameters):
 def validate_detector_descriptor(detector_name, descriptor_name):
     from src.algorithms import DETECTOR_DESCRIPTOR_COMPATIBILITY
     allowed = DETECTOR_DESCRIPTOR_COMPATIBILITY.get(detector_name, [])
+    if isinstance(allowed, dict):
+        allowed = [d for backends in allowed.values()
+                   for descriptors in backends.values() for d in descriptors]
     if descriptor_name not in allowed:
         raise ValueError(
             f'Descriptor {descriptor_name!r} is not compatible with detector {detector_name!r}. '
@@ -89,6 +92,9 @@ def validate_detector_descriptor(detector_name, descriptor_name):
 def validate_descriptor_matcher(descriptor_name, matcher_name):
     from src.algorithms import DESCRIPTOR_MATCHER_COMPATIBILITY
     allowed = DESCRIPTOR_MATCHER_COMPATIBILITY.get(descriptor_name, [])
+    if isinstance(allowed, dict):
+        allowed = [m for backends in allowed.values()
+                   for matchers in backends.values() for m in matchers]
     if matcher_name not in allowed:
         raise ValueError(
             f'Matcher {matcher_name!r} is not compatible with descriptor {descriptor_name!r}. '
