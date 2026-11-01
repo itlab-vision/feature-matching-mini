@@ -6,9 +6,8 @@ from src.backend.opencv.io_adapter.io_adapter import OpenCVIOAdapter
 
 @IOAdapter.register("lightglue_opencv")
 class LightGlueOpenCVIOAdapter(OpenCVIOAdapter):
-    def _normalize_keypoints(self, keypoints, img_shape, extractor_name):
+    def _normalize_keypoints(self, keypoints, height, width, extractor_name):
         keypoints = np.asarray(keypoints, dtype=np.float32).reshape(-1, 2).copy()
-        height, width = img_shape[:2]
 
         if "disk" in extractor_name:
             if width <= 1 or height <= 1:
@@ -25,28 +24,30 @@ class LightGlueOpenCVIOAdapter(OpenCVIOAdapter):
         return keypoints
 
     def preprocess(self, inputs):
-        features1, features2 = inputs.get('features1'), inputs.get('features2')
-        kpts0 = features1.get('keypoints')
-        kpts1 = features2.get('keypoints')
-        desc0 = features1.get('descriptors')
-        desc1 = features2.get('descriptors')
+        features0, features1 = inputs.get('features0'), inputs.get('features1')
+        kpts0 = features0.get('keypoints')
+        kpts1 = features1.get('keypoints')
+        desc0 = features0.get('descriptors')
+        desc1 = features1.get('descriptors')
 
         if kpts0 is None or kpts1 is None or len(kpts0) == 0 or len(kpts1) == 0 or \
                 desc0 is None or desc1 is None or len(desc0) == 0 or len(desc1) == 0:
             return None
 
-        shape0 = features1.get("img_shape")
-        shape1 = features2.get("img_shape")
+        height0 = features0.get("height")
+        width0 = features0.get("width")
+        height1 = features1.get("height")
+        width1 = features1.get("width")
 
-        extractor_name = features1.get("extractor_name", "").lower()
+        extractor_name = features0.get("extractor_name", "").lower()
 
         if len(kpts0) > 0 and isinstance(kpts0[0], cv.KeyPoint):
             kpts0 = cv.KeyPoint_convert(kpts0)
         if len(kpts1) > 0 and isinstance(kpts1[0], cv.KeyPoint):
             kpts1 = cv.KeyPoint_convert(kpts1)
 
-        kpts0 = self._normalize_keypoints(kpts0, shape0, extractor_name)
-        kpts1 = self._normalize_keypoints(kpts1, shape1, extractor_name)
+        kpts0 = self._normalize_keypoints(kpts0, height0, width0, extractor_name)
+        kpts1 = self._normalize_keypoints(kpts1, height1, width1, extractor_name)
 
         if kpts0.ndim == 2:
             kpts0 = np.expand_dims(kpts0, axis=0)

@@ -1,8 +1,8 @@
 import cv2 as cv
 import numpy as np
 
-from src.algorithms import (DETECTOR_DESCRIPTOR_COMPATIBILITY, DESCRIPTOR_MATCHER_COMPATIBILITY, DNN_MATCHERS,
-                            OPENCV_MATCHERS, DNN_PIPELINES)
+from src.algorithms import (BACKEND_ALGORITHMS, DETECTOR_DESCRIPTOR_COMPATIBILITY, OPENCV_MATCHERS, TORCH_PIPELINES,
+                            get_compatible_descriptors, get_compatible_matchers, get_default_backend)
 
 from src.detectors import Detector
 from src.descriptors import Descriptor
@@ -10,8 +10,6 @@ from src.matchers import Matcher
 from src.dnn_extractors import DNNFeatureExtractors  # noqa: F401
 from src.dnn_matchers import DNNMatcher  # noqa: F401
 from src.dnn_pipeline import DNNPipeline  # noqa: F401
-from src.opencv_dnn_extractors import ALIKEDOpenCV, DISKOpenCV  # noqa: F401
-from src.opencv_dnn_matchers import LightGlueOpenCVMatcher  # noqa: F401
 from src.hardnet_descriptor import HardNet  # noqa: F401
 from src.tfeat_descriptor import TFeat  # noqa: F401
 
@@ -31,6 +29,9 @@ class FeatureMatcherCV2:
         self._detector_config = config.get('detector', {})
         self._descriptor_config = config.get('descriptor', {})
         self._matcher_config = config.get('matcher', {})
+        self._detector_backend = self._get_backend(self._detector_name, self._detector_config, 0)
+        self._descriptor_backend = self._get_backend(self._descriptor_name, self._descriptor_config, 1)
+        self._matcher_backend = self._get_backend(self._matcher_name, self._matcher_config, 2)
 
         self._validate_compatibility()
 
@@ -45,21 +46,55 @@ class FeatureMatcherCV2:
         if self._detector_name not in DETECTOR_DESCRIPTOR_COMPATIBILITY:
             raise ValueError(f"Detector '{self._detector_name}' is not registered in compatibility matrix")
 
-        if self._descriptor_name not in DETECTOR_DESCRIPTOR_COMPATIBILITY[self._detector_name]:
-            raise ValueError(f"Detector {self._detector_name} cannot be used with Descriptor {self._descriptor_name}")
+        self._validate_backend(self._detector_name, self._detector_backend, 0, 'Detector')
+        self._validate_backend(self._descriptor_name, self._descriptor_backend, 1, 'Descriptor')
+        self._validate_backend(self._matcher_name, self._matcher_backend, 2, 'Matcher')
 
-        if self._descriptor_name in DESCRIPTOR_MATCHER_COMPATIBILITY:
-            if self._matcher_name not in DESCRIPTOR_MATCHER_COMPATIBILITY[self._descriptor_name]:
-                raise ValueError(f"Descriptor '{self._descriptor_name}' cannot be used with "
-                                 f"Matcher '{self._matcher_name}'"
-                                 f"Available: {DESCRIPTOR_MATCHER_COMPATIBILITY[self._descriptor_name]}")
+        descriptors = get_compatible_descriptors(
+            self._detector_name,
+            self._detector_backend,
+            self._descriptor_backend,
+        )
+        if self._descriptor_name not in descriptors:
+            raise ValueError(
+                f"Detector '{self._detector_name}' on {self._detector_backend} backend cannot be used with "
+                f"Descriptor '{self._descriptor_name}' on {self._descriptor_backend} backend. "
+                f"Available: {descriptors}"
+            )
 
-        if self._matcher_name in DNN_MATCHERS and 'mode' in self._matcher_config:
+        matchers = get_compatible_matchers(
+            self._descriptor_name,
+            self._descriptor_backend,
+            self._matcher_backend,
+        )
+        if self._matcher_name not in matchers:
+            raise ValueError(
+                f"Descriptor '{self._descriptor_name}' on {self._descriptor_backend} backend cannot be used with "
+                f"Matcher '{self._matcher_name}' on {self._matcher_backend} backend. Available: {matchers}"
+            )
+
+        if self._matcher_backend != 'opencv' and 'mode' in self._matcher_config:
             raise ValueError(f"Matcher '{self._matcher_name}' does not support 'mode' parameter. "
                              f"Mode is only available for OpenCV matchers: {OPENCV_MATCHERS}")
 
+    @staticmethod
+    def _get_backend(algorithm_name, config, algorithm_index):
+        backend = config.get('backend')
+        if backend is not None:
+            return backend.lower()
+        return get_default_backend(algorithm_name, algorithm_index)
+
+    @staticmethod
+    def _validate_backend(algorithm_name, backend, algorithm_index, component_name):
+        if backend not in BACKEND_ALGORITHMS:
+            raise ValueError(f"Unknown {component_name.lower()} backend '{backend}'")
+        if algorithm_name not in BACKEND_ALGORITHMS[backend][algorithm_index]:
+            raise ValueError(
+                f"{component_name} '{algorithm_name}' is not available on {backend} backend"
+            )
+
     def _has_keypoints(self, features):
-        if self._detector_name in DNN_PIPELINES:
+        if self._detector_name in TORCH_PIPELINES:
             return True
 
         kp = features.get('kp')

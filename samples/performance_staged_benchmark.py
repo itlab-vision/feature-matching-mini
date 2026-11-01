@@ -7,18 +7,19 @@ sys.path.append(str(Path(__file__).parent.parent))  # noqa: E402
 
 from src.image_utils import read_image  # noqa: E402
 from samples.utils import build_feature_matcher_config, performance_tests_parser  # noqa: E402
-from src.algorithms import DNN_ALGORITHMS, DNN_PIPELINES  # noqa: E402
+from src.algorithms import DNN_ALGORITHMS, TORCH_PIPELINES  # noqa: E402
 from src.detectors import Detector  # noqa: E402
 from src.descriptors import Descriptor  # noqa: E402
 from src.matchers import Matcher  # noqa: E402
 from samples.performance_profiler import PerformanceProfiler  # noqa: E402
-from src.opencv_dnn_extractors import ALIKEDOpenCV, DISKOpenCV  # noqa: E402, F401
-from src.opencv_dnn_matchers import LightGlueOpenCVMatcher  # noqa: E402, F401
 from src.tfeat_descriptor import TFeat  # noqa: E402, F401
 from src.hardnet_descriptor import HardNet  # noqa: E402, F401
 import src.backend.opencv.model_loader  # noqa: E402, F401
 import src.backend.opencv.inference_api  # noqa: E402, F401
 import src.backend.opencv.io_adapter  # noqa: E402, F401
+import src.backend.onnx.model_loader  # noqa: E402, F401
+import src.backend.onnx.inference_api  # noqa: E402, F401
+import src.backend.onnx.io_adapter  # noqa: E402, F401
 from src.dnn_extractors import DNNFeatureExtractors  # noqa: E402, F401
 from src.dnn_matchers import DNNMatcher  # noqa: E402, F401
 from src.dnn_pipeline import DNNPipeline  # noqa: E402, F401
@@ -127,7 +128,7 @@ def _pipeline_methods_perf_test(logger, profiler, matcher, features0, features1,
 def staged_performance_test(logger, profiler, detector, detector_name, descriptor, descriptor_name,
                             matcher, img0, img1, iterations):
 
-    if detector_name in DNN_PIPELINES:
+    if detector_name in TORCH_PIPELINES:
         _pipeline_methods_perf_test(logger, profiler, matcher,
                                     {'image': img0}, {'image': img1}, iterations)
 

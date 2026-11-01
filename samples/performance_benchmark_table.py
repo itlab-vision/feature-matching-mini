@@ -9,7 +9,7 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).parent.parent))  # noqa: E402
 
 from src.algorithms import (DETECTOR_DESCRIPTOR_COMPATIBILITY, DESCRIPTOR_MATCHER_COMPATIBILITY,  # noqa: E402
-                            DNN_PIPELINES)
+                            TORCH_PIPELINES, get_compatible_descriptors, get_compatible_matchers)
 
 logging.basicConfig(level=logging.INFO, format='[ %(levelname)s ] %(message)s')
 logger = logging.getLogger("PerformanceBenchmark")
@@ -52,20 +52,28 @@ def parse_performance_log(log_output, script_type):
     return results
 
 
-def run_benchmark(script_name, detector, descriptor, matcher,
-                  img1, img2, device='cpu', iterations=10):
+def run_benchmark(script_name, combo, img1, img2, device='cpu', iterations=10):
+    det = combo['detector']
+    detb = combo['detector_backend']
+    des = combo['descriptor']
+    desb = combo['descriptor_backend']
+    mat = combo['matcher']
+    matb = combo['matcher_backend']
     cmd = [
         sys.executable, '-m', script_name,
-        '-det', detector,
-        '-des', descriptor,
-        '-mat', matcher,
+        '-det', det,
+        '-detb', detb,
+        '-des', des,
+        '-desb', desb,
+        '-mat', mat,
+        '-matb', matb,
         '-i1', str(img1),
         '-i2', str(img2),
         '-d', device,
         '-n', str(iterations)
     ]
 
-    logger.info(f"Running: {detector}+{descriptor}+{matcher}")
+    logger.info(f"Running: {det} ({detb}) + {des} ({desb}) + {mat} ({matb})")
 
     process = None
     try:
@@ -79,7 +87,7 @@ def run_benchmark(script_name, detector, descriptor, matcher,
         output = stdout + stderr
 
         if process.returncode != 0:
-            logger.warning(f"Failed: {detector}+{descriptor}+{matcher}")
+            logger.warning(f"Failed: {det} ({detb}) + {des} ({desb}) + {mat} ({matb})")
             return False, {}
 
         script_type = 'staged' if 'staged' in script_name else 'pipeline'
@@ -97,15 +105,25 @@ def run_benchmark(script_name, detector, descriptor, matcher,
 
 def get_all_combinations():
     combinations = []
-
-    for detector in DETECTOR_DESCRIPTOR_COMPATIBILITY:
-        descriptors = DETECTOR_DESCRIPTOR_COMPATIBILITY.get(detector, [])
-
-        for descriptor in descriptors:
-            matchers = DESCRIPTOR_MATCHER_COMPATIBILITY.get(descriptor, [])
-
-            for matcher in matchers:
-                combinations.append((detector, descriptor, matcher))
+    for detector, det_backends_dict in DETECTOR_DESCRIPTOR_COMPATIBILITY.items():
+        for det_backend, desc_backends_dict in det_backends_dict.items():
+            for desc_backend in desc_backends_dict.keys():
+                descriptors = get_compatible_descriptors(detector, det_backend, desc_backend)
+                for descriptor in descriptors:
+                    match_backends_dict = DESCRIPTOR_MATCHER_COMPATIBILITY.get(descriptor, {})
+                    if desc_backend in match_backends_dict:
+                        for match_backend in match_backends_dict[desc_backend].keys():
+                            matchers = get_compatible_matchers(descriptor, desc_backend, match_backend)
+                            for matcher in matchers:
+                                combo = {
+                                    'detector': detector,
+                                    'detector_backend': det_backend,
+                                    'descriptor': descriptor,
+                                    'descriptor_backend': desc_backend,
+                                    'matcher': matcher,
+                                    'matcher_backend': match_backend
+                                }
+                                combinations.append(combo)
 
     return combinations
 
@@ -115,21 +133,23 @@ def table_benchmark(img1, img2, output_csv, device='cpu', iterations=10):
     logger.info(f"Found {len(combinations)} valid combinations:")
     all_results = []
 
-    for (detector, descriptor, matcher) in combinations:
+    for combo in combinations:
         combo_result = {
-            'detector': detector,
-            'descriptor': descriptor,
-            'matcher': matcher,
+            'detector': combo['detector'],
+            'detector_backend': combo['detector_backend'],
+            'descriptor': combo['descriptor'],
+            'descriptor_backend': combo['descriptor_backend'],
+            'matcher': combo['matcher'],
+            'matcher_backend': combo['matcher_backend'],
             'device': device,
             'iterations': iterations,
         }
 
-        is_pipeline = detector in DNN_PIPELINES
+        is_pipeline = combo['detector'] in TORCH_PIPELINES
         if not is_pipeline:
             success_staged, staged_results = run_benchmark(
                 'samples.performance_staged_benchmark',
-                detector, descriptor, matcher,
-                img1, img2, device, iterations)
+                combo, img1, img2, device, iterations)
 
             if not success_staged:
                 continue
@@ -138,8 +158,7 @@ def table_benchmark(img1, img2, output_csv, device='cpu', iterations=10):
 
         success_pipeline, pipeline_results = run_benchmark(
             'samples.performance_pipeline_benchmark',
-            detector, descriptor, matcher,
-            img1, img2, device, iterations)
+            combo, img1, img2, device, iterations)
 
         if not success_pipeline:
             continue
@@ -159,7 +178,10 @@ def save_results_to_csv(results, output_path):
     df = pd.DataFrame(results)
 
     columns_order = [
-        'detector', 'descriptor', 'matcher', 'device', 'iterations',
+        'detector', 'detector_backend',
+        'descriptor', 'descriptor_backend',
+        'matcher', 'matcher_backend',
+        'device', 'iterations',
         'min_detection_ms', 'mean_detection_ms',
         'min_descriptor_ms', 'mean_descriptor_ms',
         "min_extractor_ms", "mean_extractor_ms",

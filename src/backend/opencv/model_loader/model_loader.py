@@ -1,6 +1,20 @@
 from src.backend.model_wrapper_base import ModelWrapper
 
 
+OPENCV_DETECTOR_MODELS = {
+    'disk': 'disk_1024.onnx',
+    'aliked': 'aliked-n32-top2k-640.onnx',
+}
+OPENCV_DESCRIPTOR_MODELS = {
+    'disk': 'disk_1024.onnx',
+    'aliked': 'aliked-n32-top2k-640.onnx',
+}
+OPENCV_MATCHER_MODELS = {
+    'disk': 'disk_lightglue_2outputs.onnx',
+    'aliked': 'lightglue_for_aliked.onnx',
+}
+
+
 @ModelWrapper.register("opencv")
 class OpenCVModelLoader(ModelWrapper):
     def __init__(self, model_name, model_path=None, config=None, logger=None):

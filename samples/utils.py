@@ -4,14 +4,23 @@ from pathlib import Path
 
 sys.path.append(str(Path(__file__).parent.parent))  # noqa: E402
 
+from src.algorithms import get_default_backend  # noqa: E402
 from src.algorithms import (ALL_DETECTORS, ALL_DESCRIPTORS, ALL_MATCHERS, OPENCV_MATCHERS_MODE,  # noqa: E402
-                            DNN_DETECTORS, DNN_DESCRIPTORS, DNN_MATCHERS, OPENCV_MATCHERS)
+                            TORCH_DETECTORS, TORCH_DESCRIPTORS, TORCH_MATCHERS, OPENCV_MATCHERS)
 
 
 def build_detector_config(args):
     config = dict()
-    if (args.device is not None) and (args.detector in DNN_DETECTORS):
+    if (args.device is not None) and (args.detector in TORCH_DETECTORS):
         config['device'] = args.device
+    if args.provider_option:
+        config['provider_option'] = args.provider_option
+    if args.intra_op_threads is not None:
+        config['intra_op_num_threads'] = args.intra_op_threads
+    if args.inter_op_threads is not None:
+        config['inter_op_num_threads'] = args.inter_op_threads
+    if args.execution_mode is not None:
+        config['execution_mode'] = args.execution_mode
     if args.det_backend is not None:
         config['backend'] = args.det_backend
     if args.det_nfeatures is not None:
@@ -29,8 +38,16 @@ def build_detector_config(args):
 
 def build_descriptor_config(args):
     config = dict()
-    if (args.device is not None) and (args.descriptor in DNN_DESCRIPTORS or args.descriptor in ['tfeat', 'hardnet']):
+    if (args.device is not None) and (args.descriptor in TORCH_DESCRIPTORS or args.descriptor in ['tfeat', 'hardnet']):
         config['device'] = args.device
+    if args.provider_option:
+        config['provider_option'] = args.provider_option
+    if args.intra_op_threads is not None:
+        config['intra_op_num_threads'] = args.intra_op_threads
+    if args.inter_op_threads is not None:
+        config['inter_op_num_threads'] = args.inter_op_threads
+    if args.execution_mode is not None:
+        config['execution_mode'] = args.execution_mode
     if args.des_backend is not None:
         config['backend'] = args.des_backend
     if args.des_nfeatures is not None:
@@ -58,14 +75,29 @@ def build_descriptor_config(args):
 
 def build_matcher_config(args):
     config = dict()
-    if (args.device is not None) and (args.matcher in DNN_MATCHERS):
+    if (args.device is not None) and (args.matcher in TORCH_MATCHERS):
         config['device'] = args.device
     if args.mat_backend is not None:
         config['backend'] = args.mat_backend
-    if args.matcher in OPENCV_MATCHERS:
-        config['mode'] = args.matcher_mode
-    if (args.k_knn is not None) and (args.matcher in OPENCV_MATCHERS):
-        config['k'] = args.k_knn
+
+    matcher_backend = args.mat_backend
+    if matcher_backend is None:
+        matcher_backend = get_default_backend(args.matcher, 2)
+
+    if matcher_backend == 'opencv':
+        if args.matcher in OPENCV_MATCHERS:
+            config['mode'] = args.matcher_mode
+        if (args.k_knn is not None) and (args.matcher in OPENCV_MATCHERS):
+            config['k'] = args.k_knn
+
+    if args.provider_option:
+        config['provider_option'] = args.provider_option
+    if args.intra_op_threads is not None:
+        config['intra_op_num_threads'] = args.intra_op_threads
+    if args.inter_op_threads is not None:
+        config['inter_op_num_threads'] = args.inter_op_threads
+    if args.execution_mode is not None:
+        config['execution_mode'] = args.execution_mode
     if args.mat_ratio is not None:
         config['ratio'] = args.mat_ratio
     if args.mat_cross_check is not None:
@@ -99,8 +131,6 @@ def performance_tests_parser():
         description="Feature matching staged performance test",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
-    available_devices = ['cpu', 'cuda', 'mps']
-
     arg_parser.add_argument('-det', '--detector', type=str, default='sift',
                             choices=ALL_DETECTORS, help='Detector algorithm')
     arg_parser.add_argument('-des', '--descriptor', type=str, default='sift',
@@ -114,7 +144,17 @@ def performance_tests_parser():
                             help='Path to the second image')
 
     arg_parser.add_argument('-d', '--device', type=str, default=None,
-                            choices=available_devices, help='The device on which the script will be run')
+                            help='The device on which the script will be run')
+    arg_parser.add_argument('-po', '--provider-option', action='append', default=[],
+                            help='ONNX provider options in format Provider.Key=Value '
+                                 '(e.g., -po CUDAExecutionProvider.device_id=0)')
+    arg_parser.add_argument('--intra-op-threads', type=int, default=None,
+                            help='Intra-op threads number for ONNX Runtime')
+    arg_parser.add_argument('--inter-op-threads', type=int, default=None,
+                            help='Inter-op threads number for ONNX Runtime')
+    arg_parser.add_argument('--execution-mode', type=str, default=None,
+                            choices=['ORT_SEQUENTIAL', 'ORT_PARALLEL'],
+                            help='Execution mode for ONNX Runtime')
 
     det_group = arg_parser.add_argument_group('Detector config')
     det_group.add_argument('-detb', '--det-backend', type=str, default=None, help='Backend for detector')
@@ -194,7 +234,7 @@ def build_hpatches_task_config(args):
 
 def build_hpatches_detector_config(args):
     config = dict()
-    if (args.device is not None) and (args.detector in DNN_DETECTORS):
+    if (args.device is not None) and (args.detector in TORCH_DETECTORS):
         config['device'] = args.device
     if args.det_nfeatures is not None:
         config['nfeatures'] = args.det_nfeatures
@@ -207,7 +247,7 @@ def build_hpatches_detector_config(args):
 
 def build_hpatches_descriptor_config(args):
     config = dict()
-    if (args.device is not None) and (args.descriptor in DNN_DESCRIPTORS or args.descriptor in ['tfeat', 'hardnet']):
+    if (args.device is not None) and (args.descriptor in TORCH_DESCRIPTORS or args.descriptor in ['tfeat', 'hardnet']):
         config['device'] = args.device
     if args.des_nfeatures is not None:
         config['nfeatures'] = args.des_nfeatures
@@ -220,7 +260,7 @@ def build_hpatches_descriptor_config(args):
 
 def build_hpatches_matcher_config(args):
     config = dict()
-    if (args.device is not None) and (args.matcher in DNN_MATCHERS):
+    if (args.device is not None) and (args.matcher in TORCH_MATCHERS):
         config['device'] = args.device
     if args.matcher in OPENCV_MATCHERS:
         config['mode'] = args.matcher_mode

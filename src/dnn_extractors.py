@@ -23,11 +23,15 @@ class DNNFeatureExtractors(Detector, Descriptor):
     def __init__(self, extractor_name, logger, config=None):
         if config is None:
             config = {}
+        else:
+            config = config.copy()
 
+        self.extractor_name = extractor_name
         Detector.__init__(self, logger, extractor_name)
         Descriptor.__init__(self, logger, extractor_name)
 
         backend = config.pop('backend', 'torch').lower()
+        self._backend = backend
         self._nfeatures = config.get('nfeatures', 4096)
         self._threshold = config.get('threshold', 0.005)
 
@@ -35,23 +39,32 @@ class DNNFeatureExtractors(Detector, Descriptor):
             DNNFeatureExtractors._model_wrapper = ModelWrapper.create(backend=backend, model_name=extractor_name,
                                                                       config=config, logger=logger)
             DNNFeatureExtractors._model_components = DNNFeatureExtractors._model_wrapper.load()
+            DNNFeatureExtractors.model_wrap_loaded = DNNFeatureExtractors._model_components.get('model') \
+                if backend in ['opencv', 'onnx'] else DNNFeatureExtractors._model_wrapper
 
         if DNNFeatureExtractors._io_adapter is None:
             DNNFeatureExtractors._io_adapter = IOAdapter.create(backend=backend, model_name=extractor_name,
+                                                                model_wrapper=DNNFeatureExtractors.model_wrap_loaded,
                                                                 config=config, logger=logger)
 
         if DNNFeatureExtractors._inference is None:
             DNNFeatureExtractors._inference = InferenceAPI.create(backend=backend, logger=logger, config=config,
                                                                   model_name=extractor_name,
-                                                                  model_wrapper=DNNFeatureExtractors._model_wrapper)
+                                                                  model_wrapper=DNNFeatureExtractors.model_wrap_loaded)
 
-    def _forward(self, img):
+    def _forward(self, img, features=None):
         if img is None:
             self._logger.error("Input image is None. Detection aborted.")
             return {'keypoints': (), 'descriptors': ()}
 
-        self._logger.info(f"Running inference with {self._detector_name}")
+        self._logger.info(
+            f"Running inference with {self._detector_name} on {self._backend} backend"
+        )
         inputs = {'image': img, **DNNFeatureExtractors._model_components}
+        if features is not None:
+            inputs.update(features)
+            if 'keypoints' not in inputs and 'kp' in features:
+                inputs['keypoints'] = features['kp']
 
         inputs = DNNFeatureExtractors._io_adapter.preprocess(inputs)
         outputs = DNNFeatureExtractors._inference.run(inputs)
@@ -86,7 +99,7 @@ class DNNFeatureExtractors(Detector, Descriptor):
 
         height, width = img.shape[:2]
         extracted = {'keypoints': kp, 'descriptors': des, 'scores': sc,
-                     'height': height, 'width': width, **outputs}
+                     'height': height, 'width': width, 'extractor_name': self.extractor_name, **outputs}
         DNNFeatureExtractors._extracted_data = extracted
 
         if len(kp) > 0:
@@ -114,7 +127,7 @@ class DNNFeatureExtractors(Detector, Descriptor):
             DNNFeatureExtractors._is_extracted = False
             return self._extracted_data
         else:
-            return self._forward(img)
+            return self._forward(img, features)
 
     def detectAndCompute(self, img):
         return self._forward(img)

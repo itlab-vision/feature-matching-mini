@@ -6,13 +6,16 @@ from unittest.mock import MagicMock
 from logging import Logger
 
 from src.image_utils import read_image
-from src.algorithms import DNN_ALGORITHMS, ALL_DETECTORS, ALL_DESCRIPTORS
+from src.algorithms import (ALL_DESCRIPTORS, ALL_DETECTORS, DNN_ALGORITHMS, get_compatible_descriptors,
+                            get_default_backend)
 import src.backend.opencv.model_loader  # noqa: F401
 import src.backend.opencv.inference_api  # noqa: F401
 import src.backend.opencv.io_adapter  # noqa: F401
+import src.backend.onnx.model_loader  # noqa: F401
+import src.backend.onnx.inference_api  # noqa: F401
+import src.backend.onnx.io_adapter  # noqa: F401
 from src.detectors import Detector
 from src.descriptors import Descriptor, SIFTDescriptor, OpenCVDescriptor
-from src.feature_matcher import FeatureMatcherCV2
 
 
 @pytest.fixture
@@ -100,13 +103,20 @@ class TestDescriptorCompute:
     @pytest.mark.parametrize("detector_name", ALL_DETECTORS)
     @pytest.mark.parametrize("descriptor_name", ALL_DESCRIPTORS)
     def test_all_methods_compute_descriptors(self, detector_name, descriptor_name, mock_logger, load_img, get_kp):
-        if (detector_name in FeatureMatcherCV2._DETECTOR_DESCRIPTOR_COMPATIBILITY
-                and descriptor_name in FeatureMatcherCV2._DETECTOR_DESCRIPTOR_COMPATIBILITY[detector_name]):
+        detector_backend = get_default_backend(detector_name, 0)
+        descriptor_backend = get_default_backend(descriptor_name, 1)
+        compatible_descriptors = get_compatible_descriptors(
+            detector_name,
+            detector_backend,
+            descriptor_backend,
+        )
+        if descriptor_name in compatible_descriptors:
             is_neural = detector_name in DNN_ALGORITHMS
 
             if is_neural:
                 img = load_img("box.png", input_type='tensor')
-                config = {'device': 'cpu'} if detector_name in ALGORITHMS_CPU_ONLY else {}
+                config = {'device': 'cpu', 'backend': detector_backend} \
+                    if detector_name in ALGORITHMS_CPU_ONLY else {'backend': detector_backend}
                 features = get_kp("box.png", detector_name, input_type='tensor', config=config)
 
                 assert isinstance(features, dict)

@@ -52,7 +52,7 @@ class TFeat(Descriptor):
         if len(img.shape) == 3:
             img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
 
-        self._logger.info(f"Running inference with {self._descriptor_name}")
+        self._logger.info(f"Running inference with {self._descriptor_name} on opencv backend")
 
         use_gpu = (self._device.type == 'cuda')
         desc_tfeat = describe_opencv(self.model, img, kp, 32, self.mag_factor, use_gpu=use_gpu)

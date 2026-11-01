@@ -11,3 +11,4 @@ matplotlib
 einops
 loguru
 yacs
+onnxruntime

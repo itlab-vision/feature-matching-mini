@@ -5,6 +5,7 @@ import src.backend.torch.io_adapter  # noqa: E402, F401
 from src.backend.io_adapter_base import IOAdapter
 from src.backend.inference_api_base import InferenceAPI
 from src.backend.model_wrapper_base import ModelWrapper
+from src.backend.opencv.model_loader.model_loader import OPENCV_MATCHER_MODELS
 
 
 class DNNMatcher(Matcher):
@@ -16,10 +17,16 @@ class DNNMatcher(Matcher):
     def __init__(self, matcher_name, logger, config=None, descriptor_class=None):
         if config is None:
             config = {}
+        else:
+            config = config.copy()
+
+        if descriptor_class._descriptor_name == 'aliked' and config.get('lightglue_model_path') is None:
+            config['lightglue_model_path'] = f"models/{OPENCV_MATCHER_MODELS['aliked']}"
 
         Matcher.__init__(self, matcher_name, logger, config, descriptor_class)
 
         backend = config.pop('backend', 'torch').lower()
+        self._backend = backend
         if 'descriptor_class' not in config:
             config['descriptor_class'] = descriptor_class
 
@@ -30,19 +37,25 @@ class DNNMatcher(Matcher):
             DNNMatcher._model_wrapper = ModelWrapper.create(backend=backend, model_name=matcher_name,
                                                             config=config, logger=logger)
             DNNMatcher._model_components = DNNMatcher._model_wrapper.load()
+            DNNMatcher.model_wrap_loaded = DNNMatcher._model_components.get('model') \
+                if backend in ['opencv', 'onnx'] else DNNMatcher._model_wrapper
 
         if DNNMatcher._io_adapter is None:
             DNNMatcher._io_adapter = IOAdapter.create(backend=backend, model_name=matcher_name,
+                                                      model_wrapper=DNNMatcher.model_wrap_loaded,
                                                       config=config, logger=logger)
 
         if DNNMatcher._inference is None:
             DNNMatcher._inference = InferenceAPI.create(backend=backend, logger=logger, model_name=matcher_name,
-                                                        model_wrapper=DNNMatcher._model_wrapper, config=config)
+                                                        model_wrapper=DNNMatcher.model_wrap_loaded, config=config)
 
     def _init_matcher(self):
         pass
 
     def match(self, features0, features1):
+        self._logger.info(
+            f"Running inference with {self._matcher_name} on {self._backend} backend"
+        )
         inputs = {"features0": features0, "features1": features1, "descriptor_name": self._descriptor_class,
                   **DNNMatcher._model_components}
         inputs = DNNMatcher._io_adapter.preprocess(inputs)

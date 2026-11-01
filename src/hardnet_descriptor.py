@@ -59,7 +59,7 @@ class HardNet(Descriptor):
 
         if len(img.shape) == 3:
             img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
-        self._logger.info(f"Running inference with {self._descriptor_name}")
+        self._logger.info(f"Running inference with {self._descriptor_name} on opencv backend")
         keypoints, descriptors = self._extract_descriptors(img, kp)
         self._logger.info(f"{self._descriptor_name} computed {len(descriptors)} descriptors")
         return {'keypoints': keypoints, 'descriptors': descriptors}

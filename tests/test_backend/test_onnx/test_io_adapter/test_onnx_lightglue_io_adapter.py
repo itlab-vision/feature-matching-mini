@@ -2,7 +2,7 @@ import pytest
 import numpy as np
 import cv2 as cv
 from unittest.mock import MagicMock
-from src.backend.opencv.io_adapter.lightglue_io_adapter import LightGlueOpenCVIOAdapter
+from src.backend.onnx.io_adapter.lightglue_io_adapter import LightGlueOnnxIOAdapter
 
 
 @pytest.fixture
@@ -14,8 +14,8 @@ def mock_model():
 def adapter(mock_model):
     logger = MagicMock()
     config = {'score_threshold': 0.1}
-    adapter_instance = LightGlueOpenCVIOAdapter(
-        model_name="lightglue_opencv",
+    adapter_instance = LightGlueOnnxIOAdapter(
+        model_name="lightglue_onnx",
         model_wrapper=mock_model,
         config=config,
         logger=logger
@@ -26,10 +26,10 @@ def adapter(mock_model):
 def test_normalize_keypoints_disk(adapter):
     keypoints = np.array([[100.0, 200.0], [500.0, 400.0]], dtype=np.float32)
     img_shape = (1000, 2000, 3)
-
-    normalized = adapter._normalize_keypoints(keypoints, img_shape, extractor_name="disk_opencv")
-
     height, width = img_shape[:2]
+
+    normalized = adapter._normalize_keypoints(keypoints, height, width, extractor_name="disk")
+
     expected = np.array([
         [100.0 / (width - 1), 200.0 / (height - 1)],
         [500.0 / (width - 1), 400.0 / (height - 1)]
@@ -41,10 +41,10 @@ def test_normalize_keypoints_disk(adapter):
 def test_normalize_keypoints_aliked(adapter):
     keypoints = np.array([[0.0, 0.0], [2000.0, 1000.0]], dtype=np.float32)
     img_shape = (1000, 2000, 3)
-
-    normalized = adapter._normalize_keypoints(keypoints, img_shape, extractor_name="aliked_opencv")
-
     height, width = img_shape[:2]
+
+    normalized = adapter._normalize_keypoints(keypoints, height, width, extractor_name="aliked")
+
     expected = np.array([
         [2.0 * 0.0 / width - 1.0, 2.0 * 0.0 / height - 1.0],
         [2.0 * 2000.0 / width - 1.0, 2.0 * 1000.0 / height - 1.0]
@@ -55,26 +55,31 @@ def test_normalize_keypoints_aliked(adapter):
 
 def test_preprocess(adapter, mock_model):
     inputs = {
-        'features1': {
+        'features0': {
             'keypoints': np.array([[0.0, 0.0]], dtype=np.float32),
             'descriptors': np.random.rand(1, 128).astype(np.float32),
-            'img_shape': (100, 100, 3),
-            'extractor_name': 'disk_opencv'
+            'height': 100,
+            'width': 100,
+            'extractor_name': 'disk'
         },
-        'features2': {
+        'features1': {
             'keypoints': np.array([[10.0, 10.0]], dtype=np.float32),
             'descriptors': np.random.rand(1, 128).astype(np.float32),
-            'img_shape': (100, 100, 3),
-            'extractor_name': 'disk_opencv'
+            'height': 100,
+            'width': 100,
+            'extractor_name': 'disk'
         }
     }
 
-    adapter.preprocess(inputs)
+    processed = adapter.preprocess(inputs)
 
-    assert mock_model.setInput.call_count == 4
+    assert isinstance(processed, dict)
+    assert 'kpts0' in processed
+    assert 'kpts1' in processed
+    assert 'desc0' in processed
+    assert 'desc1' in processed
 
-    called_names = [call.kwargs.get('name') for call in mock_model.setInput.call_args_list]
-    assert set(called_names) == {'kpts0', 'kpts1', 'desc0', 'desc1'}
+    mock_model.assert_not_called()
 
 
 def test_postprocess(adapter):

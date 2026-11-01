@@ -20,7 +20,7 @@ def test_disk_loader_custom_path(mock_logger):
         fake_net = MagicMock()
         mock_read_net.return_value = fake_net
 
-        model = loader.load()
+        model = loader.load()['model']
 
         mock_read_net.assert_called_once_with('models/custom_disk.onnx')
 
@@ -42,7 +42,7 @@ def test_disk_loader_default_path(mock_logger):
         fake_net = MagicMock()
         mock_read_net.return_value = fake_net
 
-        model = loader.load()
+        model = loader.load()['model']
 
         default_path = "models/disk_1024.onnx"
         mock_read_net.assert_called_once_with(default_path)

@@ -22,12 +22,15 @@ class DNNPipeline(Detector, Descriptor, Matcher):
     def __init__(self, extractor_name, logger, config=None):
         if config is None:
             config = {}
+        else:
+            config = config.copy()
 
         Detector.__init__(self, logger, extractor_name)
         Descriptor.__init__(self, logger, extractor_name)
         Matcher.__init__(self, extractor_name, logger, config, extractor_name)
 
         backend = config.pop('backend', 'torch').lower()
+        self._backend = backend
         self._nfeatures = config.get('nfeatures', 4096)
         self._threshold = config.get('threshold', 0.005)
 
@@ -66,6 +69,9 @@ class DNNPipeline(Detector, Descriptor, Matcher):
             self._logger.error("Input image is None")
             return {'matches': (), 'scores': ()}
 
+        self._logger.info(
+            f"Running inference with {self._matcher_name} on {self._backend} backend"
+        )
         inputs = {'image0': img0, 'image1': img1}
         inputs = DNNPipeline._io_adapter.preprocess(inputs)
         outputs = DNNPipeline._inference.run(inputs)

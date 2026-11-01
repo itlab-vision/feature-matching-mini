@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 import cv2 as cv
 
-from src.algorithms import ALL_MATCHERS, DNN_MATCHERS, DNN_PIPELINES
+from src.algorithms import ALL_MATCHERS, DNN_PIPELINES, DNN_MATCHERS, get_default_backend
 
 
 class Matcher(ABC):
@@ -18,7 +18,11 @@ class Matcher(ABC):
     def __init_subclass__(cls, register=True, **kwargs):
         super().__init_subclass__(**kwargs)
 
-        if register:
+        if hasattr(cls, '_MATCHER_CLASSES'):
+            for key in cls._MATCHER_CLASSES:
+                Matcher._METHODS[key] = cls
+
+        elif register:
             key = cls.__name__.replace("Matcher", "").lower()
 
             for key_ in ALL_MATCHERS:
@@ -31,6 +35,8 @@ class Matcher(ABC):
     @staticmethod
     def create(matcher_name, logger, config, descriptor_class):
         matcher_name = matcher_name.lower()
+        backend = config.get('backend') or get_default_backend(matcher_name, 2)
+        backend = backend.lower() if backend is not None else None
 
         if matcher_name in DNN_PIPELINES:
             return Matcher._METHODS["dnnpipeline"](matcher_name, logger, config)

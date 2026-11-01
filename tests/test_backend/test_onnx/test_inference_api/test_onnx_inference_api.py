@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import MagicMock
-from src.backend.opencv.inference_api.inference_api import OpenCVInferenceAPI
+from src.backend.onnx.inference_api.inference_api import OnnxInferenceAPI
 
 
 @pytest.fixture
@@ -11,53 +11,54 @@ def mock_logger():
 @pytest.fixture
 def mock_model_wrapper():
     model = MagicMock()
-    model.forward.return_value = ["tensor1", "tensor2", "tensor3"]
+    model.run.return_value = ["tensor1", "tensor2", "tensor3"]
     return model
 
 
 @pytest.mark.parametrize("model_name,expected_outputs", [
-    ("opencv", None),
-    ("aliked_opencv", ["keypoints", "descriptors", "scores"]),
-    ("disk_opencv", ["keypoints", "descriptors", "scores"]),
-    ("lightglue_opencv", ["matches0", "mscores0"])
+    ("onnx", None),
+    ("aliked", ["keypoints", "descriptors", "scores"]),
+    ("disk", ["keypoints", "descriptors", "scores"]),
+    ("lightglue", ["matches0", "mscores0"])
 ])
 def test_inference_api_initialization_and_output_names(mock_logger, mock_model_wrapper, model_name, expected_outputs):
-    api = OpenCVInferenceAPI(
+    api = OnnxInferenceAPI(
         logger=mock_logger,
         model_name=model_name,
         model=mock_model_wrapper,
         config={}
     )
-    assert OpenCVInferenceAPI is not None
+    assert OnnxInferenceAPI is not None
     assert api._model_name == model_name
     assert api.output_names == expected_outputs
 
 
 def test_run_success(mock_logger, mock_model_wrapper):
-    api = OpenCVInferenceAPI(
+    api = OnnxInferenceAPI(
         logger=mock_logger,
-        model_name="aliked_opencv",
+        model_name="aliked",
         model=mock_model_wrapper
     )
 
-    outputs = api.run()
+    inputs = {"image": "dummy_input"}
+    outputs = api.run(inputs)
 
-    mock_model_wrapper.forward.assert_called_once_with(["keypoints", "descriptors", "scores"])
+    mock_model_wrapper.run.assert_called_once_with(["keypoints", "descriptors", "scores"], inputs)
     assert outputs == ["tensor1", "tensor2", "tensor3"]
     mock_logger.error.assert_not_called()
 
 
 def test_run_exception_handling(mock_logger, mock_model_wrapper):
-    runtime_error = RuntimeError("OpenCV C++ exception")
-    mock_model_wrapper.forward.side_effect = runtime_error
+    runtime_error = RuntimeError("ONNX Runtime execution exception")
+    mock_model_wrapper.run.side_effect = runtime_error
 
-    api = OpenCVInferenceAPI(
+    api = OnnxInferenceAPI(
         logger=mock_logger,
-        model_name="disk_opencv",
+        model_name="disk",
         model=mock_model_wrapper
     )
 
-    outputs = api.run()
+    outputs = api.run(inputs={"image": "dummy"})
 
     mock_logger.error.assert_called_once()
     error_msg = mock_logger.error.call_args[0][0]

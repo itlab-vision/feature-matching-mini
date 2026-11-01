@@ -16,6 +16,7 @@ class DiskOpenCVIOAdapter(OpenCVIOAdapter):
         keypoints = outputs[0]
         descriptors = np.squeeze(outputs[1], axis=0)
         scores = np.squeeze(outputs[2], axis=0)
+
         keypoints_np = keypoints.astype(np.float32)
 
         if keypoints_np.ndim == 3:

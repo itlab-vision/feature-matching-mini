@@ -1,7 +1,7 @@
 import cv2 as cv
 from abc import ABC, abstractmethod
 
-from src.algorithms import ALL_DETECTORS, DNN_DETECTORS, DNN_PIPELINES, DNN_DESCRIPTORS
+from src.algorithms import ALL_DETECTORS, DNN_PIPELINES, DNN_DETECTORS, DNN_DESCRIPTORS
 
 
 class Detector(ABC):

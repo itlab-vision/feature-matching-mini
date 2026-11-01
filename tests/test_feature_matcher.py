@@ -6,10 +6,15 @@ from unittest.mock import MagicMock
 from logging import Logger
 
 from src.feature_matcher import FeatureMatcherCV2
-from src.algorithms import DESCRIPTOR_MATCHER_COMPATIBILITY, ALL_MATCHERS, DNN_MATCHERS
+from src.algorithms import (TORCH_MATCHERS, DETECTOR_DESCRIPTOR_COMPATIBILITY,
+                            DESCRIPTOR_MATCHER_COMPATIBILITY, get_compatible_descriptors,
+                            get_compatible_matchers)
 import src.backend.opencv.model_loader  # noqa: F401
 import src.backend.opencv.inference_api  # noqa: F401
 import src.backend.opencv.io_adapter  # noqa: F401
+import src.backend.onnx.model_loader  # noqa: F401
+import src.backend.onnx.inference_api  # noqa: F401
+import src.backend.onnx.io_adapter  # noqa: F401
 
 
 @pytest.fixture
@@ -127,24 +132,42 @@ class TestFeatureMatcherMatch:
 
 
 class TestFeatureMatcherCompatibility:
-    valid_combinations = [
-        (det, des, mat, mode)
-        for det, descriptors in FeatureMatcherCV2._DETECTOR_DESCRIPTOR_COMPATIBILITY.items()
-        for des in descriptors
-        for mat in ALL_MATCHERS
-        for mode in ([None] if mat in DNN_MATCHERS or 'opencv' in mat else ['simple', 'knn'])
-        if mat in DESCRIPTOR_MATCHER_COMPATIBILITY.get(des, [])
-        and mat != 'superglue'
-    ]
+    valid_combinations = []
+    for detector, det_backends_dict in DETECTOR_DESCRIPTOR_COMPATIBILITY.items():
+        for det_backend, desc_backends_dict in det_backends_dict.items():
+            for desc_backend in desc_backends_dict.keys():
+                descriptors = get_compatible_descriptors(detector, det_backend, desc_backend)
+                for descriptor in descriptors:
+                    match_backends_dict = DESCRIPTOR_MATCHER_COMPATIBILITY.get(descriptor, {})
+                    if desc_backend in match_backends_dict:
+                        for match_backend in match_backends_dict[desc_backend].keys():
+                            matchers = get_compatible_matchers(descriptor, desc_backend, match_backend)
+                            for matcher in matchers:
+                                if matcher == 'superglue':
+                                    continue
+                                modes = [None] if matcher in TORCH_MATCHERS or 'opencv' in match_backend else ['simple',
+                                                                                                               'knn']
+                                for mode in modes:
+                                    valid_combinations.append((
+                                        detector, det_backend,
+                                        descriptor, desc_backend,
+                                        matcher, match_backend,
+                                        mode
+                                    ))
 
-    @pytest.mark.parametrize("det, des, mat, mode", valid_combinations)
-    def test_known_compatible_pairs(self, det, des, mat, mode, mock_logger, load_img):
+    @pytest.mark.parametrize("det, det_backend, des, desc_backend, mat, match_backend, mode", valid_combinations)
+    def test_known_compatible_pairs(self, det, det_backend, des, desc_backend,
+                                    mat, match_backend, mode, mock_logger, load_img):
         img1 = load_img("box.png")
         img2 = load_img("box_in_scene.png")
 
-        config = {}
+        config = {
+            'detector': {'backend': det_backend},
+            'descriptor': {'backend': desc_backend},
+            'matcher': {'backend': match_backend}
+        }
         if mode is not None:
-            config = {'matcher': {'mode': mode}}
+            config['matcher']['mode'] = mode
 
         matcher_cv = FeatureMatcherCV2(
             logger=mock_logger,
@@ -168,7 +191,10 @@ class TestFeatureMatcherCompatibility:
         except Exception as e:
             pytest.fail(
                 f"FAILED COMBINATION:\n"
-                f"Detector: {det} | Descriptor: {des} | Matcher: {mat} | Mode: {mode}\n"
+                f"Detector: {det} ({det_backend}) | "
+                f"Descriptor: {des} ({desc_backend}) | "
+                f"Matcher: {mat} ({match_backend}) | "
+                f"Mode: {mode}\n"
                 f"Error: {e}"
             )
         finally:
