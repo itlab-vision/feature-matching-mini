@@ -52,7 +52,9 @@ class YamlReader:
             return config
         flat = {}
         for key, value in config.items():
-            if isinstance(value, dict):
+            if key == 'src_config':
+                flat[key] = value
+            elif isinstance(value, dict):
                 flat.update(YamlReader._flatten_config(value))
             else:
                 flat[key] = value
