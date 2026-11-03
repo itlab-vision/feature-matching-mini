@@ -8,6 +8,7 @@ from pathlib import Path
 
 sys.path.append(str(Path(__file__).parent.parent))  # noqa: E402
 
+from samples.utils import configure_model_paths   # noqa: E402
 from src.algorithms import (DETECTOR_DESCRIPTOR_COMPATIBILITY, DESCRIPTOR_MATCHER_COMPATIBILITY,  # noqa: E402
                             TORCH_PIPELINES, get_compatible_descriptors, get_compatible_matchers)
 
@@ -52,7 +53,7 @@ def parse_performance_log(log_output, script_type):
     return results
 
 
-def run_benchmark(script_name, combo, img1, img2, device='cpu', iterations=10):
+def run_benchmark(script_name, combo, img1, img2, mp, device='cpu', iterations=10):
     det = combo['detector']
     detb = combo['detector_backend']
     des = combo['descriptor']
@@ -69,6 +70,7 @@ def run_benchmark(script_name, combo, img1, img2, device='cpu', iterations=10):
         '-matb', matb,
         '-i1', str(img1),
         '-i2', str(img2),
+        '-mp', str(mp),
         '-d', device,
         '-n', str(iterations)
     ]
@@ -128,7 +130,7 @@ def get_all_combinations():
     return combinations
 
 
-def table_benchmark(img1, img2, output_csv, device='cpu', iterations=10):
+def table_benchmark(img1, img2, mp, output_csv, device='cpu', iterations=10):
     combinations = get_all_combinations()
     logger.info(f"Found {len(combinations)} valid combinations:")
     all_results = []
@@ -149,7 +151,7 @@ def table_benchmark(img1, img2, output_csv, device='cpu', iterations=10):
         if not is_pipeline:
             success_staged, staged_results = run_benchmark(
                 'samples.performance_staged_benchmark',
-                combo, img1, img2, device, iterations)
+                combo, img1, img2, mp, device, iterations)
 
             if not success_staged:
                 continue
@@ -158,7 +160,7 @@ def table_benchmark(img1, img2, output_csv, device='cpu', iterations=10):
 
         success_pipeline, pipeline_results = run_benchmark(
             'samples.performance_pipeline_benchmark',
-            combo, img1, img2, device, iterations)
+            combo, img1, img2, mp, device, iterations)
 
         if not success_pipeline:
             continue
@@ -212,6 +214,9 @@ def parse_args():
     parser.add_argument('-i2', '--image2', type=Path, required=True,
                         help='Path to the second image')
 
+    parser.add_argument('-mp', '--modelpath', type=Path, default=Path("models"),
+                        help='Path to models')
+
     parser.add_argument('-o', '--output', type=Path, default=Path('benchmark_results.csv'),
                         help='Output CSV file path')
 
@@ -226,14 +231,15 @@ def parse_args():
 
 def main():
     args = parse_args()
-
     if not args.image1.exists() or not args.image2.exists():
         logger.error(f"One of the images does not exist: {args.image1} or {args.image2}")
         return 1
 
+    configure_model_paths(args)
     table_benchmark(
         img1=args.image1,
         img2=args.image2,
+        mp=args.modelpath,
         output_csv=args.output,
         device=args.device,
         iterations=args.iterations,

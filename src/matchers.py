@@ -41,7 +41,7 @@ class Matcher(ABC):
         if matcher_name in DNN_PIPELINES:
             return Matcher._METHODS["dnnpipeline"](matcher_name, logger, config)
 
-        if matcher_name in DNN_MATCHERS and backend != 'opencv':
+        if matcher_name in DNN_MATCHERS:
             return Matcher._METHODS['dnn'](matcher_name, logger, config, descriptor_class)
 
         if not Matcher._METHODS.get(matcher_name):

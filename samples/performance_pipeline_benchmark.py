@@ -5,7 +5,7 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).parent.parent))  # noqa: E402
 
 from src.image_utils import read_image  # noqa: E402
-from samples.utils import build_feature_matcher_config, performance_tests_parser  # noqa: E402
+from samples.utils import build_feature_matcher_config, performance_tests_parser, configure_model_paths  # noqa: E402
 from src.algorithms import DNN_ALGORITHMS, TORCH_PIPELINES  # noqa: E402
 from src.detectors import Detector  # noqa: E402
 from src.descriptors import Descriptor  # noqa: E402
@@ -68,7 +68,7 @@ def main():
         if not args.image1.exists() or not args.image2.exists():
             logger.error(f"One of the images does not exist: {args.image1} or {args.image2}")
             return 1
-
+        configure_model_paths(args)
         config = build_feature_matcher_config(args)
         logger.info(f"Config: {config}")
 

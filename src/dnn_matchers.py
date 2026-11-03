@@ -8,7 +8,6 @@ import src.backend.executorch.io_adapter  # noqa: E402, F401
 from src.backend.io_adapter_base import IOAdapter
 from src.backend.inference_api_base import InferenceAPI
 from src.backend.model_wrapper_base import ModelWrapper
-from src.backend.opencv.model_loader.model_loader import OPENCV_MATCHER_MODELS
 
 
 class DNNMatcher(Matcher):
@@ -22,9 +21,6 @@ class DNNMatcher(Matcher):
             config = {}
         else:
             config = config.copy()
-
-        if descriptor_class._descriptor_name == 'aliked' and config.get('lightglue_model_path') is None:
-            config['lightglue_model_path'] = f"models/{OPENCV_MATCHER_MODELS['aliked']}"
 
         Matcher.__init__(self, matcher_name, logger, config, descriptor_class)
 
