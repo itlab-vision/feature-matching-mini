@@ -1,3 +1,4 @@
+from .model_wrapper import TorchModelWrapper  # noqa: E402, F401
 from .d2net import D2NetTorchModelWrapper  # noqa: E402, F401
 from .xfeat import XFeatTorchModelWrapper  # noqa: E402, F401
 from .superpoint import SuperPointTorchModelWrapper  # noqa: E402, F401

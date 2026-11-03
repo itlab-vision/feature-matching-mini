@@ -1,0 +1,49 @@
+- stitching_params:
+    stitcher_type: 'DetailedStitcher'
+    images_dir: '/home/ivmukhin/data/114_широкоуг'
+    out_file_name: 'panorama_src_superpoint_executorch.jpg'
+    report_file_name: 'stitching_report_executorch.yaml'
+
+  matching_params:
+    detector: 'superpoint_lightglue'
+    descriptor: 'superpoint_lightglue'
+    matcher: 'lightglue'
+    sequential_matching: true
+    keypoints_num: 5000
+    src_config:
+      detector:
+        backend: executorch
+        model_path: models/executorch/superpoint_lightglue_xnnpack_1x3x480x640.pte
+      descriptor:
+        backend: executorch
+        model_path: models/executorch/superpoint_lightglue_xnnpack_1x3x480x640.pte
+      matcher:
+        backend: executorch
+        model_path: models/executorch/lightglue_superpoint_k256_xnnpack_1x3x480x640.pte
+
+  processing_params:
+    try_cuda: false
+    work_megapix: 0.6
+    seam_megapix: 0.1
+    compose_megapix: -1
+    range_width: -1
+
+  estimation_params:
+    estimator: 'homography'
+    match_conf: 0.3
+    conf_thresh: 0.3
+    ba: 'ray'
+    ba_refine_mask: 'xxxxx'
+
+  warping_params:
+    wave_correct: 'horiz'
+    warp: 'spherical'
+
+  blending_params:
+    seam: 'gc_color'
+    expos_comp: 'gain_blocks'
+    expos_comp_nr_feeds: 1
+    expos_comp_nr_filtering: 2
+    expos_comp_block_size: 32
+    blend: 'multiband'
+    blend_strength: 5

@@ -10,7 +10,7 @@ from src.backend.torch.model_wrapper.model_wrapper import TorchModelWrapper
 class LightGlueTorchModelWrapper(TorchModelWrapper):
     def load(self):
         extractor_name = self._config.get('descriptor_class')._descriptor_name.replace("_lightglue", "")
-        self._logger.info(f"Loading SuperGlue onto {self._device}")
+        self._logger.info(f"Loading LightGlue (features={extractor_name}) onto {self._device}")
         self._model = LightGlue(features=extractor_name, **self._config).eval().to(self._device)
         return {"model": self._model}
 
