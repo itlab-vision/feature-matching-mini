@@ -379,3 +379,94 @@ class HomographyAUCTask(HPatchesTask):
             metrics[threshold] = {'mean_auc': global_auc}
 
         return metrics
+
+
+class FrobeniusHomographyNormTask(HPatchesTask):
+    _HOMOGRAPHY_METHODS = {
+        "ransac": cv.RANSAC,
+        "magsac": cv.USAC_MAGSAC,
+        "lmeds": cv.LMEDS,
+        "rho": cv.RHO
+    }
+
+    def __init__(self, logger, config):
+        super().__init__(logger)
+
+        self._eval_thresholds = config.pop('eval_thresholds', [5.0])
+        if not isinstance(self._eval_thresholds, list):
+            self._eval_thresholds = [self._eval_thresholds]
+
+        self._homography_method = config.pop('homography_method', "ransac")
+
+    def eval_task(self, matching_data, split):
+        results = {threshold: {seq: {} for seq in split} for threshold in self._eval_thresholds}
+        self._logger.info('Evaluating Frobenius Homography Norm')
+
+        for threshold in self._eval_thresholds:
+            for seq in split:
+                if seq not in matching_data:
+                    self._logger.warning(f"Scene '{seq}' not found in matching_data. Skipping.")
+                    continue
+
+                for i in self._img_indices:
+                    data = matching_data[seq].get(i)
+                    if not data or not data['matches']:
+                        self._logger.warning(f"Image pair 1-{i} in scene '{seq}' has no matching data.")
+                        continue
+
+                    kp_ref = data['kp_ref']
+                    kp_tgt = data['kp_tgt']
+                    matches = data['matches']
+
+                    pts_ref = np.array([kp_ref[m.queryIdx].pt for m in matches],
+                                       dtype=np.float32).reshape(-1, 1, 2)
+                    pts_tgt_pred = np.array([kp_tgt[m.trainIdx].pt for m in matches],
+                                            dtype=np.float32).reshape(-1, 1, 2)
+
+                    if len(pts_ref) < 4:
+                        self._logger.warning(f"Not enough matches ({len(pts_ref)}) to compute homography "
+                                             f"for scene '{seq}' image pair 1-{i}. Minimum 4 required.")
+                        continue
+
+                    H_gt = data['H']
+                    H_pred, mask = cv.findHomography(pts_ref, pts_tgt_pred,
+                                                     self._HOMOGRAPHY_METHODS[self._homography_method],
+                                                     threshold)
+
+                    if H_pred is None:
+                        self._logger.warning(f"Homography estimation failed for scene '{seq}' image pair 1-{i}.")
+                        continue
+
+                    H_gt_norm = H_gt / np.linalg.norm(H_gt, ord='fro')
+                    H_pred_norm = H_pred / np.linalg.norm(H_pred, ord='fro')
+
+                    err_plus = np.linalg.norm(H_pred_norm - H_gt_norm, ord='fro')
+                    err_minus = np.linalg.norm(H_pred_norm + H_gt_norm, ord='fro')
+
+                    error = min(err_plus, err_minus)
+                    results[threshold][seq][i] = {'error': float(error)}
+
+        return results
+
+    def report_metrics(self, results, task_name="Frobenius Homography Norm"):
+        metrics = {}
+
+        for threshold, threshold_results in results.items():
+            all_errors = [
+                img['error']
+                for s in threshold_results.values()
+                for img in s.values()
+                if 'error' in img
+            ]
+
+            if not all_errors:
+                self._logger.warning(f"No results for threshold {threshold}px")
+                metrics[threshold] = None
+                continue
+
+            mean_error = float(np.mean(all_errors))
+            self._logger.info(f"{task_name.upper()}, Mean Error: {mean_error:.4f} "
+                              f"({threshold}px)")
+            metrics[threshold] = {'mean_frobenius_error': mean_error}
+
+        return metrics
