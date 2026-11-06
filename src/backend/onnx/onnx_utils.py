@@ -12,27 +12,27 @@ class OnnxSessionConfiguration:
         self._config = config
 
     def set_session_options(self):
-        sess_options = ort.SessionOptions()
+        self.sess_options = ort.SessionOptions()
 
         number_threads = self._config.get('intra_op_num_threads', 0)
         execution_mode_str = self._config.get('execution_mode', 'ORT_SEQUENTIAL').upper()
         num_inter_threads = self._config.get('inter_op_num_threads', 0)
 
-        sess_options.intra_op_num_threads = number_threads
-        sess_options.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
+        self.sess_options.intra_op_num_threads = number_threads
+        self.sess_options.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
 
         if execution_mode_str in OnnxSessionConfiguration._ORT_EXECUTION_MODE:
-            sess_options.execution_mode = OnnxSessionConfiguration._ORT_EXECUTION_MODE[execution_mode_str]
+            self.sess_options.execution_mode = OnnxSessionConfiguration._ORT_EXECUTION_MODE[execution_mode_str]
         else:
             self._logger.warning(f"Unknown execution mode '{execution_mode_str}', falling back to ORT_SEQUENTIAL")
-            sess_options.execution_mode = ort.ExecutionMode.ORT_SEQUENTIAL
+            self.sess_options.execution_mode = ort.ExecutionMode.ORT_SEQUENTIAL
 
         if execution_mode_str == 'ORT_PARALLEL':
-            sess_options.inter_op_num_threads = num_inter_threads
+            self.sess_options.inter_op_num_threads = num_inter_threads
         elif num_inter_threads > 0:
             self._logger.warning("Parameter num_inter_threads is only set in ORT_PARALLEL mode")
 
-        return sess_options
+        return self.sess_options
 
     def _parse_provider_options(self, option_strings):
         nested_dict = {}
