@@ -4,6 +4,7 @@ import cv2 as cv
 from src.detectors import Detector
 from src.descriptors import Descriptor
 from src.matchers import Matcher
+import src.backend.io_adapter  # noqa: E402, F401
 import src.backend.torch.model_wrapper  # noqa: E402, F401
 import src.backend.torch.inference_api  # noqa: E402, F401
 import src.backend.torch.io_adapter  # noqa: E402, F401
@@ -69,9 +70,7 @@ class DNNPipeline(Detector, Descriptor, Matcher):
             self._logger.error("Input image is None")
             return {'matches': (), 'scores': ()}
 
-        self._logger.info(
-            f"Running inference with {self._matcher_name} on {self._backend} backend"
-        )
+        self._logger.info(f"Running inference with {self._matcher_name} on {self._backend} backend")
         inputs = {'image0': img0, 'image1': img1}
         inputs = DNNPipeline._io_adapter.preprocess(inputs)
         outputs = DNNPipeline._inference.run(inputs)

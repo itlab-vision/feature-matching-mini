@@ -1,6 +1,9 @@
 from pathlib import Path
 import torch
+import numpy as np
+import cv2 as cv
 
+from thirdparty.d2net.lib.utils import preprocess_image
 from thirdparty.d2net.lib.model_test import D2Net as D2NetModel
 from thirdparty.d2net.lib.pyramid import process_multiscale
 
@@ -30,17 +33,24 @@ class D2NetTorchModelWrapper(TorchModelWrapper):
         self._model.eval()
         return {'model': self._model}
 
+    def preprocess(self, inputs):
+        image = cv.cvtColor(np.asarray(inputs["image"]), cv.COLOR_BGR2RGB)
+        image = preprocess_image(image, preprocessing='caffe')
+        return torch.from_numpy(image).float().unsqueeze(0).to(self._device)
+
+    @staticmethod
+    def postprocess(outputs):
+        keypoints, scores, descriptors = outputs
+        return {'keypoints': keypoints[:, [1, 0]].astype(np.float32, copy=False),
+                'descriptors': descriptors,
+                'scores': scores}
+
     def call(self, inputs):
-        img = inputs.get("image")
-
         try:
+            image = self.preprocess(inputs)
             with torch.no_grad():
-                keypoints, scores, descriptors = process_multiscale(
-                    torch.from_numpy(img).float().unsqueeze(0).to(self._device),
-                    self._model, scales=[1])
-
-            return {'keypoints': keypoints, 'descriptors': descriptors, 'scores': scores}
-
-        except Exception as e:
-            self._logger.error(f"D2-Net inference error: {e}")
+                outputs = process_multiscale(image, self._model, scales=[1])
+            return self.postprocess(outputs)
+        except Exception as error:
+            self._logger.error(f"D2-Net inference error: {error}")
             raise

@@ -1,4 +1,5 @@
 from src.matchers import Matcher
+import src.backend.io_adapter  # noqa: E402, F401
 import src.backend.torch.model_wrapper  # noqa: E402, F401
 import src.backend.torch.inference_api  # noqa: E402, F401
 import src.backend.torch.io_adapter  # noqa: E402, F401

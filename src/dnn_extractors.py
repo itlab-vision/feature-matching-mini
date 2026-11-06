@@ -3,6 +3,7 @@ import numpy as np
 
 from src.detectors import Detector
 from src.descriptors import Descriptor
+import src.backend.io_adapter  # noqa: E402, F401
 import src.backend.torch.model_wrapper  # noqa: E402, F401
 import src.backend.torch.inference_api  # noqa: E402, F401
 import src.backend.torch.io_adapter  # noqa: E402, F401
@@ -60,9 +61,7 @@ class DNNFeatureExtractors(Detector, Descriptor):
             self._logger.error("Input image is None. Detection aborted.")
             return {'keypoints': (), 'descriptors': ()}
 
-        self._logger.info(
-            f"Running inference with {self._detector_name} on {self._backend} backend"
-        )
+        self._logger.info(f"Running inference with {self._detector_name} on {self._backend} backend")
         inputs = {'image': img, **DNNFeatureExtractors._model_components}
         if features is not None:
             inputs.update(features)
