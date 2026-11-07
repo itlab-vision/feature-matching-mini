@@ -4,6 +4,7 @@ from src.backend.io_adapter_base import IOAdapter
 from src.backend.onnx.io_adapter.io_adapter import OnnxIOAdapter
 
 
+@IOAdapter.register("disk_lightglue_onnx")
 @IOAdapter.register("disk_onnx")
 class DiskOnnxIOAdapter(OnnxIOAdapter):
     def preprocess(self, inputs):

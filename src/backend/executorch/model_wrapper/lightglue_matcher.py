@@ -17,7 +17,11 @@ class LightGlueExecuTorchModelWrapper(ExecuTorchModelWrapper):
         if not isinstance(inputs, dict):
             raise TypeError("LightGlue ExecuTorch expects a dictionary of feature tensors")
 
-        names = ("keypoints0", "keypoints1", "descriptors0", "descriptors1")
+        names = ["keypoints0", "keypoints1", "descriptors0", "descriptors1"]
+        descriptor_class = self._config.get("descriptor_class")
+        descriptor_name = descriptor_class._descriptor_name if descriptor_class is not None else ""
+        if "sift" in descriptor_name or "doghardnet" in descriptor_name:
+            names.extend(("scales0", "oris0", "scales1", "oris1"))
         tensors = tuple(inputs.get(name) for name in names)
         if not all(isinstance(tensor, torch.Tensor) for tensor in tensors):
             raise TypeError(f"LightGlue ExecuTorch expects torch tensors: {names}")

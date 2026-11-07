@@ -50,3 +50,19 @@ class TestDescriptorMatcherCompatibility:
     def test_accepts_executorch_patch_descriptor_with_opencv_matcher(self):
         matchers = get_compatible_matchers('tfeat', 'executorch', 'opencv')
         assert matchers == ['bf', 'flann']
+
+
+class TestLightGlueBackendCoverage:
+    def test_supports_superpoint_onnx_and_opencv(self):
+        for backend in ('onnx', 'opencv'):
+            assert get_compatible_descriptors('superpoint_lightglue', backend, backend) == ['superpoint_lightglue']
+            assert get_compatible_matchers('superpoint_lightglue', backend, backend) == ['lightglue']
+
+    def test_supports_aliked_executorch(self):
+        assert get_compatible_descriptors('aliked_lightglue', 'executorch', 'executorch') == ['aliked_lightglue']
+        assert get_compatible_matchers('aliked_lightglue', 'executorch', 'executorch') == ['lightglue']
+
+    def test_supports_mixed_matchers_for_sift_and_doghardnet(self):
+        for descriptor in ('sift_lightglue', 'doghardnet_lightglue'):
+            for backend in ('torch', 'onnx', 'opencv', 'executorch'):
+                assert get_compatible_matchers(descriptor, 'torch', backend) == ['lightglue']

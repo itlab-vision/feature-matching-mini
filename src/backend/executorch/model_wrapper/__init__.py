@@ -1,3 +1,4 @@
+from src.backend.executorch.model_wrapper.aliked_lightglue import AlikedLightGlueExecuTorchModelWrapper  # noqa: F401
 from src.backend.executorch.model_wrapper.d2net import D2NetExecuTorchModelWrapper  # noqa: F401
 from src.backend.executorch.model_wrapper.descriptors import PatchDescriptorExecuTorchModelWrapper  # noqa: F401
 from src.backend.executorch.model_wrapper.disk_lightglue import DiskLightGlueExecuTorchModelWrapper  # noqa: F401

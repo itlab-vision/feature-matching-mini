@@ -27,6 +27,12 @@ def import_src():
         from src.detectors import Detector
         from src.descriptors import Descriptor
         from src.matchers import Matcher
+        import src.backend.opencv.model_loader  # noqa: F401
+        import src.backend.opencv.inference_api  # noqa: F401
+        import src.backend.opencv.io_adapter  # noqa: F401
+        import src.backend.onnx.model_loader  # noqa: F401
+        import src.backend.onnx.inference_api  # noqa: F401
+        import src.backend.onnx.io_adapter  # noqa: F401
     except ImportError as e:
         raise RuntimeError(
             'The src feature-matching library is not available. '
@@ -128,6 +134,16 @@ def src_features_to_image_features(features, image, img_idx=80):
             for i, (x, y) in enumerate(keypoints_np):
                 score = float(scores[i]) if scores is not None and i < len(scores) else 0.0
                 cv_keypoints.append(cv2.KeyPoint(float(x), float(y), 1.0, -1, score, 0, i))
+    scales = features.get('scales')
+    oris = features.get('oris')
+    if (scales is not None or oris is not None) and len(cv_keypoints) > 0:
+        scales = np.ones(len(cv_keypoints), dtype=np.float32) if scales is None else np.asarray(scales).reshape(-1)
+        oris = np.zeros(len(cv_keypoints), dtype=np.float32) if oris is None else np.asarray(oris).reshape(-1)
+        cv_keypoints = [
+            cv2.KeyPoint(float(kp.pt[0]), float(kp.pt[1]), float(scales[i]), float(np.rad2deg(oris[i])),
+                         float(kp.response), int(kp.octave), int(kp.class_id))
+            for i, kp in enumerate(cv_keypoints)
+        ]
     features_cv.keypoints = tuple(cv_keypoints)
 
     descriptors = as_ndarray(features.get('descriptors'))
@@ -153,6 +169,8 @@ def image_features_to_src_dict(features_cv):
         'keypoints': keypoints_cv,
         'descriptors': descriptors_np,
         'scores': scores,
+        'scales': np.asarray([kp.size for kp in keypoints], dtype=np.float32),
+        'oris': np.deg2rad(np.asarray([kp.angle for kp in keypoints], dtype=np.float32)),
     }
     if features_cv.img_size is not None:
         width, height = features_cv.img_size

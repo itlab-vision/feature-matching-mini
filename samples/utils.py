@@ -32,6 +32,8 @@ def build_detector_config(args):
         config['disk_model_path'] = args.disk_model_path
     if args.aliked_model_path is not None:
         config['aliked_model_path'] = args.aliked_model_path
+    if args.superpoint_model_path is not None:
+        config['superpoint_model_path'] = args.superpoint_model_path
     if args.det_et_model:
         config['executorch_model_path'] = args.det_et_model
         if args.det_et_input_shape:
@@ -65,6 +67,8 @@ def build_descriptor_config(args):
         config['disk_model_path'] = args.disk_model_path
     if args.aliked_model_path is not None:
         config['aliked_model_path'] = args.aliked_model_path
+    if args.superpoint_model_path is not None:
+        config['superpoint_model_path'] = args.superpoint_model_path
     if args.tfeat_model_path is not None:
         config['tfeat_model_path'] = args.tfeat_model_path
     if args.hardnet_model_path is not None:
@@ -111,9 +115,11 @@ def build_matcher_config(args):
         config['score_threshold'] = args.mat_score_threshold
     if args.lightglue_model_path is not None:
         config['lightglue_model_path'] = args.lightglue_model_path
+    if args.mat_normalize_keypoints:
+        config['normalize_keypoints'] = True
     if args.mat_et_model is not None:
         config['executorch_model_path'] = args.mat_et_model
-        config['num_keypoints'] = args.det_et_num_keypoints
+        config['num_keypoints'] = args.mat_et_num_keypoints or args.det_et_num_keypoints
     return config
 
 
@@ -176,6 +182,8 @@ def performance_tests_parser():
                            help='Path to DISK opencv model')
     det_group.add_argument('-mpa', '--aliked-model-path', type=str, default=None,
                            help='Path to ALIKED opencv model')
+    det_group.add_argument('--superpoint-model-path', type=str, default=None,
+                           help='Path to SuperPoint ONNX model')
     det_group.add_argument('--det-et-model', type=Path,
                            help='Path to a detector .pte file')
     det_group.add_argument('--det-et-input-shape', type=int, nargs=4, metavar=('N', 'C', 'H', 'W'),
@@ -222,6 +230,8 @@ def performance_tests_parser():
                            help='scoreThreshold for LightGlue matcher')
     mat_group.add_argument('-mplg', '--lightglue-model-path', type=str, default=None,
                            help='Path to LightGlue opencv model')
+    mat_group.add_argument('--mat-normalize-keypoints', action='store_true',
+                           help='Normalize keypoints before fixed LightGlue ONNX models')
     mat_group.add_argument('--mat-et-model', type=Path,
                            help='Path to a fixed-K matcher .pte file')
     mat_group.add_argument('--mat-et-num-keypoints', type=int, default=None,

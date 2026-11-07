@@ -29,6 +29,10 @@ class LightGlueFeatureExtractorTorchModelWrapper(TorchModelWrapper):
                                     'sift_lightglue', 'doghardnet_lightglue') \
                     and 'nfeatures' in extractor_conf:
                 extractor_conf['max_num_keypoints'] = extractor_conf.pop('nfeatures')
+            if self._model_name in ('sift_lightglue', 'doghardnet_lightglue'):
+                extractor_conf['nms_radius'] = extractor_conf.get('nms_radius', None)
+                if 'threshold' in extractor_conf:
+                    extractor_conf['detection_threshold'] = extractor_conf.pop('threshold')
 
             self._logger.info(f"Loading {self._model_name} weights onto {self._device}")
             LightGlueFeatureExtractorTorchModelWrapper._shared_models[model_key] = \
