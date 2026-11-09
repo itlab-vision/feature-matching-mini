@@ -5,16 +5,17 @@ from pathlib import Path
 from unittest.mock import MagicMock
 from logging import Logger
 
-from src.detectors import Detector, SIFTDetector, OpenCVDetector
+from src.detectors import Detector
+from src.backend.opencv.detectors import SIFTDetector, OpenCVDetector
 from src.dnn_extractors import DNNFeatureExtractors  # noqa: F401
 from src.dnn_matchers import DNNMatcher  # noqa: F401
 from src.dnn_pipeline import DNNPipeline  # noqa: F401
-import src.backend.opencv.model_loader  # noqa: F401
+import src.backend.opencv.model_wrapper  # noqa: F401
 import src.backend.opencv.inference_api  # noqa: F401
-import src.backend.opencv.io_adapter  # noqa: F401
-import src.backend.onnx.model_loader  # noqa: F401
+import src.backend.io_adapter  # noqa: F401
+import src.backend.onnx.model_wrapper  # noqa: F401
 import src.backend.onnx.inference_api  # noqa: F401
-import src.backend.onnx.io_adapter  # noqa: F401
+import src.backend.io_adapter  # noqa: F401
 from src.algorithms import ALL_DETECTORS, DNN_ALGORITHMS
 from src.image_utils import read_image
 

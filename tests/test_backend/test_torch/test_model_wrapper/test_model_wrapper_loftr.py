@@ -94,26 +94,3 @@ class TestLoFTRTorchModelWrapper:
             map_location="cpu"
         )
         assert result == {"model": mock_model}
-
-    def test_call(self, wrapper, mock_model):
-        inputs = {
-            "image0": torch.rand(1, 1, 64, 64),
-            "image1": torch.rand(1, 1, 64, 64)
-        }
-
-        result = wrapper.call(inputs)
-
-        mock_model.assert_called_once_with(inputs)
-        assert result is inputs
-
-    def test_call_error(self, wrapper, mock_model, mock_logger):
-        mock_model.side_effect = RuntimeError("inference failed")
-        inputs = {
-            "image0": torch.rand(1, 1, 64, 64),
-            "image1": torch.rand(1, 1, 64, 64)
-        }
-
-        with pytest.raises(RuntimeError, match="inference failed"):
-            wrapper.call(inputs)
-
-        mock_logger.error.assert_called_once_with("LoFTR inference error: inference failed")

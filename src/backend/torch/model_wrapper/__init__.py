@@ -7,3 +7,5 @@ from .loftr import LoFTRTorchModelWrapper  # noqa: E402, F401
 from .roma import RoMaTorchModelWrapper  # noqa: E402, F401
 from .lightglue_pipeline import LightGlueFeatureExtractorTorchModelWrapper  # noqa: E402, F401
 from .lightglue_matcher import LightGlueTorchModelWrapper  # noqa: E402, F401
+from .tfeat import TFeatTorchModelWrapper  # noqa: E402, F401
+from .hardnet import HardNetTorchModelWrapper  # noqa: E402, F401

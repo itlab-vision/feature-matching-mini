@@ -12,20 +12,10 @@ sys.path.append(str(Path(__file__).parent.parent))  # noqa: E402
 from src.algorithms import (BACKEND_ALGORITHMS, OPENCV_MATCHERS_MODE,  # noqa: E402
                             get_compatible_descriptors, get_compatible_matchers)
 from src.feature_matcher import FeatureMatcherCV2  # noqa: E402
+from src.backend.model_paths import (  # noqa: E402
+    EXECUTORCH_DESCRIPTOR_MODELS, EXECUTORCH_DETECTOR_MODELS, EXECUTORCH_MATCHER_MODELS,
+    ONNX_DESCRIPTOR_MODELS, ONNX_DETECTOR_MODELS, ONNX_MATCHER_MODELS)
 
-from src.backend.executorch.model_wrapper.model_wrapper import (  # noqa: E402
-    EXECUTORCH_DESCRIPTOR_MODELS,
-    EXECUTORCH_DETECTOR_MODELS,
-    EXECUTORCH_MATCHER_MODELS,
-)
-from src.backend.opencv.model_loader.model_loader import (  # noqa: E402
-    OPENCV_DESCRIPTOR_MODELS, OPENCV_DETECTOR_MODELS, OPENCV_MATCHER_MODELS,
-)
-import src.backend.opencv.inference_api  # noqa: E402, F401
-import src.backend.opencv.io_adapter  # noqa: E402, F401
-import src.backend.onnx.model_loader  # noqa: E402, F401
-import src.backend.onnx.inference_api  # noqa: E402, F401
-import src.backend.onnx.io_adapter  # noqa: E402, F401
 from samples.utils import build_hpatches_benchmark_config, build_hpatches_feature_matcher_config  # noqa: E402
 from samples.hpatches_task import HPatchesTask  # noqa: E402
 from samples.hpatches_data_manager import HPatchesDataManager  # noqa: E402
@@ -56,19 +46,19 @@ def configure_model_paths(args):
 
     if args.det_backend == 'executorch':
         args.det_et_model = model_path / EXECUTORCH_DETECTOR_MODELS[args.detector]
-    elif args.det_backend == 'opencv' and args.detector in OPENCV_DETECTOR_MODELS:
-        setattr(args, f'{args.detector}_model_path', model_path / OPENCV_DETECTOR_MODELS[args.detector])
+    elif args.det_backend in {'opencv', 'onnx'} and args.detector in ONNX_DETECTOR_MODELS:
+        setattr(args, f'{args.detector}_model_path', model_path / ONNX_DETECTOR_MODELS[args.detector])
 
     if args.des_backend == 'executorch':
         args.des_et_model = model_path / EXECUTORCH_DESCRIPTOR_MODELS[args.descriptor]
-    elif args.des_backend == 'opencv' and args.descriptor in OPENCV_DESCRIPTOR_MODELS:
-        setattr(args, f'{args.descriptor}_model_path', model_path / OPENCV_DESCRIPTOR_MODELS[args.descriptor])
+    elif args.des_backend in {'opencv', 'onnx'} and args.descriptor in ONNX_DESCRIPTOR_MODELS:
+        setattr(args, f'{args.descriptor}_model_path', model_path / ONNX_DESCRIPTOR_MODELS[args.descriptor])
 
     if args.mat_backend == 'executorch':
         args.mat_et_model = model_path / EXECUTORCH_MATCHER_MODELS[args.descriptor]
         args.mat_et_num_keypoints = 256
-    elif args.mat_backend == 'opencv' and args.matcher == 'lightglue':
-        args.lightglue_model_path = model_path / OPENCV_MATCHER_MODELS[args.descriptor]
+    elif args.mat_backend in {'opencv', 'onnx'} and args.matcher == 'lightglue':
+        args.lightglue_model_path = model_path / ONNX_MATCHER_MODELS[args.descriptor]
 
 
 def load_existing_results(output_path):
@@ -231,6 +221,7 @@ def table_benchmark(cli_args):
                         scene_matching_data[scene_name][i] = {
                             'kp_ref': keypoints0, 'kp_tgt': keypoints1,
                             'matches': correspondences['matches'], 'H': target['H'],
+                            'scores': correspondences.get('scores'),
                             'ref_shape': scene_data['ref_shape'], 'tgt_shape': target['tgt_shape'],
                         }
 

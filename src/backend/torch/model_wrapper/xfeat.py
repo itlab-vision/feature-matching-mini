@@ -1,4 +1,5 @@
 import torch
+import cv2 as cv
 
 from thirdparty.xfeat.modules.xfeat import XFeat as XFeatModel
 
@@ -15,17 +16,22 @@ class XFeatTorchModelWrapper(TorchModelWrapper):
         self._model.eval()
         return {'model': self._model}
 
+    def preprocess(self, inputs):
+        image = inputs["image"]
+        image_rgb = cv.cvtColor(image, cv.COLOR_BGR2RGB)
+        return torch.from_numpy(image_rgb).permute(2, 0, 1).float().unsqueeze(0).to(self._device) / 255.0
+
+    @staticmethod
+    def postprocess(output):
+        return {key: value.detach().cpu().numpy() if torch.is_tensor(value) else value
+                for key, value in output.items()}
+
     def call(self, inputs):
-        img = inputs.get("image")
-
         try:
+            image = self.preprocess(inputs)
             with torch.no_grad():
-                output = self._model.detectAndCompute(img, top_k=self._nfeatures)[0]
-
-            return {'keypoints': output['keypoints'],
-                    'descriptors': output['descriptors'],
-                    'scores': output['scores']}
-
-        except Exception as e:
-            self._logger.warning(f"XFeat inference error: {e}")
+                output = self._model.detectAndCompute(image, top_k=self._nfeatures)[0]
+            return self.postprocess(output)
+        except Exception as error:
+            self._logger.warning(f"XFeat inference error: {error}")
             raise

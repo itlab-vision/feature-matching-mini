@@ -1,4 +1,7 @@
 import torch
+import cv2 as cv
+import numpy as np
+from PIL import Image
 
 from thirdparty.roma.romatch import roma_outdoor
 
@@ -19,21 +22,34 @@ class RoMaTorchModelWrapper(TorchModelWrapper):
         self._model.eval().to(self._device)
         return {'model': self._model}
 
+    def preprocess(self, inputs):
+        images = []
+        sizes = []
+        for key in ('image0', 'image1'):
+            image = np.asarray(inputs[key]).astype(np.uint8)
+            color = cv.COLOR_BGR2RGB if image.ndim == 3 else cv.COLOR_GRAY2RGB
+            images.append(Image.fromarray(cv.cvtColor(image, color)))
+            sizes.append(image.shape[:2])
+        return images, sizes
+
+    @staticmethod
+    def postprocess(outputs):
+        keypoints0, keypoints1, scores = outputs
+        points0 = keypoints0.detach().cpu().numpy()
+        points1 = keypoints1.detach().cpu().numpy()
+        indices = np.arange(len(points0), dtype=np.int64)
+        return {'keypoints0': points0, 'keypoints1': points1,
+                'matches': np.column_stack((indices, indices)),
+                'scores': scores.detach().cpu().numpy()}
+
     def call(self, inputs):
-        img0 = inputs.get("image0")
-        img1 = inputs.get("image1")
-        height0, width0 = inputs.get("height0"), inputs.get("width0")
-        height1, width1 = inputs.get("height1"), inputs.get("width1")
-
         try:
+            images, sizes = self.preprocess(inputs)
             with torch.no_grad():
-                warp, certainty = self._model.match(img0, img1, device=self._device)
+                warp, certainty = self._model.match(*images, device=self._device)
                 matches, conf = self._model.sample(warp, certainty, num=self._nfeatures)
-
-                kp0, kp1 = self._model.to_pixel_coordinates(matches, height0, width0, height1, width1)
-
-            return {'keypoints0': kp0.cpu(), 'keypoints1': kp1.cpu(), 'scores': conf.cpu()}
-
-        except Exception as e:
-            self._logger.error(f"RoMa match error: {e}")
+                keypoints = self._model.to_pixel_coordinates(matches, *sizes[0], *sizes[1])
+            return self.postprocess((*keypoints, conf))
+        except Exception as error:
+            self._logger.error(f"RoMa match error: {error}")
             raise

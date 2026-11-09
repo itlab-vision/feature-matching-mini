@@ -134,9 +134,12 @@ class BaseMatchingTask(HPatchesTask, register=False):
         pixel_dists = np.linalg.norm(pts_tgt_pred - pts_tgt_gt, axis=2).flatten()
         descriptor_dists = np.array([m.distance for m in matches], dtype=np.float32)
 
-        if descriptor_dists.size > 0:
+        match_scores = data.get('scores')
+        if match_scores is not None and len(match_scores) == len(matches):
+            scores = np.asarray(match_scores, dtype=np.float32).reshape(-1)
+        elif descriptor_dists.size > 0:
             max_dist = descriptor_dists.max()
-            scores = 1.0 - (descriptor_dists / max_dist)
+            scores = 1.0 - (descriptor_dists / max_dist) if max_dist > 0 else np.ones_like(descriptor_dists)
         else:
             scores = np.array([], dtype=np.float32)
 

@@ -1,5 +1,6 @@
 from pathlib import Path
 import torch
+import numpy as np
 from transformers import AutoImageProcessor, SuperPointForKeypointDetection
 
 from src.backend.model_wrapper_base import ModelWrapper
@@ -31,15 +32,23 @@ class SuperPointTorchModelWrapper(TorchModelWrapper):
         except Exception as e:
             self._logger.error(f"Failed to load from {checkpoint}: {e}")
 
+    def preprocess(self, inputs):
+        image = inputs['image']
+        height, width = image.shape[:2]
+        processor = self._image_processor(image, return_tensors="pt").to(self._device)
+        return processor, (height, width)
+
+    def postprocess(self, outputs, size):
+        processed = self._image_processor.post_process_keypoint_detection(outputs, [list(size)])[0]
+        return {key: value.detach().cpu().numpy() if torch.is_tensor(value) else np.asarray(value)
+                for key, value in processed.items()}
+
     def call(self, inputs):
-        img = inputs.get("image")
-
         try:
+            image, size = self.preprocess(inputs)
             with torch.no_grad():
-                outputs = self._model(**img)
-
-            return {'inference_outputs': outputs, **inputs}
-
-        except Exception as e:
-            self._logger.error(f"Super Point inference error: {e}")
+                outputs = self._model(**image)
+            return self.postprocess(outputs, size)
+        except Exception as error:
+            self._logger.error(f"Super Point inference error: {error}")
             raise

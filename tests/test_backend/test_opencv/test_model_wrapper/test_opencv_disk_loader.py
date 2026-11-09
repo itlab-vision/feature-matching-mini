@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import MagicMock, patch
-from src.backend.opencv.model_loader.disk_loader import DiskOpenCVModelLoader
+from src.backend.opencv.model_wrapper.disk_wrapper import DiskOpenCVModelWrapper
 
 
 @pytest.fixture
@@ -10,7 +10,7 @@ def mock_logger():
 
 def test_disk_loader_custom_path(mock_logger):
     config = {'disk_model_path': 'models/custom_disk.onnx'}
-    loader = DiskOpenCVModelLoader(
+    loader = DiskOpenCVModelWrapper(
         model_name="disk_opencv",
         config=config,
         logger=mock_logger
@@ -32,7 +32,7 @@ def test_disk_loader_custom_path(mock_logger):
 
 def test_disk_loader_default_path(mock_logger):
     config = {}
-    loader = DiskOpenCVModelLoader(
+    loader = DiskOpenCVModelWrapper(
         model_name="disk_opencv",
         config=config,
         logger=mock_logger

@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import MagicMock, patch
-from src.backend.opencv.model_loader.lightglue_loader import LightGlueOpenCVModelLoader
+from src.backend.opencv.model_wrapper.lightglue_wrapper import LightGlueOpenCVModelWrapper
 
 
 @pytest.fixture
@@ -10,7 +10,7 @@ def mock_logger():
 
 def test_lightglue_loader_custom_path(mock_logger):
     config = {'lightglue_model_path': 'models/custom_lightglue.onnx'}
-    loader = LightGlueOpenCVModelLoader(
+    loader = LightGlueOpenCVModelWrapper(
         model_name="lightglue_opencv",
         config=config,
         logger=mock_logger
@@ -32,7 +32,7 @@ def test_lightglue_loader_custom_path(mock_logger):
 
 def test_lightglue_loader_default_path(mock_logger):
     config = {}
-    loader = LightGlueOpenCVModelLoader(
+    loader = LightGlueOpenCVModelWrapper(
         model_name="lightglue_opencv",
         config=config,
         logger=mock_logger

@@ -1,3 +1,4 @@
+import numpy as np
 import pytest
 from unittest.mock import MagicMock
 from src.backend.onnx.inference_api.inference_api import OnnxInferenceAPI
@@ -40,10 +41,13 @@ def test_run_success(mock_logger, mock_model_wrapper):
         model=mock_model_wrapper
     )
 
-    inputs = {"image": "dummy_input"}
+    inputs = {"image": np.zeros((480, 640, 3), dtype=np.uint8)}
     outputs = api.run(inputs)
 
-    mock_model_wrapper.run.assert_called_once_with(["keypoints", "descriptors", "scores"], inputs)
+    assert mock_model_wrapper.run.call_count == 1
+    call_args = mock_model_wrapper.run.call_args[0]
+    assert call_args[0] == ["keypoints", "descriptors", "scores"]
+    assert "image" in call_args[1]
     assert outputs == ["tensor1", "tensor2", "tensor3"]
     mock_logger.error.assert_not_called()
 

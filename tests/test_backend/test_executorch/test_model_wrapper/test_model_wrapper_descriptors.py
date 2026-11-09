@@ -1,66 +1,55 @@
 from unittest.mock import MagicMock
 
+import cv2 as cv
+import numpy as np
 import pytest
 import torch
 
-from src.backend.executorch.model_wrapper.descriptors import (
-    PatchDescriptorExecuTorchModelWrapper,
-)
+from src.backend.executorch.model_wrapper.tfeat import TFeatExecuTorchModelWrapper
+from src.backend.executorch.model_wrapper.hardnet import HardNetExecuTorchModelWrapper
+from src.backend.torch.model_wrapper.tfeat import TFeatTorchModelWrapper
 from src.backend.model_wrapper_base import ModelWrapper
 
 
-@pytest.fixture
-def wrapper():
-    wrapper = PatchDescriptorExecuTorchModelWrapper(
-        "hardnet_executorch", config={"descriptor_dim": 4}, logger=MagicMock()
-    )
+@pytest.mark.parametrize('name, wrapper_class', [
+    ('tfeat', TFeatExecuTorchModelWrapper),
+    ('hardnet', HardNetExecuTorchModelWrapper),
+])
+def test_patch_wrapper_registration_and_inference(name, wrapper_class):
+    assert ModelWrapper._METHODS[f'{name}_executorch'] is wrapper_class
+    wrapper = wrapper_class(name, config={'patch_size': 8})
     wrapper._method = MagicMock()
-    return wrapper
+    wrapper._method.execute.return_value = (torch.ones((1, 128)),)
+    inputs = {'image': np.zeros((16, 16), dtype=np.uint8),
+              'keypoints': np.asarray([cv.KeyPoint(8, 8, 3)], dtype=object),
+              'scores': np.asarray([0.8], dtype=np.float32)}
+
+    result = wrapper.call(inputs)
+
+    wrapper._method.execute.assert_called_once()
+    assert result['descriptors'].shape == (1, 128)
+    np.testing.assert_allclose(result['scores'], [0.8])
 
 
-class TestPatchDescriptorExecuTorchModelWrapperRegistration:
-    @pytest.mark.parametrize("name", ["hardnet_executorch", "tfeat_executorch"])
-    def test_registered_aliases(self, name):
-        assert ModelWrapper._METHODS[name] is PatchDescriptorExecuTorchModelWrapper
+def test_empty_patch_batch_skips_executorch():
+    wrapper = HardNetExecuTorchModelWrapper('hardnet')
+    wrapper._method = MagicMock()
+    result = wrapper.call({'image': np.zeros((16, 16), dtype=np.uint8),
+                           'keypoints': np.empty(0, dtype=object),
+                           'scores': np.empty(0, dtype=np.float32)})
+    assert result['descriptors'].shape == (0, 128)
+    wrapper._method.execute.assert_not_called()
 
 
-class TestPatchDescriptorExecuTorchModelWrapperCall:
-    def test_call_runs_each_patch_separately_and_concatenates_outputs(self, wrapper):
-        patches = torch.arange(128, dtype=torch.float32).reshape(2, 1, 8, 8)
-        wrapper._method.execute.side_effect = [
-            (torch.tensor([[1.0, 2.0, 3.0, 4.0]]),),
-            torch.tensor([[5.0, 6.0, 7.0, 8.0]]),
-        ]
+def test_tfeat_torch_and_executorch_use_identical_patches():
+    image = np.arange(64 * 64, dtype=np.uint8).reshape(64, 64)
+    inputs = {'image': image,
+              'keypoints': np.asarray([cv.KeyPoint(32, 32, 8), cv.KeyPoint(20, 24, 12)], dtype=object),
+              'scores': np.asarray([1.0, 0.5], dtype=np.float32)}
+    torch_wrapper = TFeatTorchModelWrapper('tfeat', config={'device': 'cpu'})
+    executorch_wrapper = TFeatExecuTorchModelWrapper('tfeat')
 
-        result = wrapper.call({"patches": patches})
+    torch_patches = torch_wrapper.preprocess(inputs)[0]
+    executorch_patches = executorch_wrapper.preprocess(inputs)[0]
 
-        assert wrapper._method.execute.call_count == 2
-        assert all(call.args[0][0].shape == (1, 1, 8, 8) for call in wrapper._method.execute.call_args_list)
-        torch.testing.assert_close(
-            result,
-            torch.tensor([[1.0, 2.0, 3.0, 4.0], [5.0, 6.0, 7.0, 8.0]]),
-        )
-
-    def test_call_returns_configured_empty_descriptor_shape(self, wrapper):
-        result = wrapper.call(torch.empty(0, 1, 8, 8))
-        assert result.shape == (0, 4)
-        assert result.dtype == torch.float32
-        wrapper._method.execute.assert_not_called()
-
-    def test_call_requires_loaded_model(self):
-        wrapper = PatchDescriptorExecuTorchModelWrapper("hardnet_executorch")
-        with pytest.raises(RuntimeError, match="load"):
-            wrapper.call(torch.zeros(1, 1, 8, 8))
-
-    @pytest.mark.parametrize("patches", ["patches", torch.zeros(1, 8, 8)])
-    def test_call_rejects_invalid_patch_batch(self, wrapper, patches):
-        with pytest.raises(TypeError, match="N, C, H, W"):
-            wrapper.call(patches)
-
-    def test_call_logs_and_reraises_runtime_error(self, wrapper):
-        wrapper._method.execute.side_effect = RuntimeError("inference failed")
-        with pytest.raises(RuntimeError, match="inference failed"):
-            wrapper.call(torch.zeros(1, 1, 8, 8))
-        wrapper._logger.warning.assert_called_once_with(
-            "hardnet_executorch ExecuTorch inference error: inference failed"
-        )
+    torch.testing.assert_close(torch_patches.cpu(), executorch_patches, rtol=0, atol=0)

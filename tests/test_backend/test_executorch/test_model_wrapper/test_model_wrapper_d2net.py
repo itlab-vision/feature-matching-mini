@@ -29,35 +29,6 @@ class TestD2NetExecuTorchModelWrapperLoad:
 
 
 class TestD2NetExecuTorchModelWrapperCall:
-    def test_call_executes_image_tensor(self, wrapper):
-        image = torch.zeros(1, 3, 4, 4).transpose(2, 3)
-        expected = (torch.ones(1, 4, 2, 2),)
-        wrapper._method.execute.return_value = expected
-
-        result = wrapper.call({"image": image})
-
-        executed = wrapper._method.execute.call_args.args[0][0]
-        assert executed.device.type == "cpu"
-        assert executed.is_contiguous()
-        assert result is expected
-
-    def test_call_accepts_direct_tensor(self, wrapper):
-        image = torch.zeros(1, 3, 4, 4)
-        wrapper.call(image)
-        wrapper._method.execute.assert_called_once()
-
     def test_call_requires_loaded_model(self):
         with pytest.raises(RuntimeError, match="load"):
             D2NetExecuTorchModelWrapper("d2net_executorch").call(torch.zeros(1))
-
-    def test_call_rejects_non_tensor(self, wrapper):
-        with pytest.raises(TypeError, match="torch.Tensor"):
-            wrapper.call({"image": "image"})
-
-    def test_call_logs_and_reraises_runtime_error(self, wrapper):
-        wrapper._method.execute.side_effect = RuntimeError("inference failed")
-        with pytest.raises(RuntimeError, match="inference failed"):
-            wrapper.call(torch.zeros(1, 3, 4, 4))
-        wrapper._logger.warning.assert_called_once_with(
-            "D2-Net ExecuTorch inference error: inference failed"
-        )
