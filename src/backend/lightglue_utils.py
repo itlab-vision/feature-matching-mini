@@ -28,6 +28,10 @@ def scale_and_orientation(features, num_keypoints):
         scales = np.ones(num_keypoints, dtype=np.float32)
     if oris is None:
         oris = np.zeros(num_keypoints, dtype=np.float32)
+    if hasattr(scales, "detach"):
+        scales = scales.detach().cpu().numpy()
+    if hasattr(oris, "detach"):
+        oris = oris.detach().cpu().numpy()
     scales = np.asarray(scales, dtype=np.float32).reshape(1, num_keypoints)
     oris = np.asarray(oris, dtype=np.float32).reshape(1, num_keypoints)
     return scales, oris

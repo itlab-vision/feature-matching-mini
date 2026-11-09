@@ -13,14 +13,6 @@ from src.algorithms import (BACKEND_ALGORITHMS, OPENCV_MATCHERS_MODE,  # noqa: E
                             get_compatible_descriptors, get_compatible_matchers)
 from src.feature_matcher import FeatureMatcherCV2  # noqa: E402
 
-from src.backend.executorch.model_wrapper.model_wrapper import (  # noqa: E402
-    EXECUTORCH_DESCRIPTOR_MODELS,
-    EXECUTORCH_DETECTOR_MODELS,
-    EXECUTORCH_MATCHER_MODELS,
-)
-from src.backend.opencv.model_loader.model_loader import (  # noqa: E402
-    OPENCV_DESCRIPTOR_MODELS, OPENCV_DETECTOR_MODELS, OPENCV_MATCHER_MODELS,
-)
 import src.backend.opencv.inference_api  # noqa: E402, F401
 import src.backend.opencv.io_adapter  # noqa: E402, F401
 import src.backend.onnx.model_loader  # noqa: E402, F401
@@ -35,17 +27,29 @@ logging.basicConfig(level=logging.INFO, format='[ %(levelname)s ] %(message)s')
 logger = logging.getLogger("HPatchesTableBenchmark")
 
 
-def get_all_combinations():
+def get_all_combinations(methods=None, backends=None):
     combinations = []
-    backends = BACKEND_ALGORITHMS.keys()
+    methods = set(methods) if methods else None
+    backends_filter = set(backends) if backends else None
+    mixed_extractors = {'sift_lightglue', 'doghardnet_lightglue'}
 
-    for detector_backend, descriptor_backend, matcher_backend in product(backends, repeat=3):
+    for detector_backend, descriptor_backend, matcher_backend in product(BACKEND_ALGORITHMS.keys(), repeat=3):
         detectors = BACKEND_ALGORITHMS[detector_backend][0]
         for detector in sorted(detectors):
+            if methods is not None and detector not in methods:
+                continue
             descriptors = get_compatible_descriptors(detector, detector_backend, descriptor_backend)
             for descriptor in descriptors:
                 matchers = get_compatible_matchers(descriptor, descriptor_backend, matcher_backend)
                 for matcher in matchers:
+                    if backends_filter is not None:
+                        if detector in mixed_extractors:
+                            if detector_backend != 'torch' or descriptor_backend != 'torch' or \
+                                    matcher_backend not in backends_filter:
+                                continue
+                        elif not (detector_backend == descriptor_backend == matcher_backend
+                                  and matcher_backend in backends_filter):
+                            continue
                     combinations.append((detector, detector_backend, descriptor, descriptor_backend,
                                          matcher, matcher_backend))
     return combinations
@@ -53,22 +57,38 @@ def get_all_combinations():
 
 def configure_model_paths(args):
     model_path = args.modelpath or Path('models')
+    detector = args.detector
+    feature = detector.replace('_lightglue', '')
+    num_keypoints = args.num_keypoints
+    args.det_nfeatures = num_keypoints
+    args.des_nfeatures = num_keypoints
+    args.det_threshold = 0.0 if detector in ('sift_lightglue', 'doghardnet_lightglue') else -1e9
+    args.des_threshold = args.det_threshold
+    args.mat_normalize_keypoints = args.mat_backend != 'torch'
 
     if args.det_backend == 'executorch':
-        args.det_et_model = model_path / EXECUTORCH_DETECTOR_MODELS[args.detector]
-    elif args.det_backend == 'opencv' and args.detector in OPENCV_DETECTOR_MODELS:
-        setattr(args, f'{args.detector}_model_path', model_path / OPENCV_DETECTOR_MODELS[args.detector])
-
-    if args.des_backend == 'executorch':
-        args.des_et_model = model_path / EXECUTORCH_DESCRIPTOR_MODELS[args.descriptor]
-    elif args.des_backend == 'opencv' and args.descriptor in OPENCV_DESCRIPTOR_MODELS:
-        setattr(args, f'{args.descriptor}_model_path', model_path / OPENCV_DESCRIPTOR_MODELS[args.descriptor])
+        args.det_et_model = model_path / f'{detector}_xnnpack.pte'
+        args.det_et_input_shape = {
+            'disk_lightglue': (1, 3, 1024, 1024),
+            'superpoint_lightglue': (1, 3, 480, 640),
+            'aliked_lightglue': (1, 3, 640, 640),
+        }[detector]
+        args.det_et_num_keypoints = num_keypoints
+    elif args.det_backend in ('onnx', 'opencv'):
+        model_names = {
+            'disk_lightglue': 'disk_1024.onnx',
+            'aliked_lightglue': 'aliked_lightglue.onnx',
+            'superpoint_lightglue': 'superpoint_lightglue.onnx',
+        }
+        setattr(args, f'{feature}_model_path', model_path / model_names[detector])
 
     if args.mat_backend == 'executorch':
-        args.mat_et_model = model_path / EXECUTORCH_MATCHER_MODELS[args.descriptor]
-        args.mat_et_num_keypoints = 256
-    elif args.mat_backend == 'opencv' and args.matcher == 'lightglue':
-        args.lightglue_model_path = model_path / OPENCV_MATCHER_MODELS[args.descriptor]
+        args.mat_et_model = model_path / f'lightglue_{feature}_k{num_keypoints}_xnnpack.pte'
+        args.mat_et_num_keypoints = num_keypoints
+    elif args.mat_backend in ('onnx', 'opencv') and args.matcher == 'lightglue':
+        model_name = f'lightglue_{feature}_opencv.onnx' if args.mat_backend == 'opencv' \
+            else f'lightglue_{feature}_k{num_keypoints}.onnx'
+        args.lightglue_model_path = model_path / model_name
 
 
 def load_existing_results(output_path):
@@ -154,7 +174,7 @@ def flatten_metrics(task_name, per_threshold):
 
 
 def table_benchmark(cli_args):
-    all_combinations = get_all_combinations()
+    all_combinations = get_all_combinations(cli_args.methods, cli_args.backends)
     if not all_combinations:
         logger.error("No combinations found in algorithms.py")
         return
@@ -293,6 +313,13 @@ def parse_args():
                         help='Batch size for processing images/scenes')
     parser.add_argument('--no-skip', action='store_true',
                         help='Recompute already existing combinations')
+    parser.add_argument('--methods', nargs='+', default=None,
+                        help='Detector/descriptor names to benchmark')
+    parser.add_argument('--backends', nargs='+', default=None,
+                        choices=['torch', 'onnx', 'opencv', 'executorch'],
+                        help='Backends to benchmark')
+    parser.add_argument('--num-keypoints', type=int, default=512,
+                        help='Number of features used by all pipelines')
 
     task_group = parser.add_argument_group('Task config')
     task_group.add_argument('-et', '--eval-thresholds', type=float, nargs='+', default=[5.0],
