@@ -68,11 +68,17 @@ class LightGlueOpenCVIOAdapter(OpenCVIOAdapter):
         if outputs is None:
             return {"matches": [], "scores": []}
         matches = outputs[0]
+        fixed_size_output = matches.ndim == 3 and matches.shape[0] == 1 and matches.shape[-1] == 2
         if matches.ndim > 2 and matches.shape[0] == 1:
             matches = np.squeeze(matches, axis=0)
         scores = outputs[1] if len(outputs) > 1 else None
         if scores is not None and scores.ndim > 1 and scores.shape[0] == 1:
             scores = np.squeeze(scores, axis=0)
+        if fixed_size_output:
+            valid = matches[:, 1] >= 0
+            matches = matches[valid]
+            if scores is not None:
+                scores = scores[valid]
         if scores is not None:
             mask = scores > self.scoreThreshold
             matches = matches[mask]
