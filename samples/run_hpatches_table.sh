@@ -14,6 +14,7 @@ Options:
                            Scenes per batch (default: 4)
   -et, --eval-thresholds T [T ...]
                            Evaluation thresholds in pixels (default: 5.0)
+  --exclude-riscv-broken   Exclude DISK and SuperPoint pipelines using PyTorch
   --no-skip                Recompute combinations already present in the CSV
   -h, --help               Show this help
 
@@ -30,6 +31,7 @@ MODELS_DIR=""
 NUM_SCENES=116
 SCENES_BATCH_SIZE=4
 EVAL_THRESHOLDS=(5.0)
+EXCLUDE_RISCV_BROKEN=0
 NO_SKIP=0
 
 while [[ $# -gt 0 ]]; do
@@ -70,6 +72,10 @@ while [[ $# -gt 0 ]]; do
         echo "--eval-thresholds requires at least one number" >&2
         exit 2
       fi
+      ;;
+    --exclude-riscv-broken)
+      EXCLUDE_RISCV_BROKEN=1
+      shift
       ;;
     --no-skip)
       NO_SKIP=1
@@ -128,8 +134,6 @@ ARGS=(
   -n "$NUM_SCENES"
   -sbs "$SCENES_BATCH_SIZE"
   -mp "$MODELS_DIR"
-  --methods sift_lightglue disk_lightglue aliked_lightglue doghardnet_lightglue superpoint_lightglue
-  --backends torch onnx opencv executorch
   --num-keypoints 512
   --eval-thresholds "${EVAL_THRESHOLDS[@]}"
 )
@@ -137,5 +141,16 @@ if [[ "$NO_SKIP" -eq 1 ]]; then
   ARGS+=(--no-skip)
 fi
 
-python samples/hpatches_table_benchmark.py "${ARGS[@]}"
+if [[ "$EXCLUDE_RISCV_BROKEN" -eq 1 ]]; then
+  python samples/hpatches_table_benchmark.py "${ARGS[@]}" \
+    --methods sift_lightglue disk_lightglue aliked_lightglue doghardnet_lightglue superpoint_lightglue \
+    --backends onnx opencv executorch
+  python samples/hpatches_table_benchmark.py "${ARGS[@]}" \
+    --methods sift_lightglue aliked_lightglue doghardnet_lightglue \
+    --backends torch
+else
+  python samples/hpatches_table_benchmark.py "${ARGS[@]}" \
+    --methods sift_lightglue disk_lightglue aliked_lightglue doghardnet_lightglue superpoint_lightglue \
+    --backends torch onnx opencv executorch
+fi
 echo "Done. Results are in $RESULTS_DIR/hpatches_results.csv"
