@@ -32,6 +32,8 @@ def build_detector_config(args):
         config['disk_model_path'] = args.disk_model_path
     if args.aliked_model_path is not None:
         config['aliked_model_path'] = args.aliked_model_path
+    if args.superpoint_model_path is not None:
+        config['superpoint_model_path'] = args.superpoint_model_path
     if args.det_et_model:
         config['executorch_model_path'] = args.det_et_model
         if args.det_et_input_shape:
@@ -65,6 +67,8 @@ def build_descriptor_config(args):
         config['disk_model_path'] = args.disk_model_path
     if args.aliked_model_path is not None:
         config['aliked_model_path'] = args.aliked_model_path
+    if args.superpoint_model_path is not None:
+        config['superpoint_model_path'] = args.superpoint_model_path
     if args.tfeat_model_path is not None:
         config['tfeat_model_path'] = args.tfeat_model_path
     if args.hardnet_model_path is not None:
@@ -111,9 +115,11 @@ def build_matcher_config(args):
         config['score_threshold'] = args.mat_score_threshold
     if args.lightglue_model_path is not None:
         config['lightglue_model_path'] = args.lightglue_model_path
+    if args.mat_normalize_keypoints:
+        config['normalize_keypoints'] = True
     if args.mat_et_model is not None:
         config['executorch_model_path'] = args.mat_et_model
-        config['num_keypoints'] = args.det_et_num_keypoints
+        config['num_keypoints'] = args.mat_et_num_keypoints or args.det_et_num_keypoints
     return config
 
 
@@ -176,6 +182,8 @@ def performance_tests_parser():
                            help='Path to DISK opencv model')
     det_group.add_argument('-mpa', '--aliked-model-path', type=str, default=None,
                            help='Path to ALIKED opencv model')
+    det_group.add_argument('--superpoint-model-path', type=str, default=None,
+                           help='Path to SuperPoint ONNX model')
     det_group.add_argument('--det-et-model', type=Path,
                            help='Path to a detector .pte file')
     det_group.add_argument('--det-et-input-shape', type=int, nargs=4, metavar=('N', 'C', 'H', 'W'),
@@ -222,6 +230,8 @@ def performance_tests_parser():
                            help='scoreThreshold for LightGlue matcher')
     mat_group.add_argument('-mplg', '--lightglue-model-path', type=str, default=None,
                            help='Path to LightGlue opencv model')
+    mat_group.add_argument('--mat-normalize-keypoints', action='store_true',
+                           help='Normalize keypoints before fixed LightGlue ONNX models')
     mat_group.add_argument('--mat-et-model', type=Path,
                            help='Path to a fixed-K matcher .pte file')
     mat_group.add_argument('--mat-et-num-keypoints', type=int, default=None,
@@ -235,7 +245,7 @@ def performance_tests_parser():
 def build_hpatches_dataset_config(args):
     config = dict()
     if args.path is not None:
-        config['path'] = args.path
+        config['raw_data_path'] = args.path
     if args.num_scenes is not None:
         config['num_scenes'] = args.num_scenes
     if args.scenes_batch_size is not None:
@@ -270,6 +280,8 @@ def build_hpatches_detector_config(args):
         config['disk_model_path'] = args.disk_model_path
     if getattr(args, 'aliked_model_path', None) is not None:
         config['aliked_model_path'] = args.aliked_model_path
+    if getattr(args, 'superpoint_model_path', None) is not None:
+        config['superpoint_model_path'] = args.superpoint_model_path
     if args.det_et_model is not None:
         config['executorch_model_path'] = args.det_et_model
         if args.det_et_input_shape is not None:
@@ -291,9 +303,19 @@ def build_hpatches_descriptor_config(args):
         config['threshold'] = args.des_threshold
     if args.des_scale is not None:
         config['scale_factor'] = args.des_scale
+    if getattr(args, 'disk_model_path', None) is not None:
+        config['disk_model_path'] = args.disk_model_path
+    if getattr(args, 'aliked_model_path', None) is not None:
+        config['aliked_model_path'] = args.aliked_model_path
+    if getattr(args, 'superpoint_model_path', None) is not None:
+        config['superpoint_model_path'] = args.superpoint_model_path
     if args.des_et_model is not None:
         config['executorch_model_path'] = args.des_et_model
         config['patch_size'] = args.des_et_patch_size
+        if args.det_et_input_shape is not None:
+            config['input_shape'] = args.det_et_input_shape
+        if args.det_et_num_keypoints is not None:
+            config['num_keypoints'] = args.det_et_num_keypoints
     return config
 
 
@@ -312,6 +334,8 @@ def build_hpatches_matcher_config(args):
         config['cross_check'] = args.mat_cross_check
     if getattr(args, 'lightglue_model_path', None) is not None:
         config['lightglue_model_path'] = args.lightglue_model_path
+    if getattr(args, 'mat_normalize_keypoints', False):
+        config['normalize_keypoints'] = True
     if args.mat_et_model is not None:
         config['executorch_model_path'] = args.mat_et_model
         num_keypoints = args.mat_et_num_keypoints

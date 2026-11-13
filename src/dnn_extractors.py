@@ -86,19 +86,35 @@ class DNNFeatureExtractors(Detector, Descriptor):
         oris = outputs.get('oris')
 
         if scales is not None:
-            outputs['scales'] = scales[:, mask]
+            scales = scales[:, mask]
         if oris is not None:
-            outputs['oris'] = oris[:, mask]
+            oris = oris[:, mask]
 
         if self._nfeatures is not None and len(kp) > self._nfeatures:
-            indices = np.argsort(sc)[::-1][:self._nfeatures]
+            indices = np.argsort(-sc, kind='stable')[:self._nfeatures]
             kp = kp[indices]
             des = des[indices]
+            sc = sc[indices]
 
             if scales is not None:
-                outputs['scales'] = scales[:, mask]
+                scales = scales[:, indices]
             if oris is not None:
-                outputs['oris'] = oris[:, mask]
+                oris = oris[:, indices]
+
+        order = np.argsort(-sc, kind='stable')
+        if (order != np.arange(len(sc))).any():
+            kp = kp[order]
+            des = des[order]
+            sc = sc[order]
+            if scales is not None:
+                scales = scales[:, order]
+            if oris is not None:
+                oris = oris[:, order]
+
+        if scales is not None:
+            outputs['scales'] = scales
+        if oris is not None:
+            outputs['oris'] = oris
 
         height, width = img.shape[:2]
         extracted = {'keypoints': kp, 'descriptors': des, 'scores': sc,

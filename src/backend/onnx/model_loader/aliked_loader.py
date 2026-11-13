@@ -4,6 +4,7 @@ from src.backend.onnx.model_loader.model_loader import OnnxModelLoader
 from src.backend.onnx.onnx_utils import OnnxSessionConfiguration
 
 
+@ModelWrapper.register("aliked_lightglue_onnx")
 @ModelWrapper.register("aliked_onnx")
 class AlikedOnnxModelLoader(OnnxModelLoader):
     def load(self):

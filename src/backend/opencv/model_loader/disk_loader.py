@@ -6,6 +6,7 @@ from src.backend.opencv.model_loader.model_loader import (
 )
 
 
+@ModelWrapper.register("disk_lightglue_opencv")
 @ModelWrapper.register("disk_opencv")
 class DiskOpenCVModelLoader(OpenCVModelLoader):
     def load(self):

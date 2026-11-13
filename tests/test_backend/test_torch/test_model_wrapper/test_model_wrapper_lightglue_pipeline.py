@@ -65,6 +65,41 @@ class TestLightGlueFeatureExtractorTorchModelWrapper:
         mock_disk.return_value.eval.return_value.to.assert_called_once_with(torch.device("cpu"))
         assert result["model"] is mock_model
 
+    @pytest.mark.parametrize("extractor_name", [
+        "superpoint_lightglue",
+        "disk_lightglue",
+        "aliked_lightglue",
+        "sift_lightglue",
+        "doghardnet_lightglue",
+    ])
+    def test_load_maps_nfeatures_to_max_num_keypoints(self, wrapper, extractor_name):
+        mock_extractor = MagicMock()
+        mock_model = MagicMock()
+
+        wrapper._model_name = extractor_name
+        wrapper._config = {"nfeatures": 256}
+        wrapper._EXTRACTOR_CLASSES[f"{extractor_name}_torch"] = mock_extractor
+        mock_extractor.return_value.eval.return_value.to.return_value = mock_model
+
+        result = wrapper.load()
+
+        mock_extractor.assert_called_once_with(max_num_keypoints=256)
+        assert result["model"] is mock_model
+
+    def test_load_nfeatures_not_mapped_for_other_extractors(self, wrapper):
+        mock_roma = MagicMock()
+        mock_model = MagicMock()
+
+        wrapper._model_name = "roma"
+        wrapper._config = {"nfeatures": 128}
+        wrapper._EXTRACTOR_CLASSES["roma_torch"] = mock_roma
+        mock_roma.return_value.eval.return_value.to.return_value = mock_model
+
+        result = wrapper.load()
+
+        mock_roma.assert_called_once_with(nfeatures=128)
+        assert result["model"] is mock_model
+
     def test_load_unknown_extractor(self, wrapper):
         wrapper._model_name = "unknown_extractor"
 

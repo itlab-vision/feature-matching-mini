@@ -24,9 +24,19 @@ class LightGlueFeatureExtractorTorchModelWrapper(TorchModelWrapper):
             if not extractor_class:
                 raise ValueError(f"Extractor '{self._model_name}' not found.")
 
+            extractor_conf = dict(self._config)
+            if self._model_name in ('disk_lightglue', 'aliked_lightglue', 'superpoint_lightglue',
+                                    'sift_lightglue', 'doghardnet_lightglue') \
+                    and 'nfeatures' in extractor_conf:
+                extractor_conf['max_num_keypoints'] = extractor_conf.pop('nfeatures')
+            if self._model_name in ('sift_lightglue', 'doghardnet_lightglue'):
+                extractor_conf['nms_radius'] = extractor_conf.get('nms_radius', None)
+                if 'threshold' in extractor_conf:
+                    extractor_conf['detection_threshold'] = extractor_conf.pop('threshold')
+
             self._logger.info(f"Loading {self._model_name} weights onto {self._device}")
             LightGlueFeatureExtractorTorchModelWrapper._shared_models[model_key] = \
-                (extractor_class(**self._config).eval().to(self._device))
+                (extractor_class(**extractor_conf).eval().to(self._device))
 
         self._model = LightGlueFeatureExtractorTorchModelWrapper._shared_models[model_key]
         return {'model': self._model}
