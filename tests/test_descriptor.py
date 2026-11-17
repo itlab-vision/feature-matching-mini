@@ -8,14 +8,15 @@ from logging import Logger
 from src.image_utils import read_image
 from src.algorithms import (ALL_DESCRIPTORS, ALL_DETECTORS, DNN_ALGORITHMS, get_compatible_descriptors,
                             get_default_backend)
-import src.backend.opencv.model_loader  # noqa: F401
+import src.backend.opencv.model_wrapper  # noqa: F401
 import src.backend.opencv.inference_api  # noqa: F401
-import src.backend.opencv.io_adapter  # noqa: F401
-import src.backend.onnx.model_loader  # noqa: F401
+import src.backend.io_adapter  # noqa: F401
+import src.backend.onnx.model_wrapper  # noqa: F401
 import src.backend.onnx.inference_api  # noqa: F401
-import src.backend.onnx.io_adapter  # noqa: F401
+import src.backend.io_adapter  # noqa: F401
 from src.detectors import Detector
-from src.descriptors import Descriptor, SIFTDescriptor, OpenCVDescriptor
+from src.descriptors import Descriptor
+from src.backend.opencv.descriptors import SIFTDescriptor, OpenCVDescriptor
 
 
 @pytest.fixture

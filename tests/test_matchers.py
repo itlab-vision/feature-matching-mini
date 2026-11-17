@@ -8,7 +8,8 @@ from logging import Logger
 
 from src.descriptors import Descriptor
 from src.detectors import Detector
-from src.matchers import Matcher, BFMatcher, FLANNMatcher
+from src.matchers import Matcher
+from src.backend.opencv.matchers import BFMatcher, FLANNMatcher
 
 
 @pytest.fixture

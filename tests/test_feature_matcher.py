@@ -8,12 +8,12 @@ from logging import Logger
 from src.feature_matcher import FeatureMatcherCV2
 from src.algorithms import (DESCRIPTOR_MATCHER_COMPATIBILITY, DETECTOR_DESCRIPTOR_COMPATIBILITY, TORCH_MATCHERS,
                             get_compatible_descriptors, get_compatible_matchers)
-import src.backend.opencv.model_loader  # noqa: F401
+import src.backend.opencv.model_wrapper  # noqa: F401
 import src.backend.opencv.inference_api  # noqa: F401
-import src.backend.opencv.io_adapter  # noqa: F401
-import src.backend.onnx.model_loader  # noqa: F401
+import src.backend.io_adapter  # noqa: F401
+import src.backend.onnx.model_wrapper  # noqa: F401
 import src.backend.onnx.inference_api  # noqa: F401
-import src.backend.onnx.io_adapter  # noqa: F401
+import src.backend.io_adapter  # noqa: F401
 
 
 @pytest.fixture
