@@ -1,0 +1,24 @@
+name: Quality evaluation smoke test
+
+on: [push, pull_request]
+
+permissions:
+  contents: read
+
+jobs:
+  quality_evaluation_smoke:
+    name: Quality evaluation smoke test
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12.5'
+          cache: pip
+          cache-dependency-path: requirements_ci.txt
+      - name: Install test dependencies
+        run: python -m pip install -r requirements_ci.txt
+      - name: Run quality evaluation on two pairs
+        run: python -m pytest -v tests/test_quality_evaluation_smoke.py::test_hpatches_quality_evaluation_cli

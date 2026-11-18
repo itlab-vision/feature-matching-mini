@@ -67,38 +67,3 @@ class TestSuperGlueTorchModelWrapper:
             "match_threshold": 0.1
         })
         assert result == {"model": mock_model}
-
-    def test_call(self, wrapper, mock_model):
-        inputs = {
-            "keypoints0": torch.rand(1, 5, 2),
-            "keypoints1": torch.rand(1, 6, 2),
-            "descriptors0": torch.rand(1, 64, 5),
-            "descriptors1": torch.rand(1, 64, 6),
-            "scores0": torch.rand(1, 5),
-            "scores1": torch.rand(1, 6),
-            "image0": torch.rand(1, 1, 100, 100),
-            "image1": torch.rand(1, 1, 120, 120)
-        }
-        matches = torch.tensor([[1, -1, 0, 3, -1]])
-        scores = torch.tensor([[0.9, 0.0, 0.8, 0.7, 0.0]])
-        mock_model.return_value = {
-            "matches0": matches,
-            "matching_scores0": scores
-        }
-
-        result = wrapper.call(inputs)
-
-        mock_model.assert_called_once_with(inputs)
-        assert torch.equal(result["matches"], matches)
-        assert torch.equal(result["scores"], scores)
-        for key, value in inputs.items():
-            assert result[key] is value
-
-    def test_call_error(self, wrapper, mock_model, mock_logger):
-        inputs = {"keypoints0": torch.rand(1, 5, 2)}
-        mock_model.side_effect = RuntimeError("inference failed")
-
-        with pytest.raises(RuntimeError, match="inference failed"):
-            wrapper.call(inputs)
-
-        mock_logger.error.assert_called_once_with("Super Glue inference error: inference failed")

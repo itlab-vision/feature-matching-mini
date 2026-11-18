@@ -1,3 +1,4 @@
+import numpy as np
 import pytest
 from unittest.mock import MagicMock
 from src.backend.opencv.inference_api.inference_api import OpenCVInferenceAPI
@@ -40,8 +41,10 @@ def test_run_success(mock_logger, mock_model_wrapper):
         model=mock_model_wrapper
     )
 
-    outputs = api.run()
+    inputs = {"image": np.zeros((480, 640, 3), dtype=np.uint8)}
+    outputs = api.run(inputs)
 
+    mock_model_wrapper.setInput.assert_called_once()
     mock_model_wrapper.forward.assert_called_once_with(["keypoints", "descriptors", "scores"])
     assert outputs == ["tensor1", "tensor2", "tensor3"]
     mock_logger.error.assert_not_called()

@@ -84,6 +84,8 @@ def parser():
                            help='Patch size for descriptor model')
 
     mat_group = arg_parser.add_argument_group('Matcher config')
+    mat_group.add_argument('-mn', '--mat-nfeatures', type=int, default=None,
+                           help='Max number of matches for a combined pipeline')
     mat_group.add_argument('-matb', '--mat-backend', type=str, default=None,
                            help='Backend for matcher')
     mat_group.add_argument('-mat_m', '--matcher_mode', type=str, default='simple',

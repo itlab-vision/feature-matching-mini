@@ -46,8 +46,10 @@ class HPatchesDataManager:
 
         for i in self._img_indices:
             target_path = scene_dir / f"{i}.ppm"
-            img_target = read_image(target_path)
             h_path = scene_dir / f"H_1_{i}"
+            if not target_path.exists() and not h_path.exists():
+                continue
+            img_target = read_image(target_path)
 
             if img_target is not None and h_path.exists():
                 H = np.loadtxt(str(h_path))

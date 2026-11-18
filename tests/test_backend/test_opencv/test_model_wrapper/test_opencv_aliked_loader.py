@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import MagicMock, patch
-from src.backend.opencv.model_loader.aliked_loader import AlikedOpenCVModelLoader
+from src.backend.opencv.model_wrapper.aliked_wrapper import AlikedOpenCVModelWrapper
 
 
 @pytest.fixture
@@ -10,7 +10,7 @@ def mock_logger():
 
 def test_aliked_loader_custom_path(mock_logger):
     config = {'aliked_model_path': 'models/custom_aliked.onnx'}
-    loader = AlikedOpenCVModelLoader(
+    loader = AlikedOpenCVModelWrapper(
         model_name="aliked_opencv",
         config=config,
         logger=mock_logger
@@ -32,7 +32,7 @@ def test_aliked_loader_custom_path(mock_logger):
 
 def test_aliked_loader_default_path(mock_logger):
     config = {}
-    loader = AlikedOpenCVModelLoader(
+    loader = AlikedOpenCVModelWrapper(
         model_name="aliked_opencv",
         config=config,
         logger=mock_logger

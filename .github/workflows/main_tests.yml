@@ -32,4 +32,4 @@ jobs:
           python -m pip install lightglue/
 
       - name: Run main tests
-        run: python -m pytest tests/
+        run: python -m pytest tests/ --ignore=tests/test_quality_evaluation_smoke.py

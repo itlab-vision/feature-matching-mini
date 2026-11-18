@@ -12,20 +12,10 @@ sys.path.append(str(Path(__file__).parent.parent))  # noqa: E402
 from src.algorithms import (BACKEND_ALGORITHMS, OPENCV_MATCHERS_MODE,  # noqa: E402
                             get_compatible_descriptors, get_compatible_matchers)
 from src.feature_matcher import FeatureMatcherCV2  # noqa: E402
+from src.backend.model_paths import (  # noqa: E402
+    EXECUTORCH_DESCRIPTOR_MODELS, EXECUTORCH_DETECTOR_MODELS, EXECUTORCH_MATCHER_MODELS,
+    ONNX_DESCRIPTOR_MODELS, ONNX_DETECTOR_MODELS, ONNX_MATCHER_MODELS)
 
-from src.backend.executorch.model_wrapper.model_wrapper import (  # noqa: E402
-    EXECUTORCH_DESCRIPTOR_MODELS,
-    EXECUTORCH_DETECTOR_MODELS,
-    EXECUTORCH_MATCHER_MODELS,
-)
-from src.backend.opencv.model_loader.model_loader import (  # noqa: E402
-    OPENCV_DESCRIPTOR_MODELS, OPENCV_DETECTOR_MODELS, OPENCV_MATCHER_MODELS,
-)
-import src.backend.opencv.inference_api  # noqa: E402, F401
-import src.backend.opencv.io_adapter  # noqa: E402, F401
-import src.backend.onnx.model_loader  # noqa: E402, F401
-import src.backend.onnx.inference_api  # noqa: E402, F401
-import src.backend.onnx.io_adapter  # noqa: E402, F401
 from samples.utils import build_hpatches_benchmark_config, build_hpatches_feature_matcher_config  # noqa: E402
 from samples.hpatches_task import HPatchesTask  # noqa: E402
 from samples.hpatches_data_manager import HPatchesDataManager  # noqa: E402
@@ -56,19 +46,19 @@ def configure_model_paths(args):
 
     if args.det_backend == 'executorch':
         args.det_et_model = model_path / EXECUTORCH_DETECTOR_MODELS[args.detector]
-    elif args.det_backend == 'opencv' and args.detector in OPENCV_DETECTOR_MODELS:
-        setattr(args, f'{args.detector}_model_path', model_path / OPENCV_DETECTOR_MODELS[args.detector])
+    elif args.det_backend in {'opencv', 'onnx'} and args.detector in ONNX_DETECTOR_MODELS:
+        setattr(args, f'{args.detector}_model_path', model_path / ONNX_DETECTOR_MODELS[args.detector])
 
     if args.des_backend == 'executorch':
         args.des_et_model = model_path / EXECUTORCH_DESCRIPTOR_MODELS[args.descriptor]
-    elif args.des_backend == 'opencv' and args.descriptor in OPENCV_DESCRIPTOR_MODELS:
-        setattr(args, f'{args.descriptor}_model_path', model_path / OPENCV_DESCRIPTOR_MODELS[args.descriptor])
+    elif args.des_backend in {'opencv', 'onnx'} and args.descriptor in ONNX_DESCRIPTOR_MODELS:
+        setattr(args, f'{args.descriptor}_model_path', model_path / ONNX_DESCRIPTOR_MODELS[args.descriptor])
 
     if args.mat_backend == 'executorch':
         args.mat_et_model = model_path / EXECUTORCH_MATCHER_MODELS[args.descriptor]
         args.mat_et_num_keypoints = 256
-    elif args.mat_backend == 'opencv' and args.matcher == 'lightglue':
-        args.lightglue_model_path = model_path / OPENCV_MATCHER_MODELS[args.descriptor]
+    elif args.mat_backend in {'opencv', 'onnx'} and args.matcher == 'lightglue':
+        args.lightglue_model_path = model_path / ONNX_MATCHER_MODELS[args.descriptor]
 
 
 def load_existing_results(output_path):
@@ -106,7 +96,7 @@ def save_single_result(output_path, new_result, tasks, thresholds):
         'detector', 'detector_backend',
         'descriptor', 'descriptor_backend',
         'matcher', 'matcher_backend',
-        'device', 'num_scenes',
+        'device', 'num_scenes', 'num_pairs',
     ]
     metric_columns = []
     for task in tasks:
@@ -157,15 +147,13 @@ def table_benchmark(cli_args):
     all_combinations = get_all_combinations()
     if not all_combinations:
         logger.error("No combinations found in algorithms.py")
-        return
+        return False
 
     first_combination = all_combinations[0]
     base_args = copy.copy(cli_args)
     base_args.detector, base_args.det_backend = first_combination[:2]
     base_args.descriptor, base_args.des_backend = first_combination[2:4]
     base_args.matcher, base_args.mat_backend = first_combination[4:]
-    configure_model_paths(base_args)
-
     base_config = build_hpatches_benchmark_config(base_args)
     _, existing_combos = load_existing_results(cli_args.output)
 
@@ -181,11 +169,12 @@ def table_benchmark(cli_args):
 
     if not combinations:
         logger.info("All combinations already computed")
-        return
+        return True
 
     task_objects = {name: HPatchesTask.create(task_name=name, logger=logger, config=base_config['task'])
                     for name in cli_args.tasks}
     dm = HPatchesDataManager(logger=logger, config=base_config['dataset'])
+    failed = 0
 
     for idx, combo in enumerate(combinations, 1):
         det, det_backend, desc, des_backend, mat, mat_backend = combo
@@ -193,17 +182,23 @@ def table_benchmark(cli_args):
                     f"{det}[{det_backend}] + {desc}[{des_backend}] + {mat}[{mat_backend}]")
 
         current_combo_results = {task: {} for task in cli_args.tasks}
+        num_pairs = 0
 
         tmp_args = copy.copy(cli_args)
         tmp_args.detector, tmp_args.descriptor, tmp_args.matcher = det, desc, mat
         tmp_args.det_backend = det_backend
         tmp_args.des_backend = des_backend
         tmp_args.mat_backend = mat_backend
-        configure_model_paths(tmp_args)
-        combo_fm_config = build_hpatches_feature_matcher_config(tmp_args)
         feature_matcher = None
 
         try:
+            configure_model_paths(tmp_args)
+            for backend, path in ((det_backend, tmp_args.det_et_model),
+                                  (des_backend, tmp_args.des_et_model),
+                                  (mat_backend, tmp_args.mat_et_model)):
+                if backend == 'executorch' and (not path.is_file() or path.stat().st_size == 0):
+                    raise FileNotFoundError(f"Missing or empty ExecuTorch model: {path}")
+            combo_fm_config = build_hpatches_feature_matcher_config(tmp_args)
             feature_matcher = FeatureMatcherCV2(detector=det, descriptor=desc, matcher=mat,
                                                 logger=logger, config=combo_fm_config)
 
@@ -218,6 +213,7 @@ def table_benchmark(cli_args):
 
                     for i, target in scene_data['targets'].items():
                         features_ref, features_tgt, correspondences = feature_matcher.match(img_ref, target['image'])
+                        num_pairs += 1
                         if 'keypoints0' in correspondences and 'keypoints1' in correspondences:
                             keypoints0 = correspondences['keypoints0']
                             keypoints1 = correspondences['keypoints1']
@@ -231,6 +227,7 @@ def table_benchmark(cli_args):
                         scene_matching_data[scene_name][i] = {
                             'kp_ref': keypoints0, 'kp_tgt': keypoints1,
                             'matches': correspondences['matches'], 'H': target['H'],
+                            'scores': correspondences.get('scores'),
                             'ref_shape': scene_data['ref_shape'], 'tgt_shape': target['tgt_shape'],
                         }
 
@@ -248,6 +245,7 @@ def table_benchmark(cli_args):
                 'matcher': mat, 'matcher_backend': mat_backend,
                 'device': cli_args.device or 'cpu',
                 'num_scenes': cli_args.num_scenes,
+                'num_pairs': num_pairs,
             }
 
             for name, task_obj in task_objects.items():
@@ -259,6 +257,7 @@ def table_benchmark(cli_args):
                         f"{mat}[{mat_backend}] finished and saved")
 
         except Exception as e:
+            failed += 1
             logger.error(f"Failed combination {det}[{det_backend}]+{desc}[{des_backend}]+"
                          f"{mat}[{mat_backend}]: {e}")
             continue
@@ -266,6 +265,9 @@ def table_benchmark(cli_args):
             dm.reset()
             if feature_matcher is not None:
                 feature_matcher.close()
+
+    logger.info(f"Completed {len(combinations) - failed}/{len(combinations)} combinations")
+    return failed == 0
 
 
 def parse_args():
@@ -293,6 +295,8 @@ def parse_args():
                         help='Batch size for processing images/scenes')
     parser.add_argument('--no-skip', action='store_true',
                         help='Recompute already existing combinations')
+    parser.add_argument('--strict', action='store_true',
+                        help='Exit with an error if any combination fails')
 
     task_group = parser.add_argument_group('Task config')
     task_group.add_argument('-et', '--eval-thresholds', type=float, nargs='+', default=[5.0],
@@ -329,6 +333,8 @@ def parse_args():
                            help='Patch size for descriptor model')
 
     mat_group = parser.add_argument_group('Matcher config')
+    mat_group.add_argument('-mn', '--mat-nfeatures', type=int, default=None,
+                           help='Max number of matches for a combined pipeline')
     mat_group.add_argument('-mat_m', '--matcher_mode', type=str, default='simple',
                            choices=OPENCV_MATCHERS_MODE, help='Matching mode')
     mat_group.add_argument('-mr', '--mat-ratio', type=float, default=None,
@@ -350,7 +356,8 @@ def main():
         return 1
 
     logger.info("HPatches Benchmark Table Generator")
-    table_benchmark(args)
+    if not table_benchmark(args) and args.strict:
+        return 1
     logger.info("Benchmark completed successfully")
 
     return 0
