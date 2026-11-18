@@ -1,3 +1,4 @@
+import numpy as np
 import pytest
 import torch
 
@@ -135,79 +136,22 @@ class TestR2D2TorchModelWrapperLoad:
 
 
 class TestR2D2TorchModelWrapperCall:
-    def test_call_returns_dict(self, wrapper, model_outputs):
-        wrapper._model = MagicMock()
-        wrapper._nms = MagicMock()
+    @patch("src.backend.torch.model_wrapper.r2d2.extract_multiscale")
+    def test_call_preprocesses_image_and_converts_outputs(self, extract, wrapper, model_outputs):
+        extract.return_value = model_outputs
 
-        with patch("src.backend.torch.model_wrapper.r2d2.extract_multiscale", return_value=model_outputs):
-            result = wrapper.call({
-                "image": torch.rand(1, 3, 240, 320),
-                "model": wrapper._model,
-                "nms": wrapper._nms,
-            })
+        result = wrapper.call({"image": np.zeros((8, 10, 3), dtype=np.uint8)})
 
-        assert isinstance(result, dict)
-        assert "keypoints" in result
-        assert "descriptors" in result
-        assert "scores" in result
+        model, image, nms = extract.call_args.args
+        assert model is wrapper._model
+        assert image.shape == (1, 3, 8, 10)
+        assert nms is wrapper._nms
+        np.testing.assert_array_equal(result["keypoints"], model_outputs[0][:, :2].numpy())
+        np.testing.assert_array_equal(result["descriptors"], model_outputs[1].numpy())
+        np.testing.assert_array_equal(result["scores"], model_outputs[2].numpy())
 
-    def test_call_returns_cpu_tensors(self, wrapper, model_outputs):
-        with patch("src.backend.torch.model_wrapper.r2d2.extract_multiscale", return_value=model_outputs):
-            result = wrapper.call({
-                "image": torch.rand(1, 3, 240, 320),
-                "model": wrapper._model,
-                "nms": wrapper._nms,
-            })
-
-        assert result["keypoints"].device.type == "cpu"
-        assert result["descriptors"].device.type == "cpu"
-        assert result["scores"].device.type == "cpu"
-
-    def test_call_returns_expected_outputs(self, wrapper, model_outputs):
-        with patch("src.backend.torch.model_wrapper.r2d2.extract_multiscale", return_value=model_outputs):
-            result = wrapper.call({
-                "image": torch.rand(1, 3, 240, 320),
-                "model": wrapper._model,
-                "nms": wrapper._nms,
-            })
-
-        assert torch.equal(result["keypoints"], model_outputs[0])
-        assert torch.equal(result["descriptors"], model_outputs[1])
-        assert torch.equal(result["scores"], model_outputs[2])
-
-    def test_call_invokes_extract_multiscale(self, wrapper, model_outputs):
-        image = torch.rand(1, 3, 240, 320)
-
-        with (patch("src.backend.torch.model_wrapper.r2d2.extract_multiscale", return_value=model_outputs)
-              as mock_extract):
-            wrapper.call({
-                "image": image,
-                "model": wrapper._model,
-                "nms": wrapper._nms,
-            })
-
-        mock_extract.assert_called_once_with(wrapper._model, image, wrapper._nms)
-
-    def test_call_logs_warning_on_error(self, wrapper):
-        error = RuntimeError("inference failed")
-
-        with patch("src.backend.torch.model_wrapper.r2d2.extract_multiscale", side_effect=error):
-            with pytest.raises(RuntimeError, match="inference failed"):
-                wrapper.call({
-                    "image": torch.rand(1, 3, 240, 320),
-                    "model": wrapper._model,
-                    "nms": wrapper._nms,
-                })
-
-        wrapper._logger.warning.assert_called_once_with("R2D2 inference failed (likely 0 points): inference failed")
-
-    def test_call_reraises_model_error(self, wrapper):
-        error = ValueError("invalid image")
-
-        with patch("src.backend.torch.model_wrapper.r2d2.extract_multiscale", side_effect=error):
-            with pytest.raises(ValueError, match="invalid image"):
-                wrapper.call({
-                    "image": torch.rand(1, 3, 240, 320),
-                    "model": wrapper._model,
-                    "nms": wrapper._nms,
-                })
+    @patch("src.backend.torch.model_wrapper.r2d2.extract_multiscale", side_effect=RuntimeError("boom"))
+    def test_call_logs_and_reraises_model_error(self, extract, wrapper):
+        with pytest.raises(RuntimeError, match="boom"):
+            wrapper.call({"image": np.zeros((8, 10, 3), dtype=np.uint8)})
+        wrapper._logger.warning.assert_called_once_with("R2D2 inference failed (likely 0 points): boom")

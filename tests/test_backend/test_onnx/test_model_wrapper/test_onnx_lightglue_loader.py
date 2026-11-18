@@ -2,7 +2,7 @@ import pytest
 from unittest.mock import MagicMock, patch
 from logging import Logger
 
-from src.backend.onnx.model_loader.lightglue_loader import LightGlueOnnxModelLoader
+from src.backend.onnx.model_wrapper.lightglue_wrapper import LightGlueOnnxModelWrapper
 from src.backend.model_wrapper_base import ModelWrapper
 
 
@@ -12,17 +12,17 @@ def mock_logger():
 
 
 def test_registered_in_factory(mock_logger):
-    loader = LightGlueOnnxModelLoader(model_name="lightglue_onnx", config={}, logger=mock_logger)
+    loader = LightGlueOnnxModelWrapper(model_name="lightglue_onnx", config={}, logger=mock_logger)
     assert loader is not None
     assert "lightglue_onnx" in ModelWrapper._METHODS
 
 
 def test_load_default_path_success(mock_logger):
     config = {}
-    loader = LightGlueOnnxModelLoader(model_name="lightglue_onnx", config=config, logger=mock_logger)
+    loader = LightGlueOnnxModelWrapper(model_name="lightglue_onnx", config=config, logger=mock_logger)
 
-    with patch('src.backend.onnx.model_loader.lightglue_loader.OnnxSessionConfiguration') as mock_session_config_cls, \
-            patch('onnxruntime.InferenceSession') as mock_inference_session:
+    with (patch('src.backend.onnx.model_wrapper.lightglue_wrapper.OnnxSessionConfiguration')
+          as mock_session_config_cls, patch('onnxruntime.InferenceSession') as mock_inference_session):
         mock_session_config_instance = MagicMock()
         mock_session_config_instance.set_session_options.return_value = "dummy_sess_options"
         mock_session_config_instance.get_providers_with_options.return_value = ["CPUExecutionProvider"]
@@ -47,10 +47,10 @@ def test_load_default_path_success(mock_logger):
 def test_load_custom_path_success(mock_logger):
     custom_path = "models/custom_lightglue.onnx"
     config = {'lightglue_model_path': custom_path}
-    loader = LightGlueOnnxModelLoader(model_name="lightglue_onnx", config=config, logger=mock_logger)
+    loader = LightGlueOnnxModelWrapper(model_name="lightglue_onnx", config=config, logger=mock_logger)
 
-    with patch('src.backend.onnx.model_loader.lightglue_loader.OnnxSessionConfiguration') as mock_session_config_cls, \
-            patch('onnxruntime.InferenceSession') as mock_inference_session:
+    with (patch('src.backend.onnx.model_wrapper.lightglue_wrapper.OnnxSessionConfiguration')
+          as mock_session_config_cls, patch('onnxruntime.InferenceSession') as mock_inference_session):
         mock_session_config_instance = MagicMock()
         mock_session_config_instance.set_session_options.return_value = "dummy_sess_options"
         mock_session_config_instance.get_providers_with_options.return_value = ["CPUExecutionProvider"]
@@ -72,9 +72,9 @@ def test_load_custom_path_success(mock_logger):
 
 def test_load_exception_handling(mock_logger):
     config = {}
-    loader = LightGlueOnnxModelLoader(model_name="lightglue_onnx", config=config, logger=mock_logger)
+    loader = LightGlueOnnxModelWrapper(model_name="lightglue_onnx", config=config, logger=mock_logger)
 
-    with patch('src.backend.onnx.model_loader.lightglue_loader.OnnxSessionConfiguration'), \
+    with patch('src.backend.onnx.model_wrapper.lightglue_wrapper.OnnxSessionConfiguration'), \
             patch('onnxruntime.InferenceSession', side_effect=Exception("LightGlue model not found")):
         with pytest.raises(Exception, match="LightGlue model not found"):
             loader.load()

@@ -1,3 +1,4 @@
+import numpy as np
 import pytest
 import torch
 
@@ -167,58 +168,26 @@ class TestSuperPointTorchModelWrapperLoad:
 
 
 class TestSuperPointTorchModelWrapperCall:
-    def test_call_returns_dict(self, wrapper, inference_outputs):
-        wrapper._model.return_value = inference_outputs
-        inputs = {"image": {"pixel_values": torch.rand(1, 3, 240, 320)}}
+    def test_call_runs_processor_model_and_postprocess(self, wrapper, inference_outputs, mock_processor, mock_model):
+        image = np.zeros((8, 10, 3), dtype=np.uint8)
+        pixels = torch.zeros(1, 1, 8, 10)
+        mock_processor.return_value.to.return_value = {"pixel_values": pixels}
+        mock_processor.post_process_keypoint_detection.return_value = [
+            {key: value[0] for key, value in inference_outputs.items()}
+        ]
 
-        result = wrapper.call(inputs)
+        result = wrapper.call({"image": image})
 
-        assert isinstance(result, dict)
-        assert "inference_outputs" in result
-        assert "image" in result
+        assert mock_processor.call_args.args[0] is image
+        assert mock_processor.call_args.kwargs == {"return_tensors": "pt"}
+        mock_model.assert_called_once_with(pixel_values=pixels)
+        mock_processor.post_process_keypoint_detection.assert_called_once_with(mock_model.return_value, [[8, 10]])
+        for key, value in result.items():
+            np.testing.assert_array_equal(value, inference_outputs[key][0].numpy())
 
-    def test_call_returns_model_outputs(self, wrapper, inference_outputs):
-        wrapper._model.return_value = inference_outputs
-        inputs = {"image": {"pixel_values": torch.rand(1, 3, 240, 320)}}
-
-        result = wrapper.call(inputs)
-
-        assert result["inference_outputs"] is inference_outputs
-
-    def test_call_invokes_model(self, wrapper, inference_outputs):
-        wrapper._model.return_value = inference_outputs
-        image = {"pixel_values": torch.rand(1, 3, 240, 320)}
-
-        wrapper.call({"image": image})
-
-        wrapper._model.assert_called_once_with(**image)
-
-    def test_call_preserves_input_fields(self, wrapper, inference_outputs):
-        wrapper._model.return_value = inference_outputs
-        image = {"pixel_values": torch.rand(1, 3, 240, 320)}
-        inputs = {
-            "image": image,
-            "height": 240,
-            "width": 320,
-        }
-
-        result = wrapper.call(inputs)
-        assert result["image"] is image
-        assert result["height"] == 240
-        assert result["width"] == 320
-
-    def test_call_logs_error_on_failure(self, wrapper):
-        wrapper._model.side_effect = RuntimeError("inference failed")
-        image = {"pixel_values": torch.rand(1, 3, 240, 320)}
-
-        with pytest.raises(RuntimeError, match="inference failed"):
-            wrapper.call({"image": image})
-
-        wrapper._logger.error.assert_called_once_with("Super Point inference error: inference failed")
-
-    def test_call_reraises_model_error(self, wrapper):
-        wrapper._model.side_effect = ValueError("invalid input")
-        image = {"pixel_values": torch.rand(1, 3, 240, 320)}
-
-        with pytest.raises(ValueError, match="invalid input"):
-            wrapper.call({"image": image})
+    def test_call_logs_and_reraises_model_error(self, wrapper, mock_processor, mock_model):
+        mock_processor.return_value.to.return_value = {}
+        mock_model.side_effect = RuntimeError("boom")
+        with pytest.raises(RuntimeError, match="boom"):
+            wrapper.call({"image": np.zeros((8, 10, 3), dtype=np.uint8)})
+        wrapper._logger.error.assert_called_once_with("Super Point inference error: boom")

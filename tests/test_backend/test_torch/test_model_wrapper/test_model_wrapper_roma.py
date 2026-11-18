@@ -1,3 +1,4 @@
+import numpy as np
 import pytest
 import torch
 from unittest.mock import MagicMock, patch
@@ -71,53 +72,29 @@ class TestRoMaTorchModelWrapper:
         assert result == {"model": mock_model}
 
     def test_call(self, wrapper, mock_model):
-        img0 = MagicMock()
-        img1 = MagicMock()
-        warp = MagicMock()
-        certainty = MagicMock()
-        matches = torch.rand(1, 10, 4)
-        conf = torch.rand(1, 10)
-        kp0 = torch.rand(10, 2)
-        kp1 = torch.rand(10, 2)
+        images = {"image0": np.zeros((8, 10, 3), dtype=np.uint8), "image1": np.zeros((7, 9), dtype=np.uint8)}
+        mock_model.match.return_value = ("warp", "certainty")
+        scores = torch.ones(2)
+        matches = torch.zeros(2, 4)
+        mock_model.sample.return_value = (matches, scores)
+        points = torch.tensor([[2, 3], [4, 5]])
+        mock_model.to_pixel_coordinates.return_value = (points, points + 1)
 
-        mock_model.match.return_value = (warp, certainty)
-        mock_model.sample.return_value = (matches, conf)
-        mock_model.to_pixel_coordinates.return_value = (kp0, kp1)
+        result = wrapper.call(images)
 
-        inputs = {
-            "image0": img0,
-            "image1": img1,
-            "height0": 100,
-            "width0": 200,
-            "height1": 150,
-            "width1": 300
-        }
-
-        result = wrapper.call(inputs)
-
-        mock_model.match.assert_called_once_with(img0, img1, device=torch.device("cpu"))
-        mock_model.sample.assert_called_once_with(warp, certainty, num=10)
-        mock_model.to_pixel_coordinates.assert_called_once_with(
-            matches, 100, 200, 150, 300
-        )
-
-        assert torch.equal(result["keypoints0"], kp0)
-        assert torch.equal(result["keypoints1"], kp1)
-        assert torch.equal(result["scores"], conf)
+        left, right = mock_model.match.call_args.args
+        assert (left.size, right.size) == ((10, 8), (9, 7))
+        assert left.mode == right.mode == "RGB"
+        mock_model.sample.assert_called_once_with("warp", "certainty", num=10)
+        mock_model.to_pixel_coordinates.assert_called_once_with(matches, 8, 10, 7, 9)
+        np.testing.assert_array_equal(result["matches"], [[0, 0], [1, 1]])
+        np.testing.assert_array_equal(result["keypoints0"], points.numpy())
+        np.testing.assert_array_equal(result["keypoints1"], (points + 1).numpy())
+        np.testing.assert_array_equal(result["scores"], scores.numpy())
 
     def test_call_error(self, wrapper, mock_model, mock_logger):
-        mock_model.match.side_effect = RuntimeError("match failed")
-
-        inputs = {
-            "image0": MagicMock(),
-            "image1": MagicMock(),
-            "height0": 100,
-            "width0": 200,
-            "height1": 100,
-            "width1": 200
-        }
-
-        with pytest.raises(RuntimeError, match="match failed"):
-            wrapper.call(inputs)
-
-        mock_logger.error.assert_called_once_with("RoMa match error: match failed")
+        mock_model.match.side_effect = RuntimeError("boom")
+        image = np.zeros((8, 10, 3), dtype=np.uint8)
+        with pytest.raises(RuntimeError, match="boom"):
+            wrapper.call({"image0": image, "image1": image})
+        mock_logger.error.assert_called_once_with("RoMa match error: boom")

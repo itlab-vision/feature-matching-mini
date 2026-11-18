@@ -4,14 +4,14 @@ import cv2 as cv
 from src.detectors import Detector
 from src.descriptors import Descriptor
 from src.matchers import Matcher
-import src.backend.torch.model_wrapper  # noqa: E402, F401
-import src.backend.torch.inference_api  # noqa: E402, F401
-import src.backend.torch.io_adapter  # noqa: E402, F401
 from src.backend.io_adapter_base import IOAdapter
 from src.backend.inference_api_base import InferenceAPI
 from src.backend.model_wrapper_base import ModelWrapper
 
 
+@Descriptor.register("dnnpipeline")
+@Detector.register("dnnpipeline")
+@Matcher.register("dnnpipeline")
 class DNNPipeline(Detector, Descriptor, Matcher):
     _model_wrapper = None
     _model_components = None
@@ -69,9 +69,7 @@ class DNNPipeline(Detector, Descriptor, Matcher):
             self._logger.error("Input image is None")
             return {'matches': (), 'scores': ()}
 
-        self._logger.info(
-            f"Running inference with {self._matcher_name} on {self._backend} backend"
-        )
+        self._logger.info(f"Running inference with {self._matcher_name} on {self._backend} backend")
         inputs = {'image0': img0, 'image1': img1}
         inputs = DNNPipeline._io_adapter.preprocess(inputs)
         outputs = DNNPipeline._inference.run(inputs)
@@ -86,20 +84,19 @@ class DNNPipeline(Detector, Descriptor, Matcher):
             self._logger.warning(f"{self._detector_name}: invalid matcher output")
             return {'matches': (), 'scores': ()}
 
-        mask = scores > self._threshold
-        matches = matches[mask]
-        scores = scores[mask]
+        indices = np.flatnonzero(scores > self._threshold)
+        if self._nfeatures is not None and len(indices) > self._nfeatures:
+            indices = indices[np.argsort(scores[indices])[::-1][:self._nfeatures]]
 
-        if self._nfeatures is not None and len(matches) > self._nfeatures:
-            indices = np.argsort(scores)[::-1][:self._nfeatures]
-            matches = matches[indices]
-            scores = scores[indices]
+        selected = matches[indices]
+        keypoints0 = np.asarray(keypoints0, dtype=object)[[match.queryIdx for match in selected]]
+        keypoints1 = np.asarray(keypoints1, dtype=object)[[match.trainIdx for match in selected]]
+        matches = np.asarray([cv.DMatch(i, i, match.distance) for i, match in enumerate(selected)], dtype=object)
+        scores = scores[indices]
 
-        extracted = {'keypoints0': keypoints0,
-                     'keypoints1': keypoints1,
-                     'matches': matches,
-                     'scores': scores,
-                     **outputs}
+        extracted = {**outputs, 'keypoints0': keypoints0,
+                     'keypoints1': keypoints1, 'matches': matches,
+                     'scores': scores}
         DNNPipeline._extracted_data = extracted
 
         if len(matches) > 0:

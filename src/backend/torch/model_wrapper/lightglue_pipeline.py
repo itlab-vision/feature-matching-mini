@@ -1,4 +1,6 @@
 import torch
+import cv2 as cv
+import numpy as np
 
 from thirdparty.lightglue.lightglue import SuperPoint, DISK, SIFT, ALIKED, DoGHardNet
 
@@ -31,19 +33,28 @@ class LightGlueFeatureExtractorTorchModelWrapper(TorchModelWrapper):
         self._model = LightGlueFeatureExtractorTorchModelWrapper._shared_models[model_key]
         return {'model': self._model}
 
+    def preprocess(self, inputs):
+        rgb = cv.cvtColor(inputs['image'], cv.COLOR_BGR2RGB)
+        image = torch.from_numpy(np.ascontiguousarray(rgb)).permute(2, 0, 1).float() / 255.0
+        return image.unsqueeze(0).to(self._device)
+
+    @staticmethod
+    def postprocess(outputs):
+        result = {key: value.detach().cpu().numpy() if torch.is_tensor(value) else value
+                  for key, value in outputs.items()}
+        result['keypoints'] = outputs['keypoints'].squeeze(0).detach().cpu().numpy()
+        result['descriptors'] = outputs['descriptors'].squeeze(0).detach().cpu().numpy()
+        result['scores'] = outputs['keypoint_scores'].squeeze(0).detach().cpu().numpy()
+        result.pop('keypoint_scores', None)
+        return result
+
     def call(self, inputs):
-        img = inputs.get("image")
-        model = inputs.get("model")
-
         try:
+            image = self.preprocess(inputs)
             with torch.no_grad():
-                if img.ndim == 3:
-                    image_tensor = img[None]
-
                 self._logger.info(f"Running inference with {self._model_name} on torch backend")
-                extracted = model.extract(image_tensor.to(self._device))
-            return extracted
-
-        except Exception as e:
-            self._logger.error(f"D2-Net inference error: {e}")
+                outputs = self._model.extract(image)
+            return self.postprocess(outputs)
+        except Exception as error:
+            self._logger.error(f"LightGlue extractor inference error: {error}")
             raise

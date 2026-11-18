@@ -9,15 +9,9 @@ from src.algorithms import ALL_DETECTORS, ALL_DESCRIPTORS, ALL_MATCHERS, OPENCV_
 from src.image_utils import read_image, save_image, show_image  # noqa: E402, F401
 from src.detectors import Detector  # noqa: E402, F401
 from src.descriptors import Descriptor  # noqa: E402, F401
-from src.matchers import Matcher, OpenCVMatcher  # noqa: E402, F401
+from src.matchers import Matcher  # noqa: E402, F401
 from src.feature_matcher import FeatureMatcherCV2  # noqa: E402, F401
 from samples.utils import build_feature_matcher_config  # noqa: E402, F401
-import src.backend.opencv.model_loader  # noqa: E402, F401
-import src.backend.opencv.inference_api  # noqa: E402, F401
-import src.backend.opencv.io_adapter  # noqa: E402, F401
-import src.backend.onnx.model_loader  # noqa: E402, F401
-import src.backend.onnx.inference_api  # noqa: E402, F401
-import src.backend.onnx.io_adapter  # noqa: E402, F401
 
 
 logging.basicConfig(level=logging.INFO, format='[ %(levelname)s ] %(message)s')
@@ -100,6 +94,8 @@ def parser():
                            help='Patch size for descriptor model')
 
     mat_group = arg_parser.add_argument_group('Matcher config')
+    mat_group.add_argument('-mn', '--mat-nfeatures', type=int, default=None,
+                           help='Max number of matches for a combined pipeline')
     mat_group.add_argument('-matb', '--mat-backend', type=str, default=None,
                            help='Backend for matcher')
     mat_group.add_argument('-mat_m', '--matcher_mode', type=str, default='simple',
