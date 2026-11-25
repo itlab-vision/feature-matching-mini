@@ -134,6 +134,13 @@ def main():
                     img_tgt = target['image']
                     H = target['H']
 
+                    ref_h, ref_w = img_ref.shape[:2]
+                    tgt_h, tgt_w = img_tgt.shape[:2]
+                    logger.info(f"Scene '{scene_name}', target {i}: loaded image size (WxH): "
+                                f"ref={ref_w}x{ref_h}, tgt={tgt_w}x{tgt_h}")
+                    logger.info(f"Scene '{scene_name}', target {i}: image size before feeding "
+                                f"to the algorithm (WxH): ref={ref_w}x{ref_h}, tgt={tgt_w}x{tgt_h}")
+
                     features_ref, features_tgt, correspondences = feature_matcher.match(img_ref, img_tgt)
                     if 'keypoints0' in correspondences and 'keypoints1' in correspondences:
                         keypoints0 = correspondences['keypoints0']

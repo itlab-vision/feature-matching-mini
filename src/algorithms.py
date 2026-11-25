@@ -10,28 +10,31 @@ TORCH_MATCHERS = {'lightglue', 'superglue', 'loftr', 'roma'}
 TORCH_PIPELINES = {'loftr', 'roma'}
 
 OPENCV_DETECTORS = {'sift', 'orb', 'fast', 'akaze', 'brisk', 'kaze', 'gftt', 'mser', 'agast', 'blob', 'star',
-                    'harrislaplace', 'msd', 'disk', 'aliked'}
+                    'harrislaplace', 'msd', 'disk', 'aliked', 'disk_lightglue', 'aliked_lightglue',
+                    'superpoint_lightglue'}
 
 OPENCV_DESCRIPTORS = {'sift', 'orb', 'akaze', 'brisk', 'kaze', 'brief', 'freak', 'daisy', 'latch', 'beblid', 'teblid',
-                      'vgg', 'boostdesc', 'disk', 'aliked'}
+                      'vgg', 'boostdesc', 'disk', 'aliked', 'disk_lightglue', 'aliked_lightglue',
+                      'superpoint_lightglue'}
 
 OPENCV_MATCHERS = {'bf', 'flann', 'lightglue'}
 
-OPENCV_DNN_DETECTORS = {'disk', 'aliked'}
+OPENCV_DNN_DETECTORS = {'disk', 'aliked', 'disk_lightglue', 'aliked_lightglue', 'superpoint_lightglue'}
 
-OPENCV_DNN_DESCRIPTORS = {'disk', 'aliked'}
+OPENCV_DNN_DESCRIPTORS = {'disk', 'aliked', 'disk_lightglue', 'aliked_lightglue', 'superpoint_lightglue'}
 
 OPENCV_DNN_MATCHERS = {'lightglue'}
 
-ONNX_DETECTORS = {'disk', 'aliked'}
+ONNX_DETECTORS = {'disk', 'aliked', 'disk_lightglue', 'aliked_lightglue', 'superpoint_lightglue'}
 
-ONNX_DESCRIPTORS = {'disk', 'aliked'}
+ONNX_DESCRIPTORS = {'disk', 'aliked', 'disk_lightglue', 'aliked_lightglue', 'superpoint_lightglue'}
 
 ONNX_MATCHERS = {'lightglue'}
 OPENCV_MATCHERS_MODE = {'simple', 'knn'}
 
-EXECUTORCH_DETECTORS = {'superpoint_lightglue', 'disk_lightglue', 'd2net', 'xfeat'}
-EXECUTORCH_DESCRIPTORS = {'superpoint_lightglue', 'disk_lightglue', 'd2net', 'xfeat', 'tfeat', 'hardnet'}
+EXECUTORCH_DETECTORS = {'superpoint_lightglue', 'disk_lightglue', 'aliked_lightglue', 'd2net', 'xfeat'}
+EXECUTORCH_DESCRIPTORS = {'superpoint_lightglue', 'disk_lightglue', 'aliked_lightglue', 'd2net', 'xfeat',
+                          'tfeat', 'hardnet'}
 EXECUTORCH_MATCHERS = {'lightglue'}
 
 TORCH_ALGORITHMS = TORCH_DETECTORS | TORCH_DESCRIPTORS | TORCH_MATCHERS | TORCH_PIPELINES
@@ -138,15 +141,24 @@ DETECTOR_DESCRIPTOR_COMPATIBILITY = {
     'superpoint': {'torch': {'torch': ['superpoint']}},
     'superpoint_lightglue': {
         'torch': {'torch': ['superpoint_lightglue']},
+        'onnx': {'onnx': ['superpoint_lightglue']},
+        'opencv': {'opencv': ['superpoint_lightglue']},
         'executorch': {'executorch': ['superpoint_lightglue']},
     },
     'disk_lightglue': {
         'torch': {'torch': ['disk_lightglue']},
+        'onnx': {'onnx': ['disk_lightglue']},
+        'opencv': {'opencv': ['disk_lightglue']},
         'executorch': {'executorch': ['disk_lightglue']},
     },
     'disk': {'opencv': {'opencv': ['disk']}, 'onnx': {'onnx': ['disk']}},
     'sift_lightglue': {'torch': {'torch': ['sift_lightglue']}},
-    'aliked_lightglue': {'torch': {'torch': ['aliked_lightglue']}},
+    'aliked_lightglue': {
+        'torch': {'torch': ['aliked_lightglue']},
+        'onnx': {'onnx': ['aliked_lightglue']},
+        'opencv': {'opencv': ['aliked_lightglue']},
+        'executorch': {'executorch': ['aliked_lightglue']},
+    },
     'aliked': {'opencv': {'opencv': ['aliked']}, 'onnx': {'onnx': ['aliked']}},
     'doghardnet_lightglue': {'torch': {'torch': ['doghardnet_lightglue']}},
     'd2net': {
@@ -182,19 +194,38 @@ DESCRIPTOR_MATCHER_COMPATIBILITY = {
     }},
     'superpoint_lightglue': {
         'torch': {'torch': ['lightglue']},
+        'onnx': {'onnx': ['lightglue']},
+        'opencv': {'opencv': ['lightglue']},
         'executorch': {'executorch': ['lightglue']},
     },
     'disk_lightglue': {
         'torch': {'torch': ['lightglue']},
+        'onnx': {'onnx': ['lightglue']},
+        'opencv': {'opencv': ['lightglue']},
         'executorch': {'executorch': ['lightglue']},
     },
     'disk': {'opencv': {'opencv': ['bf', 'flann', 'lightglue']},
              'onnx': {'opencv': ['bf', 'flann'], 'onnx': ['lightglue']}},
-    'sift_lightglue': {'torch': {'torch': ['lightglue']}},
-    'aliked_lightglue': {'torch': {'torch': ['lightglue']}},
+    'sift_lightglue': {'torch': {
+        'torch': ['lightglue'],
+        'onnx': ['lightglue'],
+        'opencv': ['lightglue'],
+        'executorch': ['lightglue'],
+    }},
+    'aliked_lightglue': {
+        'torch': {'torch': ['lightglue']},
+        'onnx': {'onnx': ['lightglue']},
+        'opencv': {'opencv': ['lightglue']},
+        'executorch': {'executorch': ['lightglue']},
+    },
     'aliked': {'opencv': {'opencv': ['bf', 'flann', 'lightglue']},
                'onnx': {'opencv': ['bf', 'flann'], 'onnx': ['lightglue']}},
-    'doghardnet_lightglue': {'torch': {'torch': ['lightglue']}},
+    'doghardnet_lightglue': {'torch': {
+        'torch': ['lightglue'],
+        'onnx': ['lightglue'],
+        'opencv': ['lightglue'],
+        'executorch': ['lightglue'],
+    }},
     'xfeat': {
         'torch': {'opencv': ['bf', 'flann']},
         'executorch': {'opencv': ['bf', 'flann']},

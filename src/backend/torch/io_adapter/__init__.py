@@ -1,3 +1,4 @@
+from .io_adapter import TorchIOAdapter  # noqa: E402, F401
 from .d2net import D2NetTorchIOAdapter  # noqa: E402, F401
 from .xfeat import XFeatTorchIOAdapter  # noqa: E402, F401
 from .superpoint import SuperPointTorchIOAdapter  # noqa: E402, F401

@@ -4,6 +4,7 @@ from src.backend.io_adapter_base import IOAdapter
 from src.backend.opencv.io_adapter.io_adapter import OpenCVIOAdapter
 
 
+@IOAdapter.register("disk_lightglue_opencv")
 @IOAdapter.register("disk_opencv")
 class DiskOpenCVIOAdapter(OpenCVIOAdapter):
     def preprocess(self, inputs):

@@ -4,6 +4,7 @@ from src.backend.io_adapter_base import IOAdapter
 from src.backend.opencv.io_adapter.io_adapter import OpenCVIOAdapter
 
 
+@IOAdapter.register("aliked_lightglue_opencv")
 @IOAdapter.register("aliked_opencv")
 class AlikedOpenCVIOAdapter(OpenCVIOAdapter):
     def preprocess(self, inputs):
@@ -14,8 +15,8 @@ class AlikedOpenCVIOAdapter(OpenCVIOAdapter):
 
     def postprocess(self, outputs):
         keypoints = outputs[0]
-        descriptors = outputs[1]
-        scores = outputs[2]
+        descriptors = np.squeeze(outputs[1], axis=0)
+        scores = np.squeeze(outputs[2], axis=0)
         keypoints_np = keypoints.astype(np.float32)
         if keypoints_np.ndim == 3:
             keypoints_np = keypoints_np.reshape(-1, 2)

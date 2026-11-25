@@ -101,3 +101,24 @@ def test_postprocess(adapter):
     assert dmatches[0].trainIdx == 1
 
     assert pytest.approx(dmatches[0].distance, 0.01) == 0.1
+
+
+def test_postprocess_fixed_size_output_discards_unmatched_keypoints(adapter):
+    adapter.scoreThreshold = 0.1
+    matches = np.array([[[0, 1], [1, -1], [2, 3]]], dtype=np.int64)
+    scores = np.array([[0.9, 0.8, 0.7]], dtype=np.float32)
+
+    result = adapter.postprocess([matches, scores])
+
+    assert [(match.queryIdx, match.trainIdx) for match in result['matches']] == [(0, 1), (2, 3)]
+    np.testing.assert_allclose(result['scores'], [0.9, 0.7])
+
+
+def test_postprocess_fixed_size_output_without_matches(adapter):
+    matches = np.array([[[0, -1], [1, -1]]], dtype=np.int64)
+    scores = np.array([[0.9, 0.8]], dtype=np.float32)
+
+    result = adapter.postprocess([matches, scores])
+
+    assert result['matches'] == []
+    assert result['scores'].size == 0

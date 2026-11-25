@@ -50,8 +50,8 @@ def test_postprocess(adapter):
     adapter.orig_w = 2000
 
     fake_keypoints = np.array([[[0.0, 0.0], [-1.0, -1.0]]], dtype=np.float32)
-    fake_descriptors = np.random.rand(2, 128).astype(np.float32)
-    fake_scores = np.array([0.95, 0.88], dtype=np.float32)
+    fake_descriptors = np.random.rand(1, 2, 128).astype(np.float32)
+    fake_scores = np.array([[0.95, 0.88]], dtype=np.float32)
 
     outputs = [fake_keypoints, fake_descriptors, fake_scores]
 
@@ -62,8 +62,8 @@ def test_postprocess(adapter):
     assert 'descriptors' in result
     assert 'scores' in result
 
-    np.testing.assert_array_equal(result['descriptors'], fake_descriptors)
-    np.testing.assert_array_equal(result['scores'], fake_scores)
+    np.testing.assert_array_equal(result['descriptors'], np.squeeze(fake_descriptors, axis=0))
+    np.testing.assert_array_equal(result['scores'], np.squeeze(fake_scores, axis=0))
 
     keypoints = result['keypoints']
     assert len(keypoints) == 2
