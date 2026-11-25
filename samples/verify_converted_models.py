@@ -20,7 +20,7 @@ import src.dnn_extractors  # noqa: E402, F401
 from thirdparty.lightglue.lightglue import LightGlue  # noqa: E402
 
 
-MODELS_DIR = Path("results_6_11/models")
+MODELS_DIR = Path("models")
 METHOD_SHAPES = {
     "disk": (1, 3, 1024, 1024),
     "superpoint": (1, 3, 480, 640),

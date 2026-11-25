@@ -33,3 +33,9 @@
 
 # Build directory
 build/*
+
+# Downloaded model weights
+models/*.onnx
+models/*.onnx.data
+models/*.pte
+weights/

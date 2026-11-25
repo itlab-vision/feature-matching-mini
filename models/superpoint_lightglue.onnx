@@ -1,1065 +1,0 @@
-
-pytorch2.14.0+cu130:ìÏ
-ç
-image
-val_3
-val_7
-val_7
-val_7slice_1node_slice_1"SliceJI
-	namespace<: __main__.SuperPointDenseWrapper/slice_1: aten.slice.TensorJZ
-pkg.torch.onnx.class_hierarchy8['__main__.SuperPointDenseWrapper', 'aten.slice.Tensor']Jç
-pkg.torch.onnx.fx_nodes%slice_1 : [num_users=1] = call_function[target=torch.ops.aten.slice.Tensor](args = (%image, 1, 0, 1), kwargs = {})J-
-pkg.torch.onnx.name_scopes['', 'slice_1']J„
-pkg.torch.onnx.stack_traceƒFile "/home/ismukhin/projects/feature-matching-mini/models/convert_lightglue_benchmark.py", line 34, in forward
-    image = image[:, 0:1] * 0.2989 + image[:, 1:2] * 0.5870 + image[:, 2:3] * 0.1140
-‡
-slice_1
-val_12mulnode_mul"MulJC
-	namespace6: __main__.SuperPointDenseWrapper/mul: aten.mul.TensorJX
-pkg.torch.onnx.class_hierarchy6['__main__.SuperPointDenseWrapper', 'aten.mul.Tensor']Jà
-pkg.torch.onnx.fx_noden%mul : [num_users=1] = call_function[target=torch.ops.aten.mul.Tensor](args = (%slice_1, 0.2989), kwargs = {})J)
-pkg.torch.onnx.name_scopes['', 'mul']J„
-pkg.torch.onnx.stack_traceƒFile "/home/ismukhin/projects/feature-matching-mini/models/convert_lightglue_benchmark.py", line 34, in forward
-    image = image[:, 0:1] * 0.2989 + image[:, 1:2] * 0.5870 + image[:, 2:3] * 0.1140
-é
-image
-val_7
-val_19
-val_7
-val_7slice_2node_slice_2"SliceJI
-	namespace<: __main__.SuperPointDenseWrapper/slice_2: aten.slice.TensorJZ
-pkg.torch.onnx.class_hierarchy8['__main__.SuperPointDenseWrapper', 'aten.slice.Tensor']Jç
-pkg.torch.onnx.fx_nodes%slice_2 : [num_users=1] = call_function[target=torch.ops.aten.slice.Tensor](args = (%image, 1, 1, 2), kwargs = {})J-
-pkg.torch.onnx.name_scopes['', 'slice_2']J„
-pkg.torch.onnx.stack_traceƒFile "/home/ismukhin/projects/feature-matching-mini/models/convert_lightglue_benchmark.py", line 34, in forward
-    image = image[:, 0:1] * 0.2989 + image[:, 1:2] * 0.5870 + image[:, 2:3] * 0.1140
-È
-slice_2
-val_24mul_1
-node_mul_1"MulJE
-	namespace8: __main__.SuperPointDenseWrapper/mul_1: aten.mul.TensorJX
-pkg.torch.onnx.class_hierarchy6['__main__.SuperPointDenseWrapper', 'aten.mul.Tensor']Jâ
-pkg.torch.onnx.fx_nodeo%mul_1 : [num_users=1] = call_function[target=torch.ops.aten.mul.Tensor](args = (%slice_2, 0.587), kwargs = {})J+
-pkg.torch.onnx.name_scopes['', 'mul_1']J„
-pkg.torch.onnx.stack_traceƒFile "/home/ismukhin/projects/feature-matching-mini/models/convert_lightglue_benchmark.py", line 34, in forward
-    image = image[:, 0:1] * 0.2989 + image[:, 1:2] * 0.5870 + image[:, 2:3] * 0.1140
-◊
-mul
-mul_1addnode_add"AddJC
-	namespace6: __main__.SuperPointDenseWrapper/add: aten.add.TensorJX
-pkg.torch.onnx.class_hierarchy6['__main__.SuperPointDenseWrapper', 'aten.add.Tensor']JÑ
-pkg.torch.onnx.fx_nodej%add : [num_users=1] = call_function[target=torch.ops.aten.add.Tensor](args = (%mul, %mul_1), kwargs = {})J)
-pkg.torch.onnx.name_scopes['', 'add']J„
-pkg.torch.onnx.stack_traceƒFile "/home/ismukhin/projects/feature-matching-mini/models/convert_lightglue_benchmark.py", line 34, in forward
-    image = image[:, 0:1] * 0.2989 + image[:, 1:2] * 0.5870 + image[:, 2:3] * 0.1140
-è
-image
-val_19
-val_31
-val_7
-val_7slice_3node_slice_3"SliceJI
-	namespace<: __main__.SuperPointDenseWrapper/slice_3: aten.slice.TensorJZ
-pkg.torch.onnx.class_hierarchy8['__main__.SuperPointDenseWrapper', 'aten.slice.Tensor']Jç
-pkg.torch.onnx.fx_nodes%slice_3 : [num_users=1] = call_function[target=torch.ops.aten.slice.Tensor](args = (%image, 1, 2, 3), kwargs = {})J-
-pkg.torch.onnx.name_scopes['', 'slice_3']J„
-pkg.torch.onnx.stack_traceƒFile "/home/ismukhin/projects/feature-matching-mini/models/convert_lightglue_benchmark.py", line 34, in forward
-    image = image[:, 0:1] * 0.2989 + image[:, 1:2] * 0.5870 + image[:, 2:3] * 0.1140
-È
-slice_3
-val_36mul_2
-node_mul_2"MulJE
-	namespace8: __main__.SuperPointDenseWrapper/mul_2: aten.mul.TensorJX
-pkg.torch.onnx.class_hierarchy6['__main__.SuperPointDenseWrapper', 'aten.mul.Tensor']Jâ
-pkg.torch.onnx.fx_nodeo%mul_2 : [num_users=1] = call_function[target=torch.ops.aten.mul.Tensor](args = (%slice_3, 0.114), kwargs = {})J+
-pkg.torch.onnx.name_scopes['', 'mul_2']J„
-pkg.torch.onnx.stack_traceƒFile "/home/ismukhin/projects/feature-matching-mini/models/convert_lightglue_benchmark.py", line 34, in forward
-    image = image[:, 0:1] * 0.2989 + image[:, 1:2] * 0.5870 + image[:, 2:3] * 0.1140
-·
-add
-mul_2add_1
-node_add_1"AddJE
-	namespace8: __main__.SuperPointDenseWrapper/add_1: aten.add.TensorJX
-pkg.torch.onnx.class_hierarchy6['__main__.SuperPointDenseWrapper', 'aten.add.Tensor']JÜ
-pkg.torch.onnx.fx_nodel%add_1 : [num_users=1] = call_function[target=torch.ops.aten.add.Tensor](args = (%add, %mul_2), kwargs = {})J+
-pkg.torch.onnx.name_scopes['', 'add_1']J„
-pkg.torch.onnx.stack_traceƒFile "/home/ismukhin/projects/feature-matching-mini/models/convert_lightglue_benchmark.py", line 34, in forward
-    image = image[:, 0:1] * 0.2989 + image[:, 1:2] * 0.5870 + image[:, 2:3] * 0.1140
-∏
-add_1
-model.conv1a.weight
-model.conv1a.biasconv2dnode_conv2d"Conv*
-group†*
-pads@@@@†*
-auto_pad"NOTSET†*
-strides@@†*
-	dilations@@†*
-kernel_shape@@†Ju
-	namespaceh: __main__.SuperPointDenseWrapper/model.conv1a: torch.nn.modules.conv.Conv2d/conv2d: aten.conv2d.defaultJ|
-pkg.torch.onnx.class_hierarchyZ['__main__.SuperPointDenseWrapper', 'torch.nn.modules.conv.Conv2d', 'aten.conv2d.default']Jƒ
-pkg.torch.onnx.fx_node©%conv2d : [num_users=1] = call_function[target=torch.ops.aten.conv2d.default](args = (%add_1, %p_model_conv1a_weight, %p_model_conv1a_bias, [1, 1], [1, 1]), kwargs = {})J<
-pkg.torch.onnx.name_scopes['', 'model.conv1a', 'conv2d']J¸
-pkg.torch.onnx.stack_trace›File "/home/ismukhin/projects/feature-matching-mini/models/convert_lightglue_benchmark.py", line 37, in forward
-    x = model.relu(model.conv1a(image))
-  File "/home/ismukhin/miniconda3/envs/feature-matching-env/lib/python3.14/site-packages/torch/nn/modules/conv.py", line 565, in forward
-    return self._conv_forward(input, self.weight, self.bias)
-À
-conv2drelu	node_relu"ReluJs
-	namespacef: __main__.SuperPointDenseWrapper/model.relu: torch.nn.modules.activation.ReLU/relu: aten.relu.defaultJ~
-pkg.torch.onnx.class_hierarchy\['__main__.SuperPointDenseWrapper', 'torch.nn.modules.activation.ReLU', 'aten.relu.default']JÉ
-pkg.torch.onnx.fx_nodei%relu : [num_users=1] = call_function[target=torch.ops.aten.relu.default](args = (%conv2d,), kwargs = {})J8
-pkg.torch.onnx.name_scopes['', 'model.relu', 'relu']JÙ
-pkg.torch.onnx.stack_trace’File "/home/ismukhin/projects/feature-matching-mini/models/convert_lightglue_benchmark.py", line 37, in forward
-    x = model.relu(model.conv1a(image))
-  File "/home/ismukhin/miniconda3/envs/feature-matching-env/lib/python3.14/site-packages/torch/nn/modules/activation.py", line 143, in forward
-    return F.relu(input, inplace=self.inplace)
-»
-relu
-model.conv1b.weight
-model.conv1b.biasconv2d_1node_conv2d_1"Conv*
-group†*
-pads@@@@†*
-auto_pad"NOTSET†*
-strides@@†*
-	dilations@@†*
-kernel_shape@@†Jw
-	namespacej: __main__.SuperPointDenseWrapper/model.conv1b: torch.nn.modules.conv.Conv2d/conv2d_1: aten.conv2d.defaultJ|
-pkg.torch.onnx.class_hierarchyZ['__main__.SuperPointDenseWrapper', 'torch.nn.modules.conv.Conv2d', 'aten.conv2d.default']J≈
-pkg.torch.onnx.fx_node™%conv2d_1 : [num_users=1] = call_function[target=torch.ops.aten.conv2d.default](args = (%relu, %p_model_conv1b_weight, %p_model_conv1b_bias, [1, 1], [1, 1]), kwargs = {})J>
-pkg.torch.onnx.name_scopes ['', 'model.conv1b', 'conv2d_1']JÑ
-pkg.torch.onnx.stack_traceÂFile "/home/ismukhin/projects/feature-matching-mini/models/convert_lightglue_benchmark.py", line 38, in forward
-    x = model.pool(model.relu(model.conv1b(x)))
-  File "/home/ismukhin/miniconda3/envs/feature-matching-env/lib/python3.14/site-packages/torch/nn/modules/conv.py", line 565, in forward
-    return self._conv_forward(input, self.weight, self.bias)
-·
-conv2d_1relu_1node_relu_1"ReluJu
-	namespaceh: __main__.SuperPointDenseWrapper/model.relu: torch.nn.modules.activation.ReLU/relu_1: aten.relu.defaultJ~
-pkg.torch.onnx.class_hierarchy\['__main__.SuperPointDenseWrapper', 'torch.nn.modules.activation.ReLU', 'aten.relu.default']Já
-pkg.torch.onnx.fx_nodem%relu_1 : [num_users=1] = call_function[target=torch.ops.aten.relu.default](args = (%conv2d_1,), kwargs = {})J:
-pkg.torch.onnx.name_scopes['', 'model.relu', 'relu_1']J¸
-pkg.torch.onnx.stack_trace›File "/home/ismukhin/projects/feature-matching-mini/models/convert_lightglue_benchmark.py", line 38, in forward
-    x = model.pool(model.relu(model.conv1b(x)))
-  File "/home/ismukhin/miniconda3/envs/feature-matching-env/lib/python3.14/site-packages/torch/nn/modules/activation.py", line 143, in forward
-    return F.relu(input, inplace=self.inplace)
-í
-relu_1
-max_pool2dnode_max_pool2d"MaxPool*
-storage_order †*
-	dilations@@†*
-	ceil_mode †*
-pads@ @ @ @ †*
-auto_pad"NOTSET†*
-strides@@†*
-kernel_shape@@†JÅ
-	namespacet: __main__.SuperPointDenseWrapper/model.pool: torch.nn.modules.pooling.MaxPool2d/max_pool2d: aten.max_pool2d.defaultJÜ
-pkg.torch.onnx.class_hierarchyd['__main__.SuperPointDenseWrapper', 'torch.nn.modules.pooling.MaxPool2d', 'aten.max_pool2d.default']Jü
-pkg.torch.onnx.fx_nodeÑ%max_pool2d : [num_users=1] = call_function[target=torch.ops.aten.max_pool2d.default](args = (%relu_1, [2, 2], [2, 2]), kwargs = {})J>
-pkg.torch.onnx.name_scopes ['', 'model.pool', 'max_pool2d']J„
-pkg.torch.onnx.stack_traceƒFile "/home/ismukhin/projects/feature-matching-mini/models/convert_lightglue_benchmark.py", line 38, in forward
-    x = model.pool(model.relu(model.conv1b(x)))
-  File "/home/ismukhin/miniconda3/envs/feature-matching-env/lib/python3.14/site-packages/torch/nn/modules/pooling.py", line 224, in forward
-    return F.max_pool2d(
-»
-
-max_pool2d
-model.conv2a.weight
-model.conv2a.biasconv2d_2node_conv2d_2"Conv*
-group†*
-pads@@@@†*
-auto_pad"NOTSET†*
-strides@@†*
-	dilations@@†*
-kernel_shape@@†Jw
-	namespacej: __main__.SuperPointDenseWrapper/model.conv2a: torch.nn.modules.conv.Conv2d/conv2d_2: aten.conv2d.defaultJ|
-pkg.torch.onnx.class_hierarchyZ['__main__.SuperPointDenseWrapper', 'torch.nn.modules.conv.Conv2d', 'aten.conv2d.default']JÀ
-pkg.torch.onnx.fx_node∞%conv2d_2 : [num_users=1] = call_function[target=torch.ops.aten.conv2d.default](args = (%max_pool2d, %p_model_conv2a_weight, %p_model_conv2a_bias, [1, 1], [1, 1]), kwargs = {})J>
-pkg.torch.onnx.name_scopes ['', 'model.conv2a', 'conv2d_2']J¯
-pkg.torch.onnx.stack_traceŸFile "/home/ismukhin/projects/feature-matching-mini/models/convert_lightglue_benchmark.py", line 39, in forward
-    x = model.relu(model.conv2a(x))
-  File "/home/ismukhin/miniconda3/envs/feature-matching-env/lib/python3.14/site-packages/torch/nn/modules/conv.py", line 565, in forward
-    return self._conv_forward(input, self.weight, self.bias)
-’
-conv2d_2relu_2node_relu_2"ReluJu
-	namespaceh: __main__.SuperPointDenseWrapper/model.relu: torch.nn.modules.activation.ReLU/relu_2: aten.relu.defaultJ~
-pkg.torch.onnx.class_hierarchy\['__main__.SuperPointDenseWrapper', 'torch.nn.modules.activation.ReLU', 'aten.relu.default']Já
-pkg.torch.onnx.fx_nodem%relu_2 : [num_users=1] = call_function[target=torch.ops.aten.relu.default](args = (%conv2d_2,), kwargs = {})J:
-pkg.torch.onnx.name_scopes['', 'model.relu', 'relu_2']J
-pkg.torch.onnx.stack_trace—File "/home/ismukhin/projects/feature-matching-mini/models/convert_lightglue_benchmark.py", line 39, in forward
-    x = model.relu(model.conv2a(x))
-  File "/home/ismukhin/miniconda3/envs/feature-matching-env/lib/python3.14/site-packages/torch/nn/modules/activation.py", line 143, in forward
-    return F.relu(input, inplace=self.inplace)
-Ã
-relu_2
-model.conv2b.weight
-model.conv2b.biasconv2d_3node_conv2d_3"Conv*
-group†*
-pads@@@@†*
-auto_pad"NOTSET†*
-strides@@†*
-	dilations@@†*
-kernel_shape@@†Jw
-	namespacej: __main__.SuperPointDenseWrapper/model.conv2b: torch.nn.modules.conv.Conv2d/conv2d_3: aten.conv2d.defaultJ|
-pkg.torch.onnx.class_hierarchyZ['__main__.SuperPointDenseWrapper', 'torch.nn.modules.conv.Conv2d', 'aten.conv2d.default']J«
-pkg.torch.onnx.fx_node¨%conv2d_3 : [num_users=1] = call_function[target=torch.ops.aten.conv2d.default](args = (%relu_2, %p_model_conv2b_weight, %p_model_conv2b_bias, [1, 1], [1, 1]), kwargs = {})J>
-pkg.torch.onnx.name_scopes ['', 'model.conv2b', 'conv2d_3']JÑ
-pkg.torch.onnx.stack_traceÂFile "/home/ismukhin/projects/feature-matching-mini/models/convert_lightglue_benchmark.py", line 40, in forward
-    x = model.pool(model.relu(model.conv2b(x)))
-  File "/home/ismukhin/miniconda3/envs/feature-matching-env/lib/python3.14/site-packages/torch/nn/modules/conv.py", line 565, in forward
-    return self._conv_forward(input, self.weight, self.bias)
-·
-conv2d_3relu_3node_relu_3"ReluJu
-	namespaceh: __main__.SuperPointDenseWrapper/model.relu: torch.nn.modules.activation.ReLU/relu_3: aten.relu.defaultJ~
-pkg.torch.onnx.class_hierarchy\['__main__.SuperPointDenseWrapper', 'torch.nn.modules.activation.ReLU', 'aten.relu.default']Já
-pkg.torch.onnx.fx_nodem%relu_3 : [num_users=1] = call_function[target=torch.ops.aten.relu.default](args = (%conv2d_3,), kwargs = {})J:
-pkg.torch.onnx.name_scopes['', 'model.relu', 'relu_3']J¸
-pkg.torch.onnx.stack_trace›File "/home/ismukhin/projects/feature-matching-mini/models/convert_lightglue_benchmark.py", line 40, in forward
-    x = model.pool(model.relu(model.conv2b(x)))
-  File "/home/ismukhin/miniconda3/envs/feature-matching-env/lib/python3.14/site-packages/torch/nn/modules/activation.py", line 143, in forward
-    return F.relu(input, inplace=self.inplace)
-ú
-relu_3max_pool2d_1node_max_pool2d_1"MaxPool*
-storage_order †*
-	dilations@@†*
-	ceil_mode †*
-pads@ @ @ @ †*
-auto_pad"NOTSET†*
-strides@@†*
-kernel_shape@@†JÉ
-	namespacev: __main__.SuperPointDenseWrapper/model.pool: torch.nn.modules.pooling.MaxPool2d/max_pool2d_1: aten.max_pool2d.defaultJÜ
-pkg.torch.onnx.class_hierarchyd['__main__.SuperPointDenseWrapper', 'torch.nn.modules.pooling.MaxPool2d', 'aten.max_pool2d.default']J°
-pkg.torch.onnx.fx_nodeÜ%max_pool2d_1 : [num_users=1] = call_function[target=torch.ops.aten.max_pool2d.default](args = (%relu_3, [2, 2], [2, 2]), kwargs = {})J@
-pkg.torch.onnx.name_scopes"['', 'model.pool', 'max_pool2d_1']J„
-pkg.torch.onnx.stack_traceƒFile "/home/ismukhin/projects/feature-matching-mini/models/convert_lightglue_benchmark.py", line 40, in forward
-    x = model.pool(model.relu(model.conv2b(x)))
-  File "/home/ismukhin/miniconda3/envs/feature-matching-env/lib/python3.14/site-packages/torch/nn/modules/pooling.py", line 224, in forward
-    return F.max_pool2d(
-Ã
-max_pool2d_1
-model.conv3a.weight
-model.conv3a.biasconv2d_4node_conv2d_4"Conv*
-group†*
-pads@@@@†*
-auto_pad"NOTSET†*
-strides@@†*
-	dilations@@†*
-kernel_shape@@†Jw
-	namespacej: __main__.SuperPointDenseWrapper/model.conv3a: torch.nn.modules.conv.Conv2d/conv2d_4: aten.conv2d.defaultJ|
-pkg.torch.onnx.class_hierarchyZ['__main__.SuperPointDenseWrapper', 'torch.nn.modules.conv.Conv2d', 'aten.conv2d.default']JÕ
-pkg.torch.onnx.fx_node≤%conv2d_4 : [num_users=1] = call_function[target=torch.ops.aten.conv2d.default](args = (%max_pool2d_1, %p_model_conv3a_weight, %p_model_conv3a_bias, [1, 1], [1, 1]), kwargs = {})J>
-pkg.torch.onnx.name_scopes ['', 'model.conv3a', 'conv2d_4']J¯
-pkg.torch.onnx.stack_traceŸFile "/home/ismukhin/projects/feature-matching-mini/models/convert_lightglue_benchmark.py", line 41, in forward
-    x = model.relu(model.conv3a(x))
-  File "/home/ismukhin/miniconda3/envs/feature-matching-env/lib/python3.14/site-packages/torch/nn/modules/conv.py", line 565, in forward
-    return self._conv_forward(input, self.weight, self.bias)
-’
-conv2d_4relu_4node_relu_4"ReluJu
-	namespaceh: __main__.SuperPointDenseWrapper/model.relu: torch.nn.modules.activation.ReLU/relu_4: aten.relu.defaultJ~
-pkg.torch.onnx.class_hierarchy\['__main__.SuperPointDenseWrapper', 'torch.nn.modules.activation.ReLU', 'aten.relu.default']Já
-pkg.torch.onnx.fx_nodem%relu_4 : [num_users=1] = call_function[target=torch.ops.aten.relu.default](args = (%conv2d_4,), kwargs = {})J:
-pkg.torch.onnx.name_scopes['', 'model.relu', 'relu_4']J
-pkg.torch.onnx.stack_trace—File "/home/ismukhin/projects/feature-matching-mini/models/convert_lightglue_benchmark.py", line 41, in forward
-    x = model.relu(model.conv3a(x))
-  File "/home/ismukhin/miniconda3/envs/feature-matching-env/lib/python3.14/site-packages/torch/nn/modules/activation.py", line 143, in forward
-    return F.relu(input, inplace=self.inplace)
-Ã
-relu_4
-model.conv3b.weight
-model.conv3b.biasconv2d_5node_conv2d_5"Conv*
-group†*
-pads@@@@†*
-auto_pad"NOTSET†*
-strides@@†*
-	dilations@@†*
-kernel_shape@@†Jw
-	namespacej: __main__.SuperPointDenseWrapper/model.conv3b: torch.nn.modules.conv.Conv2d/conv2d_5: aten.conv2d.defaultJ|
-pkg.torch.onnx.class_hierarchyZ['__main__.SuperPointDenseWrapper', 'torch.nn.modules.conv.Conv2d', 'aten.conv2d.default']J«
-pkg.torch.onnx.fx_node¨%conv2d_5 : [num_users=1] = call_function[target=torch.ops.aten.conv2d.default](args = (%relu_4, %p_model_conv3b_weight, %p_model_conv3b_bias, [1, 1], [1, 1]), kwargs = {})J>
-pkg.torch.onnx.name_scopes ['', 'model.conv3b', 'conv2d_5']JÑ
-pkg.torch.onnx.stack_traceÂFile "/home/ismukhin/projects/feature-matching-mini/models/convert_lightglue_benchmark.py", line 42, in forward
-    x = model.pool(model.relu(model.conv3b(x)))
-  File "/home/ismukhin/miniconda3/envs/feature-matching-env/lib/python3.14/site-packages/torch/nn/modules/conv.py", line 565, in forward
-    return self._conv_forward(input, self.weight, self.bias)
-·
-conv2d_5relu_5node_relu_5"ReluJu
-	namespaceh: __main__.SuperPointDenseWrapper/model.relu: torch.nn.modules.activation.ReLU/relu_5: aten.relu.defaultJ~
-pkg.torch.onnx.class_hierarchy\['__main__.SuperPointDenseWrapper', 'torch.nn.modules.activation.ReLU', 'aten.relu.default']Já
-pkg.torch.onnx.fx_nodem%relu_5 : [num_users=1] = call_function[target=torch.ops.aten.relu.default](args = (%conv2d_5,), kwargs = {})J:
-pkg.torch.onnx.name_scopes['', 'model.relu', 'relu_5']J¸
-pkg.torch.onnx.stack_trace›File "/home/ismukhin/projects/feature-matching-mini/models/convert_lightglue_benchmark.py", line 42, in forward
-    x = model.pool(model.relu(model.conv3b(x)))
-  File "/home/ismukhin/miniconda3/envs/feature-matching-env/lib/python3.14/site-packages/torch/nn/modules/activation.py", line 143, in forward
-    return F.relu(input, inplace=self.inplace)
-ú
-relu_5max_pool2d_2node_max_pool2d_2"MaxPool*
-storage_order †*
-	dilations@@†*
-	ceil_mode †*
-pads@ @ @ @ †*
-auto_pad"NOTSET†*
-strides@@†*
-kernel_shape@@†JÉ
-	namespacev: __main__.SuperPointDenseWrapper/model.pool: torch.nn.modules.pooling.MaxPool2d/max_pool2d_2: aten.max_pool2d.defaultJÜ
-pkg.torch.onnx.class_hierarchyd['__main__.SuperPointDenseWrapper', 'torch.nn.modules.pooling.MaxPool2d', 'aten.max_pool2d.default']J°
-pkg.torch.onnx.fx_nodeÜ%max_pool2d_2 : [num_users=1] = call_function[target=torch.ops.aten.max_pool2d.default](args = (%relu_5, [2, 2], [2, 2]), kwargs = {})J@
-pkg.torch.onnx.name_scopes"['', 'model.pool', 'max_pool2d_2']J„
-pkg.torch.onnx.stack_traceƒFile "/home/ismukhin/projects/feature-matching-mini/models/convert_lightglue_benchmark.py", line 42, in forward
-    x = model.pool(model.relu(model.conv3b(x)))
-  File "/home/ismukhin/miniconda3/envs/feature-matching-env/lib/python3.14/site-packages/torch/nn/modules/pooling.py", line 224, in forward
-    return F.max_pool2d(
-Ã
-max_pool2d_2
-model.conv4a.weight
-model.conv4a.biasconv2d_6node_conv2d_6"Conv*
-group†*
-pads@@@@†*
-auto_pad"NOTSET†*
-strides@@†*
-	dilations@@†*
-kernel_shape@@†Jw
-	namespacej: __main__.SuperPointDenseWrapper/model.conv4a: torch.nn.modules.conv.Conv2d/conv2d_6: aten.conv2d.defaultJ|
-pkg.torch.onnx.class_hierarchyZ['__main__.SuperPointDenseWrapper', 'torch.nn.modules.conv.Conv2d', 'aten.conv2d.default']JÕ
-pkg.torch.onnx.fx_node≤%conv2d_6 : [num_users=1] = call_function[target=torch.ops.aten.conv2d.default](args = (%max_pool2d_2, %p_model_conv4a_weight, %p_model_conv4a_bias, [1, 1], [1, 1]), kwargs = {})J>
-pkg.torch.onnx.name_scopes ['', 'model.conv4a', 'conv2d_6']J¯
-pkg.torch.onnx.stack_traceŸFile "/home/ismukhin/projects/feature-matching-mini/models/convert_lightglue_benchmark.py", line 43, in forward
-    x = model.relu(model.conv4a(x))
-  File "/home/ismukhin/miniconda3/envs/feature-matching-env/lib/python3.14/site-packages/torch/nn/modules/conv.py", line 565, in forward
-    return self._conv_forward(input, self.weight, self.bias)
-’
-conv2d_6relu_6node_relu_6"ReluJu
-	namespaceh: __main__.SuperPointDenseWrapper/model.relu: torch.nn.modules.activation.ReLU/relu_6: aten.relu.defaultJ~
-pkg.torch.onnx.class_hierarchy\['__main__.SuperPointDenseWrapper', 'torch.nn.modules.activation.ReLU', 'aten.relu.default']Já
-pkg.torch.onnx.fx_nodem%relu_6 : [num_users=1] = call_function[target=torch.ops.aten.relu.default](args = (%conv2d_6,), kwargs = {})J:
-pkg.torch.onnx.name_scopes['', 'model.relu', 'relu_6']J
-pkg.torch.onnx.stack_trace—File "/home/ismukhin/projects/feature-matching-mini/models/convert_lightglue_benchmark.py", line 43, in forward
-    x = model.relu(model.conv4a(x))
-  File "/home/ismukhin/miniconda3/envs/feature-matching-env/lib/python3.14/site-packages/torch/nn/modules/activation.py", line 143, in forward
-    return F.relu(input, inplace=self.inplace)
-¿
-relu_6
-model.conv4b.weight
-model.conv4b.biasconv2d_7node_conv2d_7"Conv*
-group†*
-pads@@@@†*
-auto_pad"NOTSET†*
-strides@@†*
-	dilations@@†*
-kernel_shape@@†Jw
-	namespacej: __main__.SuperPointDenseWrapper/model.conv4b: torch.nn.modules.conv.Conv2d/conv2d_7: aten.conv2d.defaultJ|
-pkg.torch.onnx.class_hierarchyZ['__main__.SuperPointDenseWrapper', 'torch.nn.modules.conv.Conv2d', 'aten.conv2d.default']J«
-pkg.torch.onnx.fx_node¨%conv2d_7 : [num_users=1] = call_function[target=torch.ops.aten.conv2d.default](args = (%relu_6, %p_model_conv4b_weight, %p_model_conv4b_bias, [1, 1], [1, 1]), kwargs = {})J>
-pkg.torch.onnx.name_scopes ['', 'model.conv4b', 'conv2d_7']J¯
-pkg.torch.onnx.stack_traceŸFile "/home/ismukhin/projects/feature-matching-mini/models/convert_lightglue_benchmark.py", line 44, in forward
-    x = model.relu(model.conv4b(x))
-  File "/home/ismukhin/miniconda3/envs/feature-matching-env/lib/python3.14/site-packages/torch/nn/modules/conv.py", line 565, in forward
-    return self._conv_forward(input, self.weight, self.bias)
-’
-conv2d_7relu_7node_relu_7"ReluJu
-	namespaceh: __main__.SuperPointDenseWrapper/model.relu: torch.nn.modules.activation.ReLU/relu_7: aten.relu.defaultJ~
-pkg.torch.onnx.class_hierarchy\['__main__.SuperPointDenseWrapper', 'torch.nn.modules.activation.ReLU', 'aten.relu.default']Já
-pkg.torch.onnx.fx_nodem%relu_7 : [num_users=2] = call_function[target=torch.ops.aten.relu.default](args = (%conv2d_7,), kwargs = {})J:
-pkg.torch.onnx.name_scopes['', 'model.relu', 'relu_7']J
-pkg.torch.onnx.stack_trace—File "/home/ismukhin/projects/feature-matching-mini/models/convert_lightglue_benchmark.py", line 44, in forward
-    x = model.relu(model.conv4b(x))
-  File "/home/ismukhin/miniconda3/envs/feature-matching-env/lib/python3.14/site-packages/torch/nn/modules/activation.py", line 143, in forward
-    return F.relu(input, inplace=self.inplace)
-Ÿ
-relu_7
-model.convPa.weight
-model.convPa.biasconv2d_8node_conv2d_8"Conv*
-group†*
-pads@@@@†*
-auto_pad"NOTSET†*
-strides@@†*
-	dilations@@†*
-kernel_shape@@†Jw
-	namespacej: __main__.SuperPointDenseWrapper/model.convPa: torch.nn.modules.conv.Conv2d/conv2d_8: aten.conv2d.defaultJ|
-pkg.torch.onnx.class_hierarchyZ['__main__.SuperPointDenseWrapper', 'torch.nn.modules.conv.Conv2d', 'aten.conv2d.default']J«
-pkg.torch.onnx.fx_node¨%conv2d_8 : [num_users=1] = call_function[target=torch.ops.aten.conv2d.default](args = (%relu_7, %p_model_convpa_weight, %p_model_convpa_bias, [1, 1], [1, 1]), kwargs = {})J>
-pkg.torch.onnx.name_scopes ['', 'model.convPa', 'conv2d_8']Jë
-pkg.torch.onnx.stack_traceÚFile "/home/ismukhin/projects/feature-matching-mini/models/convert_lightglue_benchmark.py", line 46, in forward
-    score_logits = model.convPb(model.relu(model.convPa(x)))
-  File "/home/ismukhin/miniconda3/envs/feature-matching-env/lib/python3.14/site-packages/torch/nn/modules/conv.py", line 565, in forward
-    return self._conv_forward(input, self.weight, self.bias)
-Ó
-conv2d_8relu_8node_relu_8"ReluJu
-	namespaceh: __main__.SuperPointDenseWrapper/model.relu: torch.nn.modules.activation.ReLU/relu_8: aten.relu.defaultJ~
-pkg.torch.onnx.class_hierarchy\['__main__.SuperPointDenseWrapper', 'torch.nn.modules.activation.ReLU', 'aten.relu.default']Já
-pkg.torch.onnx.fx_nodem%relu_8 : [num_users=1] = call_function[target=torch.ops.aten.relu.default](args = (%conv2d_8,), kwargs = {})J:
-pkg.torch.onnx.name_scopes['', 'model.relu', 'relu_8']Jâ
-pkg.torch.onnx.stack_traceÍFile "/home/ismukhin/projects/feature-matching-mini/models/convert_lightglue_benchmark.py", line 46, in forward
-    score_logits = model.convPb(model.relu(model.convPa(x)))
-  File "/home/ismukhin/miniconda3/envs/feature-matching-env/lib/python3.14/site-packages/torch/nn/modules/activation.py", line 143, in forward
-    return F.relu(input, inplace=self.inplace)
-Õ
-relu_8
-model.convPb.weight
-model.convPb.biasscore_logitsnode_conv2d_9"Conv*
-group†*
-pads@ @ @ @ †*
-auto_pad"NOTSET†*
-strides@@†*
-	dilations@@†*
-kernel_shape@@†Jw
-	namespacej: __main__.SuperPointDenseWrapper/model.convPb: torch.nn.modules.conv.Conv2d/conv2d_9: aten.conv2d.defaultJ|
-pkg.torch.onnx.class_hierarchyZ['__main__.SuperPointDenseWrapper', 'torch.nn.modules.conv.Conv2d', 'aten.conv2d.default']J∑
-pkg.torch.onnx.fx_nodeú%conv2d_9 : [num_users=2] = call_function[target=torch.ops.aten.conv2d.default](args = (%relu_8, %p_model_convpb_weight, %p_model_convpb_bias), kwargs = {})J>
-pkg.torch.onnx.name_scopes ['', 'model.convPb', 'conv2d_9']Jë
-pkg.torch.onnx.stack_traceÚFile "/home/ismukhin/projects/feature-matching-mini/models/convert_lightglue_benchmark.py", line 46, in forward
-    score_logits = model.convPb(model.relu(model.convPa(x)))
-  File "/home/ismukhin/miniconda3/envs/feature-matching-env/lib/python3.14/site-packages/torch/nn/modules/conv.py", line 565, in forward
-    return self._conv_forward(input, self.weight, self.bias)
-›
-relu_7
-model.convDa.weight
-model.convDa.bias	conv2d_10node_conv2d_10"Conv*
-group†*
-pads@@@@†*
-auto_pad"NOTSET†*
-strides@@†*
-	dilations@@†*
-kernel_shape@@†Jx
-	namespacek: __main__.SuperPointDenseWrapper/model.convDa: torch.nn.modules.conv.Conv2d/conv2d_10: aten.conv2d.defaultJ|
-pkg.torch.onnx.class_hierarchyZ['__main__.SuperPointDenseWrapper', 'torch.nn.modules.conv.Conv2d', 'aten.conv2d.default']J»
-pkg.torch.onnx.fx_node≠%conv2d_10 : [num_users=1] = call_function[target=torch.ops.aten.conv2d.default](args = (%relu_7, %p_model_convda_weight, %p_model_convda_bias, [1, 1], [1, 1]), kwargs = {})J?
-pkg.torch.onnx.name_scopes!['', 'model.convDa', 'conv2d_10']Jê
-pkg.torch.onnx.stack_traceÒFile "/home/ismukhin/projects/feature-matching-mini/models/convert_lightglue_benchmark.py", line 47, in forward
-    descriptors = model.convDb(model.relu(model.convDa(x)))
-  File "/home/ismukhin/miniconda3/envs/feature-matching-env/lib/python3.14/site-packages/torch/nn/modules/conv.py", line 565, in forward
-    return self._conv_forward(input, self.weight, self.bias)
-Ô
-	conv2d_10relu_9node_relu_9"ReluJu
-	namespaceh: __main__.SuperPointDenseWrapper/model.relu: torch.nn.modules.activation.ReLU/relu_9: aten.relu.defaultJ~
-pkg.torch.onnx.class_hierarchy\['__main__.SuperPointDenseWrapper', 'torch.nn.modules.activation.ReLU', 'aten.relu.default']Jà
-pkg.torch.onnx.fx_noden%relu_9 : [num_users=1] = call_function[target=torch.ops.aten.relu.default](args = (%conv2d_10,), kwargs = {})J:
-pkg.torch.onnx.name_scopes['', 'model.relu', 'relu_9']Jà
-pkg.torch.onnx.stack_traceÈFile "/home/ismukhin/projects/feature-matching-mini/models/convert_lightglue_benchmark.py", line 47, in forward
-    descriptors = model.convDb(model.relu(model.convDa(x)))
-  File "/home/ismukhin/miniconda3/envs/feature-matching-env/lib/python3.14/site-packages/torch/nn/modules/activation.py", line 143, in forward
-    return F.relu(input, inplace=self.inplace)
-Õ
-relu_9
-model.convDb.weight
-model.convDb.bias	conv2d_11node_conv2d_11"Conv*
-group†*
-pads@ @ @ @ †*
-auto_pad"NOTSET†*
-strides@@†*
-	dilations@@†*
-kernel_shape@@†Jx
-	namespacek: __main__.SuperPointDenseWrapper/model.convDb: torch.nn.modules.conv.Conv2d/conv2d_11: aten.conv2d.defaultJ|
-pkg.torch.onnx.class_hierarchyZ['__main__.SuperPointDenseWrapper', 'torch.nn.modules.conv.Conv2d', 'aten.conv2d.default']J∏
-pkg.torch.onnx.fx_nodeù%conv2d_11 : [num_users=2] = call_function[target=torch.ops.aten.conv2d.default](args = (%relu_9, %p_model_convdb_weight, %p_model_convdb_bias), kwargs = {})J?
-pkg.torch.onnx.name_scopes!['', 'model.convDb', 'conv2d_11']Jê
-pkg.torch.onnx.stack_traceÒFile "/home/ismukhin/projects/feature-matching-mini/models/convert_lightglue_benchmark.py", line 47, in forward
-    descriptors = model.convDb(model.relu(model.convDa(x)))
-  File "/home/ismukhin/miniconda3/envs/feature-matching-env/lib/python3.14/site-packages/torch/nn/modules/conv.py", line 565, in forward
-    return self._conv_forward(input, self.weight, self.bias)
-å
-	conv2d_11
-val_7linalg_vector_normnode_linalg_vector_norm"ReduceL2*
-noop_with_empty_axes †*
-keepdims†Jb
-	namespaceU: __main__.SuperPointDenseWrapper/linalg_vector_norm: aten.linalg_vector_norm.defaultJh
-pkg.torch.onnx.class_hierarchyF['__main__.SuperPointDenseWrapper', 'aten.linalg_vector_norm.default']J∞
-pkg.torch.onnx.fx_nodeï%linalg_vector_norm : [num_users=1] = call_function[target=torch.ops.aten.linalg_vector_norm.default](args = (%conv2d_11, 2, [1], True), kwargs = {})J8
-pkg.torch.onnx.name_scopes['', 'linalg_vector_norm']J◊
-pkg.torch.onnx.stack_trace∏File "/home/ismukhin/projects/feature-matching-mini/models/convert_lightglue_benchmark.py", line 48, in forward
-    descriptors = torch.nn.functional.normalize(descriptors, p=2, dim=1)
-û
-linalg_vector_norm
-val_44	clamp_minnode_clamp_min"ClipJP
-	namespaceC: __main__.SuperPointDenseWrapper/clamp_min: aten.clamp_min.defaultJ_
-pkg.torch.onnx.class_hierarchy=['__main__.SuperPointDenseWrapper', 'aten.clamp_min.default']J†
-pkg.torch.onnx.fx_nodeÖ%clamp_min : [num_users=1] = call_function[target=torch.ops.aten.clamp_min.default](args = (%linalg_vector_norm, 1e-12), kwargs = {})J/
-pkg.torch.onnx.name_scopes['', 'clamp_min']J◊
-pkg.torch.onnx.stack_trace∏File "/home/ismukhin/projects/feature-matching-mini/models/convert_lightglue_benchmark.py", line 48, in forward
-    descriptors = torch.nn.functional.normalize(descriptors, p=2, dim=1)
-Å
-	clamp_min
-val_50expandnode_expand"ExpandJJ
-	namespace=: __main__.SuperPointDenseWrapper/expand: aten.expand.defaultJ\
-pkg.torch.onnx.class_hierarchy:['__main__.SuperPointDenseWrapper', 'aten.expand.default']Jú
-pkg.torch.onnx.fx_nodeÅ%expand : [num_users=1] = call_function[target=torch.ops.aten.expand.default](args = (%clamp_min, [1, 256, 60, 80]), kwargs = {})J,
-pkg.torch.onnx.name_scopes['', 'expand']J◊
-pkg.torch.onnx.stack_trace∏File "/home/ismukhin/projects/feature-matching-mini/models/convert_lightglue_benchmark.py", line 48, in forward
-    descriptors = torch.nn.functional.normalize(descriptors, p=2, dim=1)
-·
-	conv2d_11
-expanddescriptorsnode_div"DivJC
-	namespace6: __main__.SuperPointDenseWrapper/div: aten.div.TensorJX
-pkg.torch.onnx.class_hierarchy6['__main__.SuperPointDenseWrapper', 'aten.div.Tensor']Jã
-pkg.torch.onnx.fx_nodeq%div : [num_users=1] = call_function[target=torch.ops.aten.div.Tensor](args = (%conv2d_11, %expand), kwargs = {})J)
-pkg.torch.onnx.name_scopes['', 'div']J◊
-pkg.torch.onnx.stack_trace∏File "/home/ismukhin/projects/feature-matching-mini/models/convert_lightglue_benchmark.py", line 48, in forward
-    descriptors = torch.nn.functional.normalize(descriptors, p=2, dim=1)
-˚
-score_logitsprobabilitiesnode_softmax"Softmax*
-axis†JH
-	namespace;: __main__.SuperPointDenseWrapper/softmax: aten.softmax.intJY
-pkg.torch.onnx.class_hierarchy7['__main__.SuperPointDenseWrapper', 'aten.softmax.int']Jâ
-pkg.torch.onnx.fx_nodeo%softmax : [num_users=1] = call_function[target=torch.ops.aten.softmax.int](args = (%conv2d_9, 1), kwargs = {})J-
-pkg.torch.onnx.name_scopes['', 'softmax']J◊
-pkg.torch.onnx.stack_trace∏File "/home/ismukhin/projects/feature-matching-mini/models/convert_lightglue_benchmark.py", line 49, in forward
-    return score_logits, torch.softmax(score_logits, dim=1), descriptors
-main_graph*j@Bmodel.conv1a.weightj*
-locationsuperpoint_lightglue.onnx.dataj
-offset0j
-length2304p*ö@Bmodel.conv1a.biasJÄâ-≈æêÒ¿Ë÷√?˝Cﬁ¿úJ?≠Ñ™æ÷=?¯1π¿=&™øtø©æ\∏æHß?“«ø’ù5¿ j?'?«CæŒíÒæ“›æÇj€æñÂ@^T∫Ω=dó?BMd?ëPæﬂ¥àæk[`æd≈ø2ôÌæ%®b@wôe@j™È?“∫çAç¨jø¬µ‘¿ùQUæ˚ã.ø@•˘>>ôÛΩ"^¿¯Ï•Ωà†°øÜè¿√Ï“?F%ø¥¨?Çe¬>‚:2øûÛ°?ì©]>ﬁåÂæ*ã~Ω∞ób?á0Oæyb•?i	ææ˙?bØ?Tó?ÖpTøª≤>÷¿xæ®ﬁñ¿ê•◊ø*ö@Bmodel.conv1b.biasJÄ◊ÿ8ø*º æ,ŒΩûπz¡ö?C¡∑b?aGøwCæèŒA¡„Üø∞|≤¿√‹Ÿ¿dA¨i•@|dæö;à¿,vi¡S?g@Ñ´¡0KIø2k,¿†Î@¡Rû>¿^Ê+@–8Ωuº¿“*kAj`ø!±Ú¿“ÀJ¡æ¡Q¬¡¿Û=_∆óΩ<<ü¿∆’Ö@É≈J¿-ä¿∂zD@l@8ëë¡ ®Æ@Ç)Æ?–X¥æÎòøµ`BAıŸ≥?8®^ø¸€Ω¿‰*4@‹îÇ@d%?—í¡Ã@lpøÆêí?k˚¿+ì±¿õJLødS@‚6Ç¿Rú¡πÎ	ø*ö@Bmodel.conv2a.biasJÄV+i?Ã™?qÉí@Ó¿¥ørÍ?˛›ç>˙É@òG?æÄÍ æ~Á≠>BUTæd,Ç@÷e@k·™ø¿¬@ní™@8”†æÖB6@û$¿?0#øîñù¿´Z>RR≈¿‰Ú@b±¿πñb¿sV?∞‘òæ´ÉÑø)¿Ìd ? :
-¿#Ω}?Æ∏Q@WµÉøZÉü?;ì”æàÁæV£ûæôJ¿-=®¿!Ωb@P‰1æÀg®@¥¨ì?F¿K¶0øÃ•l@X≈?ê ?ÎÊ≈ø≤ Ø¿á3ø1AÊ@‘÷HæÊ.>ÿ˜¡@uAñ@ø˘ø@îûAH1(øô°B@`Íæ1“{æ*ö@Bmodel.conv2b.biasJÄÂ—¿ëY@9°ø“˘ø( BADA'A¬B?Ü6øö∏
-¡œ|B@8ï@Ωﬂ@H–{¿É›î?æò¿èº`¿jﬂç@“—Û¡;Ä@ ô¡hk?A∞óø"Å@«;A@’ î¿À≈¿ﬁßÂøz/Aå®@¡¶ÿ˙?°ñ…¿ÿøa√õ@&®¿ˆ*ô@ÿÖÁ@F	@ÆŒµ¿T~A·Å@û?ä>ûö9AFPlΩäŒ¡Â1ò¿i AÜÍ¿y§ ¡5¶˜¿‚◊ø?L»Aàè?Ê÷;¿k§¿¬}j¿\/Øø◊ôACÕ@@Ò‡,@üÓ{æ`—∞æ@ﬂêø ±=«˘'¿*eÄBmodel.conv3a.biasj*
-locationsuperpoint_lightglue.onnx.dataj
-offset2304j
-length512p*eÄBmodel.conv3b.biasj*
-locationsuperpoint_lightglue.onnx.dataj
-offset2816j
-length512p*eÄBmodel.conv4a.biasj*
-locationsuperpoint_lightglue.onnx.dataj
-offset3328j
-length512p*eÄBmodel.conv4b.biasj*
-locationsuperpoint_lightglue.onnx.dataj
-offset3840j
-length512p*fÄBmodel.convPa.biasj*
-locationsuperpoint_lightglue.onnx.dataj
-offset4352j
-length1024p*dABmodel.convPb.biasj*
-locationsuperpoint_lightglue.onnx.dataj
-offset5376j
-length260p*fÄBmodel.convDa.biasj*
-locationsuperpoint_lightglue.onnx.dataj
-offset5636j
-length1024p*fÄBmodel.convDb.biasj*
-locationsuperpoint_lightglue.onnx.dataj
-offset6660j
-length1024p*o@@Bmodel.conv1b.weightj*
-locationsuperpoint_lightglue.onnx.dataj
-offset7684j
-length147456p*q@@Bmodel.conv2a.weightj*
-locationsuperpoint_lightglue.onnx.dataj
-offset155140j
-length147456p*q@@Bmodel.conv2b.weightj*
-locationsuperpoint_lightglue.onnx.dataj
-offset302596j
-length147456p*rÄ@Bmodel.conv3a.weightj*
-locationsuperpoint_lightglue.onnx.dataj
-offset450052j
-length294912p*sÄÄBmodel.conv3b.weightj*
-locationsuperpoint_lightglue.onnx.dataj
-offset744964j
-length589824p*tÄÄBmodel.conv4a.weightj*
-locationsuperpoint_lightglue.onnx.dataj
-offset1334788j
-length589824p*tÄÄBmodel.conv4b.weightj*
-locationsuperpoint_lightglue.onnx.dataj
-offset1924612j
-length589824p*uÄÄBmodel.convPa.weightj*
-locationsuperpoint_lightglue.onnx.dataj
-offset2514436j
-length1179648p*rAÄBmodel.convPb.weightj*
-locationsuperpoint_lightglue.onnx.dataj
-offset3694084j
-length66560p*uÄÄBmodel.convDa.weightj*
-locationsuperpoint_lightglue.onnx.dataj
-offset3760644j
-length1179648p*tÄÄBmodel.convDb.weightj*
-locationsuperpoint_lightglue.onnx.dataj
-offset4940292j
-length262144p*Bval_3J        *Bval_7J       *Bval_19J       *Bval_31J       *Bval_44JÃºå+*.Bval_50J               <       P       *Bval_12Jl	ô>*Bval_24J¢E?*Bval_36J’xÈ=ZÀ
-image
-
-
-
-‡
-Ä"=
-/pkg.torch.export.graph_signature.InputSpec.kind
-USER_INPUT"=
-5pkg.torch.export.graph_signature.InputSpec.persistentNone"*
-!pkg.torch.onnx.original_node_nameimagebñ
-score_logits
-
-
-A
-<
-P"?
-0pkg.torch.export.graph_signature.OutputSpec.kindUSER_OUTPUT"-
-!pkg.torch.onnx.original_node_nameconv2d_9bñ
-probabilities
-
-
-A
-<
-P"?
-0pkg.torch.export.graph_signature.OutputSpec.kindUSER_OUTPUT",
-!pkg.torch.onnx.original_node_namesoftmaxbë
-descriptors
-
-
-Ä
-<
-P"?
-0pkg.torch.export.graph_signature.OutputSpec.kindUSER_OUTPUT"(
-!pkg.torch.onnx.original_node_namedivjÊ
-model.conv1a.weight
-
-@
-
-
-"<
-/pkg.torch.export.graph_signature.InputSpec.kind	PARAMETER"=
-5pkg.torch.export.graph_signature.InputSpec.persistentNone":
-!pkg.torch.onnx.original_node_namep_model_conv1a_weightj÷
-model.conv1a.bias
-
-
-@"<
-/pkg.torch.export.graph_signature.InputSpec.kind	PARAMETER"=
-5pkg.torch.export.graph_signature.InputSpec.persistentNone"8
-!pkg.torch.onnx.original_node_namep_model_conv1a_biasj÷
-model.conv1b.bias
-
-
-@"<
-/pkg.torch.export.graph_signature.InputSpec.kind	PARAMETER"=
-5pkg.torch.export.graph_signature.InputSpec.persistentNone"8
-!pkg.torch.onnx.original_node_namep_model_conv1b_biasj÷
-model.conv2a.bias
-
-
-@"<
-/pkg.torch.export.graph_signature.InputSpec.kind	PARAMETER"=
-5pkg.torch.export.graph_signature.InputSpec.persistentNone"8
-!pkg.torch.onnx.original_node_namep_model_conv2a_biasj÷
-model.conv2b.bias
-
-
-@"<
-/pkg.torch.export.graph_signature.InputSpec.kind	PARAMETER"=
-5pkg.torch.export.graph_signature.InputSpec.persistentNone"8
-!pkg.torch.onnx.original_node_namep_model_conv2b_biasj◊
-model.conv3a.bias
-	
-Ä"<
-/pkg.torch.export.graph_signature.InputSpec.kind	PARAMETER"=
-5pkg.torch.export.graph_signature.InputSpec.persistentNone"8
-!pkg.torch.onnx.original_node_namep_model_conv3a_biasj◊
-model.conv3b.bias
-	
-Ä"<
-/pkg.torch.export.graph_signature.InputSpec.kind	PARAMETER"=
-5pkg.torch.export.graph_signature.InputSpec.persistentNone"8
-!pkg.torch.onnx.original_node_namep_model_conv3b_biasj◊
-model.conv4a.bias
-	
-Ä"<
-/pkg.torch.export.graph_signature.InputSpec.kind	PARAMETER"=
-5pkg.torch.export.graph_signature.InputSpec.persistentNone"8
-!pkg.torch.onnx.original_node_namep_model_conv4a_biasj◊
-model.conv4b.bias
-	
-Ä"<
-/pkg.torch.export.graph_signature.InputSpec.kind	PARAMETER"=
-5pkg.torch.export.graph_signature.InputSpec.persistentNone"8
-!pkg.torch.onnx.original_node_namep_model_conv4b_biasj◊
-model.convPa.bias
-	
-Ä"<
-/pkg.torch.export.graph_signature.InputSpec.kind	PARAMETER"=
-5pkg.torch.export.graph_signature.InputSpec.persistentNone"8
-!pkg.torch.onnx.original_node_namep_model_convpa_biasj÷
-model.convPb.bias
-
-
-A"<
-/pkg.torch.export.graph_signature.InputSpec.kind	PARAMETER"=
-5pkg.torch.export.graph_signature.InputSpec.persistentNone"8
-!pkg.torch.onnx.original_node_namep_model_convpb_biasj◊
-model.convDa.bias
-	
-Ä"<
-/pkg.torch.export.graph_signature.InputSpec.kind	PARAMETER"=
-5pkg.torch.export.graph_signature.InputSpec.persistentNone"8
-!pkg.torch.onnx.original_node_namep_model_convda_biasj◊
-model.convDb.bias
-	
-Ä"<
-/pkg.torch.export.graph_signature.InputSpec.kind	PARAMETER"=
-5pkg.torch.export.graph_signature.InputSpec.persistentNone"8
-!pkg.torch.onnx.original_node_namep_model_convdb_biasjÊ
-model.conv1b.weight
-
-@
-@
-
-"<
-/pkg.torch.export.graph_signature.InputSpec.kind	PARAMETER"=
-5pkg.torch.export.graph_signature.InputSpec.persistentNone":
-!pkg.torch.onnx.original_node_namep_model_conv1b_weightjÊ
-model.conv2a.weight
-
-@
-@
-
-"<
-/pkg.torch.export.graph_signature.InputSpec.kind	PARAMETER"=
-5pkg.torch.export.graph_signature.InputSpec.persistentNone":
-!pkg.torch.onnx.original_node_namep_model_conv2a_weightjÊ
-model.conv2b.weight
-
-@
-@
-
-"<
-/pkg.torch.export.graph_signature.InputSpec.kind	PARAMETER"=
-5pkg.torch.export.graph_signature.InputSpec.persistentNone":
-!pkg.torch.onnx.original_node_namep_model_conv2b_weightjÁ
-model.conv3a.weight
-
-Ä
-@
-
-"<
-/pkg.torch.export.graph_signature.InputSpec.kind	PARAMETER"=
-5pkg.torch.export.graph_signature.InputSpec.persistentNone":
-!pkg.torch.onnx.original_node_namep_model_conv3a_weightjË
-model.conv3b.weight
-
-Ä
-Ä
-
-"<
-/pkg.torch.export.graph_signature.InputSpec.kind	PARAMETER"=
-5pkg.torch.export.graph_signature.InputSpec.persistentNone":
-!pkg.torch.onnx.original_node_namep_model_conv3b_weightjË
-model.conv4a.weight
-
-Ä
-Ä
-
-"<
-/pkg.torch.export.graph_signature.InputSpec.kind	PARAMETER"=
-5pkg.torch.export.graph_signature.InputSpec.persistentNone":
-!pkg.torch.onnx.original_node_namep_model_conv4a_weightjË
-model.conv4b.weight
-
-Ä
-Ä
-
-"<
-/pkg.torch.export.graph_signature.InputSpec.kind	PARAMETER"=
-5pkg.torch.export.graph_signature.InputSpec.persistentNone":
-!pkg.torch.onnx.original_node_namep_model_conv4b_weightjË
-model.convPa.weight
-
-Ä
-Ä
-
-"<
-/pkg.torch.export.graph_signature.InputSpec.kind	PARAMETER"=
-5pkg.torch.export.graph_signature.InputSpec.persistentNone":
-!pkg.torch.onnx.original_node_namep_model_convpa_weightjÁ
-model.convPb.weight
-
-A
-Ä
-
-"<
-/pkg.torch.export.graph_signature.InputSpec.kind	PARAMETER"=
-5pkg.torch.export.graph_signature.InputSpec.persistentNone":
-!pkg.torch.onnx.original_node_namep_model_convpb_weightjË
-model.convDa.weight
-
-Ä
-Ä
-
-"<
-/pkg.torch.export.graph_signature.InputSpec.kind	PARAMETER"=
-5pkg.torch.export.graph_signature.InputSpec.persistentNone":
-!pkg.torch.onnx.original_node_namep_model_convda_weightjË
-model.convDb.weight
-
-Ä
-Ä
-
-"<
-/pkg.torch.export.graph_signature.InputSpec.kind	PARAMETER"=
-5pkg.torch.export.graph_signature.InputSpec.persistentNone":
-!pkg.torch.onnx.original_node_namep_model_convdb_weightjX
-val_3
-
-
-"C
-$pkg.onnxscript.optimizer.folded_from['val_0', 'val_1', 'val_2']jX
-val_7
-
-
-"C
-$pkg.onnxscript.optimizer.folded_from['val_4', 'val_5', 'val_6']j\
-val_19
-
-
-"F
-$pkg.onnxscript.optimizer.folded_from['val_16', 'val_17', 'val_18']j\
-val_31
-
-
-"F
-$pkg.onnxscript.optimizer.folded_from['val_28', 'val_29', 'val_30']jD
-val_44
- "2
-$pkg.onnxscript.optimizer.folded_from
-['val_43']jf
-val_50
-
-
-"P
-$pkg.onnxscript.optimizer.folded_from(['val_46', 'val_47', 'val_48', 'val_49']j
-val_12
- j
-val_24
- j
-val_36
- j#
-slice_1
-
-
-
-‡
-Äj
-mul
-
-
-
-‡
-Äj#
-slice_2
-
-
-
-‡
-Äj!
-mul_1
-
-
-
-‡
-Äj
-add
-
-
-
-‡
-Äj#
-slice_3
-
-
-
-‡
-Äj!
-mul_2
-
-
-
-‡
-Äj!
-add_1
-
-
-
-‡
-Äj"
-conv2d
-
-
-@
-‡
-Äj 
-relu
-
-
-@
-‡
-Äj$
-conv2d_1
-
-
-@
-‡
-Äj"
-relu_1
-
-
-@
-‡
-Äj&
-
-max_pool2d
-
-
-@
-
-¿j$
-conv2d_2
-
-
-@
-
-¿j"
-relu_2
-
-
-@
-
-¿j$
-conv2d_3
-
-
-@
-
-¿j"
-relu_3
-
-
-@
-
-¿j'
-max_pool2d_1
-
-
-@
-x
-†j$
-conv2d_4
-
-
-Ä
-x
-†j"
-relu_4
-
-
-Ä
-x
-†j$
-conv2d_5
-
-
-Ä
-x
-†j"
-relu_5
-
-
-Ä
-x
-†j'
-max_pool2d_2
-
-
-Ä
-<
-Pj#
-conv2d_6
-
-
-Ä
-<
-Pj!
-relu_6
-
-
-Ä
-<
-Pj#
-conv2d_7
-
-
-Ä
-<
-Pj!
-relu_7
-
-
-Ä
-<
-Pj#
-conv2d_8
-
-
-Ä
-<
-Pj!
-relu_8
-
-
-Ä
-<
-Pj$
-	conv2d_10
-
-
-Ä
-<
-Pj!
-relu_9
-
-
-Ä
-<
-Pj$
-	conv2d_11
-
-
-Ä
-<
-Pj,
-linalg_vector_norm
-
-
-
-<
-Pj#
-	clamp_min
-
-
-
-<
-Pj!
-expand
-
-
-Ä
-<
-PÇ∏
-0pkg.torch.export.ExportedProgram.graph_signatureÉ
-# inputs
-p_model_conv1a_weight: PARAMETER target='model.conv1a.weight'
-p_model_conv1a_bias: PARAMETER target='model.conv1a.bias'
-p_model_conv1b_weight: PARAMETER target='model.conv1b.weight'
-p_model_conv1b_bias: PARAMETER target='model.conv1b.bias'
-p_model_conv2a_weight: PARAMETER target='model.conv2a.weight'
-p_model_conv2a_bias: PARAMETER target='model.conv2a.bias'
-p_model_conv2b_weight: PARAMETER target='model.conv2b.weight'
-p_model_conv2b_bias: PARAMETER target='model.conv2b.bias'
-p_model_conv3a_weight: PARAMETER target='model.conv3a.weight'
-p_model_conv3a_bias: PARAMETER target='model.conv3a.bias'
-p_model_conv3b_weight: PARAMETER target='model.conv3b.weight'
-p_model_conv3b_bias: PARAMETER target='model.conv3b.bias'
-p_model_conv4a_weight: PARAMETER target='model.conv4a.weight'
-p_model_conv4a_bias: PARAMETER target='model.conv4a.bias'
-p_model_conv4b_weight: PARAMETER target='model.conv4b.weight'
-p_model_conv4b_bias: PARAMETER target='model.conv4b.bias'
-p_model_convpa_weight: PARAMETER target='model.convPa.weight'
-p_model_convpa_bias: PARAMETER target='model.convPa.bias'
-p_model_convpb_weight: PARAMETER target='model.convPb.weight'
-p_model_convpb_bias: PARAMETER target='model.convPb.bias'
-p_model_convda_weight: PARAMETER target='model.convDa.weight'
-p_model_convda_bias: PARAMETER target='model.convDa.bias'
-p_model_convdb_weight: PARAMETER target='model.convDb.weight'
-p_model_convdb_bias: PARAMETER target='model.convDb.bias'
-image: USER_INPUT
-
-# outputs
-conv2d_9: USER_OUTPUT
-softmax: USER_OUTPUT
-div: USER_OUTPUT
-Ç8
-2pkg.torch.export.ExportedProgram.range_constraints{}B
- 

@@ -31,5 +31,8 @@ jobs:
           git clone https://github.com/cvg/lightglue
           python -m pip install lightglue/
 
+      - name: Download models
+        run: bash models/download_models.sh
+
       - name: Run main tests
         run: python -m pytest tests/
