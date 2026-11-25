@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 import cv2
 import numpy as np
 
+from src.backend.lightglue_utils import keypoints_to_numpy
 from stitching.panorama_utils.utils import (
     SRC_MATCHER_NAMES,
     SRC_PIPELINES,
@@ -199,8 +200,8 @@ class PipelineMatcher(MatcherWrapper):
             matches = [match[0] for match in matches]
         scores = out.get('scores')
         if self.matcher_name in SRC_PIPELINES:
-            keypoints0 = self._rescale_keypoints(np.asarray(out['keypoints0'], dtype=np.float32), i)
-            keypoints1 = self._rescale_keypoints(np.asarray(out['keypoints1'], dtype=np.float32), j)
+            keypoints0 = self._rescale_keypoints(keypoints_to_numpy(out['keypoints0']), i)
+            keypoints1 = self._rescale_keypoints(keypoints_to_numpy(out['keypoints1']), j)
             map0 = self._canonical_keypoints(i, keypoints0)
             map1 = self._canonical_keypoints(j, keypoints1)
             cv_matches = []
