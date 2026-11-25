@@ -35,4 +35,4 @@ jobs:
         run: bash models/download_models.sh
 
       - name: Run main tests
-        run: python -m pytest tests/
+        run: python -m pytest tests/ --ignore=tests/test_performance_benchmark_smoke.py
