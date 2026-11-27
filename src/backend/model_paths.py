@@ -1,15 +1,11 @@
 ONNX_DETECTOR_MODELS = {
     'disk': 'disk_1024.onnx',
-    'aliked': 'aliked-n32-top2k-640.onnx',
+    'aliked': 'aliked_lightglue.onnx',
+    'disk_lightglue': 'disk_1024.onnx',
+    'aliked_lightglue': 'aliked_lightglue.onnx',
+    'superpoint_lightglue': 'superpoint_lightglue.onnx',
 }
-ONNX_DESCRIPTOR_MODELS = {
-    'disk': 'disk_1024.onnx',
-    'aliked': 'aliked-n32-top2k-640.onnx',
-}
-ONNX_MATCHER_MODELS = {
-    'disk': 'disk_lightglue_2outputs.onnx',
-    'aliked': 'lightglue_for_aliked.onnx',
-}
+ONNX_DESCRIPTOR_MODELS = ONNX_DETECTOR_MODELS
 
 
 EXECUTORCH_DETECTOR_MODELS = {

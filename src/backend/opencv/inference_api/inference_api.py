@@ -1,6 +1,8 @@
 from src.backend.inference_api_base import InferenceAPI
 import cv2 as cv
 
+from src.backend.lightglue_utils import lightglue_inputs, lightglue_matches
+
 
 @InferenceAPI.register("opencv")
 @InferenceAPI.register("aliked_opencv")
@@ -9,7 +11,10 @@ import cv2 as cv
 class OpenCVInferenceAPI(InferenceAPI):
     _OUTPUT_NAMES = {
         'aliked': ["keypoints", "descriptors", "scores"],
+        'aliked_lightglue': ["keypoints", "descriptors", "scores"],
         'disk': ["keypoints", "descriptors", "scores"],
+        'disk_lightglue': ["keypoints", "descriptors", "scores"],
+        'superpoint_lightglue': ["score_logits", "probabilities", "descriptors"],
         'lightglue': ["matches0", "mscores0"],
     }
 
@@ -23,23 +28,22 @@ class OpenCVInferenceAPI(InferenceAPI):
 
     def run(self, inputs=None):
         try:
-            if self._model_name in ('disk', 'aliked'):
-                size = (1024, 1024) if self._model_name == 'disk' else (640, 640)
+            if self._model_name in ('disk', 'disk_lightglue', 'aliked', 'aliked_lightglue', 'superpoint_lightglue'):
+                default_size = {'disk': (1024, 1024), 'aliked': (640, 640), 'superpoint': (480, 640)}
+                height, width = self._config.get(
+                    'input_shape', default_size[self._model_name.removesuffix('_lightglue')]
+                )[-2:]
                 blob = cv.dnn.blobFromImage(inputs['image'], scalefactor=1.0 / 255.0,
-                                            size=size, swapRB=True, crop=False)
+                                            size=(width, height), swapRB=True, crop=False)
                 self._model_wrapper.setInput(blob)
             if self._model_name == 'lightglue':
-                for index in (0, 1):
-                    features = inputs[f'features{index}']
-                    self._model_wrapper.setInput(features['normalized_keypoints'][None], name=f'kpts{index}')
-                    self._model_wrapper.setInput(features['descriptors'][None], name=f'desc{index}')
+                if inputs is None:
+                    return None
+                for name, value in lightglue_inputs(inputs).items():
+                    self._model_wrapper.setInput(value, name=name)
             outputs = self._model_wrapper.forward(self.output_names)
             if self._model_name == 'lightglue' and outputs is not None:
-                matches, scores = outputs
-                matches = matches[0] if matches.ndim == 3 else matches
-                scores = scores[0] if scores.ndim == 2 else scores
-                valid = scores > self._config.get('score_threshold', 0.1)
-                return {'matches': matches[valid], 'scores': scores[valid]}
+                return lightglue_matches(outputs, self._config.get('score_threshold', 0.1))
             return outputs
 
         except Exception as e:

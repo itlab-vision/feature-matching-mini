@@ -44,7 +44,7 @@ def test_lightglue_loader_default_path(mock_logger):
 
         model = loader.load()['model']
 
-        default_path = "models/disk_lightglue_2outputs.onnx"
+        default_path = "models/lightglue_disk_opencv.onnx"
         mock_read_net.assert_called_once_with(default_path)
 
         mock_logger.info.assert_called_once_with(f"Initializing LightGlue from {default_path}")

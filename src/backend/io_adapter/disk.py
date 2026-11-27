@@ -22,8 +22,9 @@ class DISKIOAdapter(IOAdapter):
     def postprocess(self, outputs):
         keypoints, descriptors, scores = outputs
         points = np.asarray(keypoints, dtype=np.float32).reshape(-1, 2).copy()
-        points[:, 0] *= self._image_size[1] / 1024.0
-        points[:, 1] *= self._image_size[0] / 1024.0
+        height, width = self._config.get('input_shape', (1, 3, 1024, 1024))[-2:]
+        points[:, 0] *= self._image_size[1] / width
+        points[:, 1] *= self._image_size[0] / height
         return {'keypoints': np.asarray(cv.KeyPoint_convert(points), dtype=object),
                 'descriptors': np.asarray(descriptors).reshape(-1, np.asarray(descriptors).shape[-1]),
                 'scores': np.asarray(scores).reshape(-1)}

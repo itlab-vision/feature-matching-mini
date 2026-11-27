@@ -5,6 +5,7 @@ from src.backend.onnx.model_wrapper.model_wrapper import OnnxModelWrapper
 from src.backend.onnx.utils import OnnxSessionConfiguration
 
 
+@ModelWrapper.register("disk_lightglue_onnx")
 @ModelWrapper.register("disk_onnx")
 class DiskOnnxModelWrapper(OnnxModelWrapper):
     def load(self):
@@ -16,7 +17,7 @@ class DiskOnnxModelWrapper(OnnxModelWrapper):
             providers = session_config.get_providers_with_options()
 
             session = ort.InferenceSession(
-                model_path,
+                str(model_path),
                 sess_options=sess_options,
                 providers=providers
             )

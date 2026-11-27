@@ -35,10 +35,10 @@ def test_load_default_path_success(mock_logger):
 
         assert model == mock_session_instance
         mock_logger.info.assert_any_call(
-            "Initializing lightglue_onnx from models/disk_lightglue_2outputs.onnx (ONNX Runtime)"
+            "Initializing lightglue_onnx from models/lightglue_disk_k512.onnx (ONNX Runtime)"
         )
         mock_inference_session.assert_called_once_with(
-            "models/disk_lightglue_2outputs.onnx",
+            "models/lightglue_disk_k512.onnx",
             sess_options="dummy_sess_options",
             providers=["CPUExecutionProvider"]
         )
