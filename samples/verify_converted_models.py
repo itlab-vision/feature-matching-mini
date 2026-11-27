@@ -17,6 +17,8 @@ from src.backend.lightglue_utils import keypoints_to_numpy, normalize_keypoints 
 from src.detectors import Detector  # noqa: E402
 from src.descriptors import Descriptor  # noqa: E402
 import src.dnn_extractors  # noqa: E402, F401
+import src.backend.torch  # noqa: E402, F401
+import src.backend.io_adapter  # noqa: E402, F401
 from thirdparty.lightglue.lightglue import LightGlue  # noqa: E402
 
 

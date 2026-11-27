@@ -40,7 +40,22 @@ class OpenCVSubsetSelector(SubsetSelector):
             self.logger.info(
                 f'Subset: kept {len(indices)} of {len(features)} images '
                 f'(conf_thresh={self.conf_thresh}): {indices}')
+        if len(indices) < 2:
+            raise ValueError('Could not find at least two overlapping images')
+
+        num_features = len(features)
+        selected_features = [features[i] for i in indices]
+        selected_pairs = []
+        for i, original_i in enumerate(indices):
+            selected_features[i].img_idx = i
+            for j, original_j in enumerate(indices):
+                pair = pairs[original_i * num_features + original_j]
+                if pair.src_img_idx >= 0 and pair.dst_img_idx >= 0:
+                    pair.src_img_idx = i
+                    pair.dst_img_idx = j
+                selected_pairs.append(pair)
+
         img_subset = [scaled_imgs[i] for i in indices]
         full_img_sizes_subset = [full_img_sizes[i] for i in indices]
         full_images_subset = [full_images[i] for i in indices]
-        return img_subset, full_images_subset, full_img_sizes_subset
+        return selected_features, selected_pairs, img_subset, full_images_subset, full_img_sizes_subset

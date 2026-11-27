@@ -35,3 +35,23 @@ def scale_and_orientation(features, num_keypoints):
     scales = np.asarray(scales, dtype=np.float32).reshape(1, num_keypoints)
     oris = np.asarray(oris, dtype=np.float32).reshape(1, num_keypoints)
     return scales, oris
+
+
+def lightglue_inputs(inputs):
+    layers = {}
+    for index in (0, 1):
+        features = inputs[f'features{index}']
+        keypoints = features['normalized_keypoints']
+        layers[f'kpts{index}'] = np.ascontiguousarray(keypoints[None], dtype=np.float32)
+        layers[f'desc{index}'] = np.ascontiguousarray(features['descriptors'][None], dtype=np.float32)
+        if inputs['add_scale_ori']:
+            layers[f'scales{index}'], layers[f'oris{index}'] = scale_and_orientation(features, len(keypoints))
+    return layers
+
+
+def lightglue_matches(outputs, threshold):
+    matches, scores = (np.asarray(output) for output in outputs)
+    matches = matches.reshape(-1, 2)
+    scores = scores.reshape(-1)
+    valid = (matches >= 0).all(axis=1) & (scores > threshold)
+    return {'matches': matches[valid], 'scores': scores[valid]}

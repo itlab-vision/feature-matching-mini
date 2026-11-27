@@ -1,3 +1,4 @@
+import logging
 import sys
 import argparse
 import traceback
@@ -12,15 +13,13 @@ from executorch.exir import to_edge_transform_and_lower
 
 sys.path.append(str(Path(__file__).parent.parent))
 
-from logger_conf import configure_logger  # noqa: E402
-from src.xfeat import XFeat as XFeatWrapper  # noqa: E402
-from src.tfeat_descriptor import TFeat  # noqa: E402
-from src.hardnet_descriptor import HardNet  # noqa: E402
-from src.lightglue_pipeline import LightGlueFeatureExtractor  # noqa: E402
-from lightglue import LightGlue  # noqa: E402
-from lightglue.lightglue import filter_matches, normalize_keypoints  # noqa: E402
+from src.backend.model_wrapper_base import ModelWrapper  # noqa: E402
+import src.backend.torch  # noqa: E402, F401
+from thirdparty.lightglue.lightglue import LightGlue  # noqa: E402
+from thirdparty.lightglue.lightglue.lightglue import filter_matches, normalize_keypoints  # noqa: E402
 
-logger = configure_logger()
+logging.basicConfig(level=logging.INFO, format="[ %(levelname)s ] %(message)s")
+logger = logging.getLogger(__name__)
 
 PARTITIONERS = {
     "xnnpack": XnnpackPartitioner(),
@@ -124,28 +123,18 @@ def load_model(model_name, weights, input_shape, matcher_features):
 def load_custom_model(name, input_shape, matcher_features):
     name = name.lower()
 
-    if name == "tfeat":
-        return TFeat("tfeat", logger, {"device": "cpu"}).model, name
-
-    if name == "hardnet":
-        return HardNet("hardnet", logger, {"device": "cpu"}).model, name
-
-    if name == "d2net":
-        from src.d2net import D2Net
-        extractor = D2Net("d2net", logger, {"device": "cpu"})
-        return D2NetDenseWrapper(extractor._model), name
-
-    if name == "xfeat":
-        extractor = XFeatWrapper("xfeat", logger, config={"device": "cpu"})
-        return XFeatDenseWrapper(extractor._model), name
-
-    if name == "superpoint_lightglue":
-        extractor = LightGlueFeatureExtractor(name, logger, {"device": "cpu"})
-        return SuperPointDenseWrapper(extractor._extractor.model), name
-
-    if name == "disk_lightglue":
-        extractor = LightGlueFeatureExtractor(name, logger, {"device": "cpu"})
-        return DiskDenseWrapper(extractor._extractor.model), name
+    if name in {"tfeat", "hardnet", "d2net", "xfeat", "superpoint_lightglue", "disk_lightglue"}:
+        wrapper = ModelWrapper.create("torch", name, logger=logger, config={"device": "cpu"})
+        model = wrapper.load()["model"]
+        if name == "d2net":
+            model = D2NetDenseWrapper(model)
+        elif name == "xfeat":
+            model = XFeatDenseWrapper(model)
+        elif name == "superpoint_lightglue":
+            model = SuperPointDenseWrapper(model)
+        elif name == "disk_lightglue":
+            model = DiskDenseWrapper(model)
+        return model, name
 
     if name == "lightglue":
         model = LightGlue(features=matcher_features, flash=False, depth_confidence=-1, width_confidence=-1).eval()

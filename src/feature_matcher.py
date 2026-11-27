@@ -10,8 +10,12 @@ from src.matchers import Matcher
 from src.dnn_extractors import DNNFeatureExtractors  # noqa: F401
 from src.dnn_matchers import DNNMatcher  # noqa: F401
 from src.dnn_pipeline import DNNPipeline  # noqa: F401
-from src.hardnet_descriptor import HardNet  # noqa: F401
-from src.tfeat_descriptor import TFeat  # noqa: F401
+from src.dnn_descriptor import DNNDescriptor  # noqa: F401
+import src.backend.io_adapter  # noqa: E402, F401
+import src.backend.torch  # noqa: E402, F401
+import src.backend.executorch  # noqa: E402, F401
+import src.backend.opencv  # noqa: E402, F401
+import src.backend.onnx  # noqa: E402, F401
 
 
 class FeatureMatcherCV2:

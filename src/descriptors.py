@@ -1,7 +1,6 @@
-import cv2 as cv
 from abc import ABC, abstractmethod
 
-from src.algorithms import DNN_PIPELINES, DNN_DESCRIPTORS
+from src.algorithms import DNN_PIPELINES, DNN_DESCRIPTORS, DNN_DETECTORS
 
 
 class Descriptor(ABC):
@@ -38,8 +37,10 @@ class Descriptor(ABC):
         if descriptor_name in DNN_PIPELINES:
             return Descriptor._METHODS["dnnpipeline"](descriptor_name, logger, config)
 
-        is_patch_descriptor = descriptor_name in {'tfeat', 'hardnet'}
-        if (descriptor_name in DNN_DESCRIPTORS and not is_patch_descriptor):
+        if descriptor_name in DNN_DESCRIPTORS and descriptor_name not in DNN_DETECTORS:
+            return Descriptor._METHODS['dnn'](descriptor_name, logger, config)
+
+        if descriptor_name in DNN_DESCRIPTORS and descriptor_name in DNN_DETECTORS:
             return Descriptor._METHODS["dnnfeatureextractors"](descriptor_name, logger, config)
 
         descriptor_class_name = descriptor_name.lower()
@@ -57,126 +58,3 @@ class Descriptor(ABC):
     @abstractmethod
     def compute(self, img, kp):
         pass
-
-
-class OpenCVDescriptor(Descriptor, register=False):
-    def __init__(self, descriptor_name, logger, extractor, config):
-        super().__init__(logger, descriptor_name)
-        self._extractor = extractor
-        self._nfeatures = config.get('nfeatures')
-
-    @property
-    def default_norm(self):
-        return self._extractor.defaultNorm()
-
-    def compute(self, img, features):
-        if img is None:
-            self._logger.error("Input image is None. Detection aborted.")
-            return {'keypoints': (), 'descriptors': ()}
-
-        self._logger.info(f"Computing {self._descriptor_name} descriptors")
-        kp, des = self._extractor.compute(img, features.get('keypoints'))
-
-        if des is not None and self._nfeatures is not None and len(des) > self._nfeatures:
-            kp = kp[:self._nfeatures]
-            des = des[:self._nfeatures]
-
-        if des is not None:
-            self._logger.info(f"{self._descriptor_name} computed {len(des)} descriptors")
-        else:
-            self._logger.warning(f"{self._descriptor_name} computed 0 descriptors")
-        return {'keypoints': kp, 'descriptors': des}
-
-
-class SIFTDescriptor(OpenCVDescriptor):
-    def __init__(self, descriptor_name, logger, config):
-        cv_params = {}
-        if 'nfeatures' in config:
-            cv_params['nfeatures'] = config['nfeatures']
-        super().__init__(descriptor_name, logger, cv.SIFT_create(**cv_params), config)
-
-
-class ORBDescriptor(OpenCVDescriptor):
-    def __init__(self, descriptor_name, logger, config):
-        cv_params = {}
-        if 'nfeatures' in config:
-            cv_params['nfeatures'] = config['nfeatures']
-        super().__init__(descriptor_name, logger, cv.ORB_create(**cv_params), config)
-
-
-class AKAZEDescriptor(OpenCVDescriptor):
-    def __init__(self, descriptor_name, logger, config):
-        cv_params = {}
-        super().__init__(descriptor_name, logger, cv.xfeatures2d.AKAZE_create(**cv_params), config)
-
-
-class BRISKDescriptor(OpenCVDescriptor):
-    def __init__(self, descriptor_name, logger, config):
-        cv_params = {}
-        if 'threshold' in config:
-            cv_params['thresh'] = int(config['threshold'])
-        super().__init__(descriptor_name, logger, cv.xfeatures2d.BRISK_create(**cv_params), config)
-
-
-class KAZEDescriptor(OpenCVDescriptor):
-    def __init__(self, descriptor_name, logger, config):
-        cv_params = {}
-        super().__init__(descriptor_name, logger, cv.xfeatures2d.KAZE_create(**cv_params), config)
-
-
-class BRIEFDescriptor(OpenCVDescriptor):
-    def __init__(self, descriptor_name, logger, config):
-        cv_params = {}
-        if 'bytes' in config:
-            cv_params['bytes'] = config['bytes']
-        super().__init__(descriptor_name, logger, cv.xfeatures2d.BriefDescriptorExtractor_create(**cv_params), config)
-
-
-class FREAKDescriptor(OpenCVDescriptor):
-    def __init__(self, descriptor_name, logger, config):
-        cv_params = {}
-        super().__init__(descriptor_name, logger, cv.xfeatures2d.FREAK_create(**cv_params), config)
-
-
-class DAISYDescriptor(OpenCVDescriptor):
-    def __init__(self, descriptor_name, logger, config):
-        cv_params = {}
-        super().__init__(descriptor_name, logger, cv.xfeatures2d.DAISY_create(**cv_params), config)
-
-
-class LATCHDescriptor(OpenCVDescriptor):
-    def __init__(self, descriptor_name, logger, config):
-        cv_params = {}
-        if 'bytes' in config:
-            cv_params['bytes'] = config['bytes']
-        super().__init__(descriptor_name, logger, cv.xfeatures2d.LATCH_create(**cv_params), config)
-
-
-class BEBLIDDescriptor(OpenCVDescriptor):
-    def __init__(self, descriptor_name, logger, config):
-        scale_factor = config.get('scale_factor', 0.75)
-        cv_params = {'scale_factor': scale_factor}
-        if 'n_bits' in config:
-            cv_params['n_bits'] = config['n_bits']
-        super().__init__(descriptor_name, logger, cv.xfeatures2d.BEBLID_create(**cv_params), config)
-
-
-class TEBLIDDescriptor(OpenCVDescriptor):
-    def __init__(self, descriptor_name, logger, config):
-        scale_factor = config.get('scale_factor', 0.75)
-        cv_params = {'scale_factor': scale_factor}
-        if 'n_bits' in config:
-            cv_params['n_bits'] = config['n_bits']
-        super().__init__(descriptor_name, logger, cv.xfeatures2d.TEBLID_create(**cv_params), config)
-
-
-class VGGDescriptor(OpenCVDescriptor):
-    def __init__(self, descriptor_name, logger, config):
-        cv_params = {}
-        super().__init__(descriptor_name, logger, cv.xfeatures2d.VGG_create(**cv_params), config)
-
-
-class BoostDescDescriptor(OpenCVDescriptor):
-    def __init__(self, descriptor_name, logger, config):
-        cv_params = {}
-        super().__init__(descriptor_name, logger, cv.xfeatures2d.BoostDesc_create(**cv_params), config)
