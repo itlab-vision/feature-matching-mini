@@ -1,3 +1,4 @@
+from src.backend.executorch.model_wrapper.aliked_lightglue import AlikedLightGlueExecuTorchModelWrapper  # noqa: F401
 from src.backend.executorch.model_wrapper.d2net import D2NetExecuTorchModelWrapper  # noqa: F401
 from src.backend.executorch.model_wrapper.tfeat import TFeatExecuTorchModelWrapper  # noqa: F401
 from src.backend.executorch.model_wrapper.hardnet import HardNetExecuTorchModelWrapper  # noqa: F401

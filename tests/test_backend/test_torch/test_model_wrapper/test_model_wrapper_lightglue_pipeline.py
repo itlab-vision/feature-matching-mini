@@ -84,7 +84,7 @@ class TestLightGlueFeatureExtractorTorchModelWrapper:
 
         result = wrapper.load()
 
-        mock_extractor.assert_called_once_with(max_num_keypoints=256)
+        assert mock_extractor.call_args.kwargs["max_num_keypoints"] == 256
         assert result["model"] is mock_model
 
     def test_load_nfeatures_not_mapped_for_other_extractors(self, wrapper):

@@ -44,7 +44,7 @@ def test_aliked_loader_default_path(mock_logger):
 
         model = loader.load()['model']
 
-        default_path = "models/aliked-n32-top2k-640.onnx"
+        default_path = "models/aliked_lightglue.onnx"
         mock_read_net.assert_called_once_with(default_path)
 
         mock_logger.info.assert_called_once_with(f"Initializing Aliked from {default_path}")

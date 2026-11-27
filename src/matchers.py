@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from src.algorithms import DNN_PIPELINES, DNN_MATCHERS, get_default_backend
+from src.algorithms import DNN_PIPELINES, DNN_MATCHERS, OPENCV_DNN_MATCHERS, get_default_backend
 
 
 class Matcher(ABC):
@@ -31,7 +31,7 @@ class Matcher(ABC):
         if matcher_name in DNN_PIPELINES:
             return Matcher._METHODS["dnnpipeline"](matcher_name, logger, config)
 
-        if matcher_name in DNN_MATCHERS:
+        if matcher_name in DNN_MATCHERS and (backend != 'opencv' or matcher_name in OPENCV_DNN_MATCHERS):
             return Matcher._METHODS['dnn'](matcher_name, logger, config, descriptor_class)
 
         if not Matcher._METHODS.get(matcher_name):

@@ -1,6 +1,7 @@
 import torch
 import numpy as np
 
+from src.backend.lightglue_utils import scale_and_orientation
 from src.backend.model_wrapper_base import ModelWrapper
 from src.backend.executorch.model_wrapper.model_wrapper import ExecuTorchModelWrapper
 
@@ -15,12 +16,17 @@ class LightGlueExecuTorchModelWrapper(ExecuTorchModelWrapper):
     def preprocess(self, inputs):
         count = self._config.get('num_keypoints', 256)
         tensors = []
-        for key in ('keypoints', 'descriptors'):
+        keypoints_field = 'normalized_keypoints' if self._config.get('normalize_keypoints') else 'keypoints'
+        for key in (keypoints_field, 'descriptors'):
             for index in (0, 1):
                 value = np.asarray(inputs[f'features{index}'][key], dtype=np.float32)
                 if len(value) != count:
                     raise ValueError(f'LightGlue ExecuTorch expects {count} {key} for features{index}')
                 tensors.append(torch.from_numpy(np.ascontiguousarray(value)).unsqueeze(0))
+        if inputs.get('add_scale_ori'):
+            for index in (0, 1):
+                scales, oris = scale_and_orientation(inputs[f'features{index}'], count)
+                tensors.extend((torch.from_numpy(scales).contiguous(), torch.from_numpy(oris).contiguous()))
         return tuple(tensors)
 
     @staticmethod

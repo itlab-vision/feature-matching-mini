@@ -3,6 +3,7 @@ import cv2
 import numpy as np
 
 from src.algorithms import ALL_MATCHERS, DNN_PIPELINES
+from src.backend.lightglue_utils import keypoints_to_numpy
 
 from stitching.panorama_utils.utils import (
     image_features_to_src_dict,
@@ -111,12 +112,6 @@ class PipelineMatcher(MatcherWrapper):
         features['extractor_name'] = self.descriptor_name
         return features
 
-    @staticmethod
-    def _keypoint_coordinates(keypoints):
-        if len(keypoints) and isinstance(keypoints[0], cv2.KeyPoint):
-            return cv2.KeyPoint_convert(keypoints)
-        return np.asarray(keypoints, dtype=np.float32).reshape(-1, 2)
-
     def _canonical_keypoints(self, idx, keypoints):
         if idx not in self._canonical:
             self._canonical[idx] = keypoints.astype(np.float32, copy=True)
@@ -170,16 +165,16 @@ class PipelineMatcher(MatcherWrapper):
         if isinstance(matches[0], (list, tuple)):
             matches = [row[0] for row in matches if row]
         if self.matcher_name in DNN_PIPELINES:
-            keypoints0 = self._keypoint_coordinates(out['keypoints0'])
-            keypoints1 = self._keypoint_coordinates(out['keypoints1'])
+            keypoints0 = keypoints_to_numpy(out['keypoints0'])
+            keypoints1 = keypoints_to_numpy(out['keypoints1'])
             map0 = self._canonical_keypoints(i, keypoints0)
             map1 = self._canonical_keypoints(j, keypoints1)
             matches_info.matches = [
                 cv2.DMatch(int(map0[m.queryIdx]), int(map1[m.trainIdx]), m.distance) for m in matches
             ]
         else:
-            keypoints0 = self._keypoint_coordinates(features_left.keypoints)
-            keypoints1 = self._keypoint_coordinates(features_right.keypoints)
+            keypoints0 = keypoints_to_numpy(features_left.keypoints)
+            keypoints1 = keypoints_to_numpy(features_right.keypoints)
             matches = [m for m in matches if 0 <= m.queryIdx < len(keypoints0) and 0 <= m.trainIdx < len(keypoints1)]
             matches_info.matches = list(matches)
 

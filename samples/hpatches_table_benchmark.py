@@ -12,9 +12,10 @@ sys.path.append(str(Path(__file__).parent.parent))  # noqa: E402
 from src.algorithms import (BACKEND_ALGORITHMS, OPENCV_MATCHERS_MODE,  # noqa: E402
                             get_compatible_descriptors, get_compatible_matchers)
 from src.feature_matcher import FeatureMatcherCV2  # noqa: E402
+
 from src.backend.model_paths import (  # noqa: E402
-    EXECUTORCH_DESCRIPTOR_MODELS, EXECUTORCH_DETECTOR_MODELS, EXECUTORCH_MATCHER_MODELS,
-    ONNX_DESCRIPTOR_MODELS, ONNX_DETECTOR_MODELS, ONNX_MATCHER_MODELS)
+    EXECUTORCH_DESCRIPTOR_MODELS, EXECUTORCH_DETECTOR_MODELS,
+    ONNX_DESCRIPTOR_MODELS, ONNX_DETECTOR_MODELS)
 
 from samples.utils import build_hpatches_benchmark_config, build_hpatches_feature_matcher_config  # noqa: E402
 from samples.hpatches_task import HPatchesTask  # noqa: E402
@@ -25,17 +26,29 @@ logging.basicConfig(level=logging.INFO, format='[ %(levelname)s ] %(message)s')
 logger = logging.getLogger("HPatchesTableBenchmark")
 
 
-def get_all_combinations():
+def get_all_combinations(methods=None, backends=None):
     combinations = []
-    backends = BACKEND_ALGORITHMS.keys()
+    methods = set(methods) if methods else None
+    backends_filter = set(backends) if backends else None
+    mixed_extractors = {'sift_lightglue', 'doghardnet_lightglue'}
 
-    for detector_backend, descriptor_backend, matcher_backend in product(backends, repeat=3):
+    for detector_backend, descriptor_backend, matcher_backend in product(BACKEND_ALGORITHMS.keys(), repeat=3):
         detectors = BACKEND_ALGORITHMS[detector_backend][0]
         for detector in sorted(detectors):
+            if methods is not None and detector not in methods:
+                continue
             descriptors = get_compatible_descriptors(detector, detector_backend, descriptor_backend)
             for descriptor in descriptors:
                 matchers = get_compatible_matchers(descriptor, descriptor_backend, matcher_backend)
                 for matcher in matchers:
+                    if backends_filter is not None:
+                        if detector in mixed_extractors:
+                            if detector_backend != 'torch' or descriptor_backend != 'torch' or \
+                                    matcher_backend not in backends_filter:
+                                continue
+                        elif not (detector_backend == descriptor_backend == matcher_backend
+                                  and matcher_backend in backends_filter):
+                            continue
                     combinations.append((detector, detector_backend, descriptor, descriptor_backend,
                                          matcher, matcher_backend))
     return combinations
@@ -43,22 +56,46 @@ def get_all_combinations():
 
 def configure_model_paths(args):
     model_path = args.modelpath or Path('models')
+    detector = args.detector
+    feature = detector.replace('_lightglue', '')
+    num_keypoints = args.num_keypoints
+    args.det_nfeatures = num_keypoints
+    args.des_nfeatures = num_keypoints
+    args.det_threshold = 0.0 if detector in ('sift_lightglue', 'doghardnet_lightglue') else -1e9
+    args.des_threshold = args.det_threshold
+    args.mat_normalize_keypoints = args.mat_backend != 'torch'
 
+    extractor_shapes = {
+        'disk_lightglue': (1, 3, 1024, 1024),
+        'superpoint_lightglue': (1, 3, 480, 640),
+        'aliked_lightglue': (1, 3, 640, 640),
+    }
     if args.det_backend == 'executorch':
-        args.det_et_model = model_path / EXECUTORCH_DETECTOR_MODELS[args.detector]
-    elif args.det_backend in {'opencv', 'onnx'} and args.detector in ONNX_DETECTOR_MODELS:
-        setattr(args, f'{args.detector}_model_path', model_path / ONNX_DETECTOR_MODELS[args.detector])
+        if detector in extractor_shapes:
+            args.det_et_model = model_path / f'{detector}_xnnpack.pte'
+            args.det_et_input_shape = extractor_shapes[detector]
+        else:
+            args.det_et_model = model_path / EXECUTORCH_DETECTOR_MODELS[detector]
+        args.det_et_num_keypoints = num_keypoints
+    elif args.det_backend in ('onnx', 'opencv') and detector in ONNX_DETECTOR_MODELS:
+        setattr(args, f'{feature}_model_path', model_path / ONNX_DETECTOR_MODELS[detector])
 
+    descriptor = args.descriptor
+    descriptor_feature = descriptor.removesuffix('_lightglue')
     if args.des_backend == 'executorch':
-        args.des_et_model = model_path / EXECUTORCH_DESCRIPTOR_MODELS[args.descriptor]
-    elif args.des_backend in {'opencv', 'onnx'} and args.descriptor in ONNX_DESCRIPTOR_MODELS:
-        setattr(args, f'{args.descriptor}_model_path', model_path / ONNX_DESCRIPTOR_MODELS[args.descriptor])
+        if descriptor in extractor_shapes:
+            args.des_et_model = model_path / f'{descriptor}_xnnpack.pte'
+        else:
+            args.des_et_model = model_path / EXECUTORCH_DESCRIPTOR_MODELS[descriptor]
+    elif args.des_backend in ('onnx', 'opencv') and descriptor in ONNX_DESCRIPTOR_MODELS:
+        setattr(args, f'{descriptor_feature}_model_path', model_path / ONNX_DESCRIPTOR_MODELS[descriptor])
 
     if args.mat_backend == 'executorch':
-        args.mat_et_model = model_path / EXECUTORCH_MATCHER_MODELS[args.descriptor]
-        args.mat_et_num_keypoints = 256
-    elif args.mat_backend in {'opencv', 'onnx'} and args.matcher == 'lightglue':
-        args.lightglue_model_path = model_path / ONNX_MATCHER_MODELS[args.descriptor]
+        args.mat_et_model = model_path / f'lightglue_{descriptor_feature}_k{num_keypoints}_xnnpack.pte'
+        args.mat_et_num_keypoints = num_keypoints
+    elif args.mat_backend in ('onnx', 'opencv') and args.matcher == 'lightglue':
+        suffix = 'opencv' if args.mat_backend == 'opencv' else f'k{num_keypoints}'
+        args.lightglue_model_path = model_path / f'lightglue_{descriptor_feature}_{suffix}.onnx'
 
 
 def load_existing_results(output_path):
@@ -144,7 +181,7 @@ def flatten_metrics(task_name, per_threshold):
 
 
 def table_benchmark(cli_args):
-    all_combinations = get_all_combinations()
+    all_combinations = get_all_combinations(cli_args.methods, cli_args.backends)
     if not all_combinations:
         logger.error("No combinations found in algorithms.py")
         return
@@ -221,7 +258,6 @@ def table_benchmark(cli_args):
                         scene_matching_data[scene_name][i] = {
                             'kp_ref': keypoints0, 'kp_tgt': keypoints1,
                             'matches': correspondences['matches'], 'H': target['H'],
-                            'scores': correspondences.get('scores'),
                             'ref_shape': scene_data['ref_shape'], 'tgt_shape': target['tgt_shape'],
                         }
 
@@ -284,6 +320,13 @@ def parse_args():
                         help='Batch size for processing images/scenes')
     parser.add_argument('--no-skip', action='store_true',
                         help='Recompute already existing combinations')
+    parser.add_argument('--methods', nargs='+', default=None,
+                        help='Detector/descriptor names to benchmark')
+    parser.add_argument('--backends', nargs='+', default=None,
+                        choices=['torch', 'onnx', 'opencv', 'executorch'],
+                        help='Backends to benchmark')
+    parser.add_argument('--num-keypoints', type=int, default=512,
+                        help='Number of features used by all pipelines')
 
     task_group = parser.add_argument_group('Task config')
     task_group.add_argument('-et', '--eval-thresholds', type=float, nargs='+', default=[5.0],
@@ -320,8 +363,6 @@ def parse_args():
                            help='Patch size for descriptor model')
 
     mat_group = parser.add_argument_group('Matcher config')
-    mat_group.add_argument('-mn', '--mat-nfeatures', type=int, default=None,
-                           help='Max number of matches for a combined pipeline')
     mat_group.add_argument('-mat_m', '--matcher_mode', type=str, default='simple',
                            choices=OPENCV_MATCHERS_MODE, help='Matching mode')
     mat_group.add_argument('-mr', '--mat-ratio', type=float, default=None,

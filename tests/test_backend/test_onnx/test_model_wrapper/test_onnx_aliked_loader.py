@@ -35,10 +35,10 @@ def test_load_default_path_success(mock_logger):
 
         assert model == mock_session_instance
         mock_logger.info.assert_any_call(
-            "Initializing aliked_onnx from models/aliked-n32-top2k-640.onnx (ONNX Runtime)"
+            "Initializing aliked_onnx from models/aliked_lightglue.onnx (ONNX Runtime)"
         )
         mock_inference_session.assert_called_once_with(
-            "models/aliked-n32-top2k-640.onnx",
+            "models/aliked_lightglue.onnx",
             sess_options="dummy_sess_options",
             providers=["CPUExecutionProvider"]
         )
