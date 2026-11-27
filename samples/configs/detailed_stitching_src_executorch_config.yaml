@@ -9,17 +9,26 @@
     descriptor: 'superpoint_lightglue'
     matcher: 'lightglue'
     sequential_matching: true
-    keypoints_num: 5000
     src_config:
       detector:
         backend: executorch
-        model_path: models/executorch/superpoint_lightglue_xnnpack_1x3x480x640.pte
+        executorch_model_path: models/superpoint_lightglue_xnnpack.pte
+        input_shape: [1, 3, 480, 640]
+        num_keypoints: 512
+        nfeatures: 512
+        threshold: -1.0e+9
       descriptor:
         backend: executorch
-        model_path: models/executorch/superpoint_lightglue_xnnpack_1x3x480x640.pte
+        executorch_model_path: models/superpoint_lightglue_xnnpack.pte
+        input_shape: [1, 3, 480, 640]
+        num_keypoints: 512
+        nfeatures: 512
+        threshold: -1.0e+9
       matcher:
         backend: executorch
-        model_path: models/executorch/lightglue_superpoint_k256_xnnpack_1x3x480x640.pte
+        executorch_model_path: models/lightglue_superpoint_k512_xnnpack.pte
+        num_keypoints: 512
+        normalize_keypoints: true
 
   processing_params:
     try_cuda: false
