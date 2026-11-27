@@ -37,7 +37,6 @@ def scale_and_orientation(features, num_keypoints):
     return scales, oris
 
 
-
 def lightglue_inputs(inputs):
     layers = {}
     for index in (0, 1):
