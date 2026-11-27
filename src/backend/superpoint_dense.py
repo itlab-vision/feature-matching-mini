@@ -21,7 +21,7 @@ def postprocess_superpoint_dense(outputs, original_size, input_size, num_keypoin
     scores = probabilities.permute(0, 2, 3, 1).reshape(1, coarse_height, coarse_width, 8, 8)
     scores = scores.permute(0, 1, 3, 2, 4).reshape(coarse_height * 8, coarse_width * 8)
 
-    keypoints, values = nms_topk(scores, num_keypoints, nms_radius)
+    keypoints, values = nms_topk(scores, min(num_keypoints, scores.numel()), nms_radius)
     descriptors = sample_descriptors(dense, keypoints / 8, coarse_height, coarse_width)
 
     original_height, original_width = original_size

@@ -1,5 +1,6 @@
 from unittest.mock import MagicMock, patch
 
+import numpy as np
 import pytest
 import torch
 
@@ -11,6 +12,7 @@ from src.backend.model_wrapper_base import ModelWrapper
 def wrapper():
     wrapper = D2NetExecuTorchModelWrapper("d2net_executorch", logger=MagicMock())
     wrapper._method = MagicMock()
+    wrapper._config["input_shape"] = (1, 3, 8, 8)
     return wrapper
 
 
@@ -30,7 +32,7 @@ class TestD2NetExecuTorchModelWrapperLoad:
 
 class TestD2NetExecuTorchModelWrapperCall:
     def test_call_executes_image_tensor(self, wrapper):
-        image = torch.zeros(1, 3, 4, 4).transpose(2, 3)
+        image = np.zeros((4, 4, 3), dtype=np.uint8)[:, ::-1]
         expected = (torch.ones(1, 4, 2, 2),)
         wrapper._method.execute.return_value = expected
 
@@ -39,10 +41,14 @@ class TestD2NetExecuTorchModelWrapperCall:
         executed = wrapper._method.execute.call_args.args[0][0]
         assert executed.device.type == "cpu"
         assert executed.is_contiguous()
-        assert result is expected
+        assert set(result) == {"keypoints", "descriptors", "scores"}
+        assert all(isinstance(value, np.ndarray) for value in result.values())
+        assert result["keypoints"].shape == (len(result["scores"]), 2)
+        assert len(result["descriptors"]) == len(result["scores"])
 
-    def test_call_accepts_direct_tensor(self, wrapper):
-        image = torch.zeros(1, 3, 4, 4)
+    def test_call_accepts_direct_image(self, wrapper):
+        image = np.zeros((4, 4, 3), dtype=np.uint8)
+        wrapper._method.execute.return_value = (torch.ones(1, 4, 2, 2),)
         wrapper.call(image)
         wrapper._method.execute.assert_called_once()
 
@@ -50,14 +56,14 @@ class TestD2NetExecuTorchModelWrapperCall:
         with pytest.raises(RuntimeError, match="load"):
             D2NetExecuTorchModelWrapper("d2net_executorch").call(torch.zeros(1))
 
-    def test_call_rejects_non_tensor(self, wrapper):
-        with pytest.raises(TypeError, match="torch.Tensor"):
+    def test_call_rejects_invalid_image(self, wrapper):
+        with pytest.raises(TypeError, match="NumPy image"):
             wrapper.call({"image": "image"})
 
     def test_call_logs_and_reraises_runtime_error(self, wrapper):
         wrapper._method.execute.side_effect = RuntimeError("inference failed")
         with pytest.raises(RuntimeError, match="inference failed"):
-            wrapper.call(torch.zeros(1, 3, 4, 4))
-        wrapper._logger.warning.assert_called_once_with(
-            "D2-Net ExecuTorch inference error: inference failed"
+            wrapper.call({"image": np.zeros((4, 4, 3), dtype=np.uint8)})
+        wrapper._logger.error.assert_called_once_with(
+            "D2-Net inference error: inference failed"
         )

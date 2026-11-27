@@ -1,3 +1,4 @@
+import numpy as np
 import pytest
 import torch
 from unittest.mock import MagicMock, patch
@@ -69,36 +70,26 @@ class TestSuperGlueTorchModelWrapper:
         assert result == {"model": mock_model}
 
     def test_call(self, wrapper, mock_model):
-        inputs = {
-            "keypoints0": torch.rand(1, 5, 2),
-            "keypoints1": torch.rand(1, 6, 2),
-            "descriptors0": torch.rand(1, 64, 5),
-            "descriptors1": torch.rand(1, 64, 6),
-            "scores0": torch.rand(1, 5),
-            "scores1": torch.rand(1, 6),
-            "image0": torch.rand(1, 1, 100, 100),
-            "image1": torch.rand(1, 1, 120, 120)
+        features = {
+            "keypoints": np.ones((3, 2), dtype=np.float32),
+            "descriptors": np.ones((3, 4), dtype=np.float32),
+            "scores": np.ones(3, dtype=np.float32),
+            "height": 8, "width": 10,
         }
-        matches = torch.tensor([[1, -1, 0, 3, -1]])
-        scores = torch.tensor([[0.9, 0.0, 0.8, 0.7, 0.0]])
         mock_model.return_value = {
-            "matches0": matches,
-            "matching_scores0": scores
+            "matches0": torch.tensor([[2, -1, 3]]),
+            "matching_scores0": torch.tensor([[0.75, 0.0, 0.5]]),
         }
 
-        result = wrapper.call(inputs)
+        result = wrapper.call({"features0": features, "features1": features})
 
-        mock_model.assert_called_once_with(inputs)
-        assert torch.equal(result["matches"], matches)
-        assert torch.equal(result["scores"], scores)
-        for key, value in inputs.items():
-            assert result[key] is value
+        data = mock_model.call_args.args[0]
+        assert data["descriptors0"].shape == (1, 4, 3)
+        assert data["image1"].shape == (1, 1, 8, 10)
+        np.testing.assert_array_equal(result["matches"], [[0, 2]])
+        np.testing.assert_array_equal(result["scores"], [0.75])
 
-    def test_call_error(self, wrapper, mock_model, mock_logger):
-        inputs = {"keypoints0": torch.rand(1, 5, 2)}
-        mock_model.side_effect = RuntimeError("inference failed")
-
-        with pytest.raises(RuntimeError, match="inference failed"):
-            wrapper.call(inputs)
-
-        mock_logger.error.assert_called_once_with("Super Glue inference error: inference failed")
+    def test_call_error(self, wrapper, mock_logger):
+        with pytest.raises(KeyError, match="features0"):
+            wrapper.call({})
+        mock_logger.error.assert_called_once()

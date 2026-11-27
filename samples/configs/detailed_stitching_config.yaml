@@ -1,5 +1,5 @@
 - stitcher_type: 'DetailedStitcher'
-  images_dir: '/mnt/d/PhotoBackup/Panoramas/Кафедра'
+  images_dir: 'test_panorama'
   out_file_name: 'panorama.jpg'
   try_cuda: true
   work_megapix: 0.6

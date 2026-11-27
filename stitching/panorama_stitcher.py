@@ -22,9 +22,6 @@ class PanoramaStitcher(ABC):
         if stitcher_type == 'OpenCVStitcher':
             from stitching.opencv_panorama_stitcher import OpenCVPanoramaStitcher
             return OpenCVPanoramaStitcher(logger, parameters)
-        elif stitcher_type == 'SuperPointLightGlueStitcher':
-            from stitching.superpoint_lightglue_panorama_sticher import SuperPointLightGlueStitcher
-            return SuperPointLightGlueStitcher(logger, parameters)
         elif stitcher_type == 'DetailedStitcher':
             from stitching.detailed_panorama_stitcher import DetailedPanoramaStitcher
             return DetailedPanoramaStitcher(logger, parameters)

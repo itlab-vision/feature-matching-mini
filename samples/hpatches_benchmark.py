@@ -84,6 +84,8 @@ def parser():
                            help='Patch size for descriptor model')
 
     mat_group = arg_parser.add_argument_group('Matcher config')
+    mat_group.add_argument('-mn', '--mat-nfeatures', type=int, default=None,
+                           help='Max number of matches for a combined pipeline')
     mat_group.add_argument('-matb', '--mat-backend', type=str, default=None,
                            help='Backend for matcher')
     mat_group.add_argument('-mat_m', '--matcher_mode', type=str, default='simple',
@@ -133,13 +135,6 @@ def main():
                 for i, target in data['targets'].items():
                     img_tgt = target['image']
                     H = target['H']
-
-                    ref_h, ref_w = img_ref.shape[:2]
-                    tgt_h, tgt_w = img_tgt.shape[:2]
-                    logger.info(f"Scene '{scene_name}', target {i}: loaded image size (WxH): "
-                                f"ref={ref_w}x{ref_h}, tgt={tgt_w}x{tgt_h}")
-                    logger.info(f"Scene '{scene_name}', target {i}: image size before feeding "
-                                f"to the algorithm (WxH): ref={ref_w}x{ref_h}, tgt={tgt_w}x{tgt_h}")
 
                     features_ref, features_tgt, correspondences = feature_matcher.match(img_ref, img_tgt)
                     if 'keypoints0' in correspondences and 'keypoints1' in correspondences:

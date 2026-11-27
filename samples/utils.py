@@ -113,6 +113,8 @@ def build_matcher_config(args):
         config['cross_check'] = args.mat_cross_check
     if args.mat_score_threshold is not None:
         config['score_threshold'] = args.mat_score_threshold
+    if getattr(args, 'mat_nfeatures', None) is not None:
+        config['nfeatures'] = args.mat_nfeatures
     if args.lightglue_model_path is not None:
         config['lightglue_model_path'] = args.lightglue_model_path
     if args.mat_normalize_keypoints:
@@ -216,6 +218,8 @@ def performance_tests_parser():
                            help='Patch size for descriptor model')
 
     mat_group = arg_parser.add_argument_group('Matcher config')
+    mat_group.add_argument('-mn', '--mat-nfeatures', type=int, default=None,
+                           help='Max number of matches for a combined pipeline')
     mat_group.add_argument('-matb', '--mat-backend', type=str, default=None,
                            help='Backend for matcher')
     mat_group.add_argument('-mat_m', '--matcher_mode', type=str, default='simple',
@@ -326,6 +330,8 @@ def build_hpatches_matcher_config(args):
         config['device'] = args.device
     if args.mat_backend is not None:
         config['backend'] = args.mat_backend
+    if getattr(args, 'mat_nfeatures', None) is not None:
+        config['nfeatures'] = args.mat_nfeatures
     if matcher_backend == 'opencv':
         config['mode'] = args.matcher_mode
     if args.mat_ratio is not None:

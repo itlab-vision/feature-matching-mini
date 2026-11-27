@@ -6,23 +6,22 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).parent.parent))  # noqa: E402
 
 from src.image_utils import read_image  # noqa: E402
-from samples.utils import build_feature_matcher_config, performance_tests_parser  # noqa: E402
 from src.algorithms import DNN_ALGORITHMS, TORCH_PIPELINES  # noqa: E402
 from src.detectors import Detector  # noqa: E402
 from src.descriptors import Descriptor  # noqa: E402
 from src.matchers import Matcher  # noqa: E402
-from samples.performance_profiler import PerformanceProfiler  # noqa: E402
-from src.tfeat_descriptor import TFeat  # noqa: E402, F401
-from src.hardnet_descriptor import HardNet  # noqa: E402, F401
-import src.backend.opencv.model_loader  # noqa: E402, F401
-import src.backend.opencv.inference_api  # noqa: E402, F401
-import src.backend.opencv.io_adapter  # noqa: E402, F401
-import src.backend.onnx.model_loader  # noqa: E402, F401
-import src.backend.onnx.inference_api  # noqa: E402, F401
-import src.backend.onnx.io_adapter  # noqa: E402, F401
+from src.dnn_descriptor import DNNDescriptor  # noqa: E402, F401
 from src.dnn_extractors import DNNFeatureExtractors  # noqa: E402, F401
 from src.dnn_matchers import DNNMatcher  # noqa: E402, F401
 from src.dnn_pipeline import DNNPipeline  # noqa: E402, F401
+import src.backend.opencv  # noqa: E402, F401
+import src.backend.onnx  # noqa: E402, F401
+import src.backend.torch  # noqa: E402, F401
+import src.backend.executorch  # noqa: E402, F401
+import src.backend.io_adapter  # noqa: E402, F401
+
+from samples.performance_profiler import PerformanceProfiler  # noqa: E402
+from samples.utils import build_feature_matcher_config, performance_tests_parser  # noqa: E402
 
 
 logging.basicConfig(level=logging.INFO, format='[ %(levelname)s ] %(message)s')

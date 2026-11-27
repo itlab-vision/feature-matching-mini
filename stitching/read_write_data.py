@@ -8,7 +8,8 @@ def read_images(logger, images_dir):
     logger.info(f'START: Read images from {images_dir}')
     imgs = []
     files = sorted(os.path.join(images_dir, f)
-                   for f in os.listdir(images_dir) if os.path.isfile(os.path.join(images_dir, f)))
+                   for f in os.listdir(images_dir)
+                   if not f.startswith('.') and os.path.isfile(os.path.join(images_dir, f)))
     logger.info(f'Available images: {files}')
     for file in files:
         logger.info(f'Read image {file}')
@@ -16,16 +17,18 @@ def read_images(logger, images_dir):
         if img is None:
             raise Exception(f'Error when reading image {file}')
         imgs.append(img)
+    if len(imgs) < 2:
+        raise ValueError(f'At least two input images are required in {images_dir}')
     logger.info('FINISH: Read images')
     return imgs
 
 
 def save_image(logger, image, filename):
     logger.info(f'START: Save image to {filename}')
-    if filename is not None:
-        cv2.imwrite(filename, image)
-    else:
+    if filename is None:
         raise ValueError('File name to save image is None')
+    if not cv2.imwrite(filename, image):
+        raise OSError(f'Could not save panorama to {filename}')
     logger.info('FINISH: Save image')
 
 

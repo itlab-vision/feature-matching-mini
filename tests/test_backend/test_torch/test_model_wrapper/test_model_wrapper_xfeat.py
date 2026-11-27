@@ -1,3 +1,4 @@
+import numpy as np
 import pytest
 import torch
 
@@ -83,67 +84,22 @@ class TestXFeatTorchModelWrapperLoad:
 
 
 class TestXFeatTorchModelWrapperCall:
-    def test_call_returns_dict(self, wrapper, model_output):
-        wrapper._model.detectAndCompute.return_value = [model_output]
+    def test_call_converts_image_and_returns_numpy_features(self, wrapper, model_output):
+        def infer(image, top_k):
+            assert not torch.is_grad_enabled()
+            assert image.shape == (1, 3, 8, 10)
+            assert top_k == 256
+            return [model_output]
 
-        result = wrapper.call({"image": torch.rand(1, 3, 120, 160)})
+        wrapper._model.detectAndCompute.side_effect = infer
+        result = wrapper.call({"image": np.zeros((8, 10, 3), dtype=np.uint8)})
 
-        assert isinstance(result, dict)
-        assert "keypoints" in result
-        assert "descriptors" in result
-        assert "scores" in result
+        assert set(result) == set(model_output)
+        for key, value in result.items():
+            np.testing.assert_array_equal(value, model_output[key].numpy())
 
-    def test_call_returns_model_outputs(self, wrapper, model_output):
-        wrapper._model.detectAndCompute.return_value = [model_output]
-
-        result = wrapper.call({"image": torch.rand(1, 3, 120, 160)})
-
-        assert result["keypoints"] is model_output["keypoints"]
-        assert result["descriptors"] is model_output["descriptors"]
-        assert result["scores"] is model_output["scores"]
-
-    def test_call_invokes_detect_and_compute(self, wrapper, model_output):
-        image = torch.rand(1, 3, 120, 160)
-        wrapper._model.detectAndCompute.return_value = [model_output]
-
-        wrapper.call({"image": image})
-
-        wrapper._model.detectAndCompute.assert_called_once_with(image, top_k=wrapper._nfeatures)
-
-    def test_call_uses_configured_nfeatures(self, wrapper, model_output):
-        wrapper._nfeatures = 512
-        wrapper._model.detectAndCompute.return_value = [model_output]
-
-        wrapper.call({"image": torch.rand(1, 3, 120, 160)})
-
-        wrapper._model.detectAndCompute.assert_called_once_with(
-            wrapper._model.detectAndCompute.call_args.args[0],
-            top_k=512)
-
-    def test_call_runs_without_gradients(self, wrapper, model_output):
-        wrapper._model.detectAndCompute.return_value = [model_output]
-        image = torch.rand(1, 3, 120, 160)
-
-        with patch("src.backend.torch.model_wrapper.xfeat.torch.no_grad") as mock_no_grad:
-            mock_no_grad.return_value.__enter__ = MagicMock(return_value=None)
-            mock_no_grad.return_value.__exit__ = MagicMock(return_value=False)
-
-            wrapper.call({"image": image})
-
-        mock_no_grad.assert_called_once_with()
-
-    def test_call_logs_warning_on_error(self, wrapper):
-        error = RuntimeError("inference failed")
-        wrapper._model.detectAndCompute.side_effect = error
-
-        with pytest.raises(RuntimeError, match="inference failed"):
-            wrapper.call({"image": torch.rand(1, 3, 120, 160)})
-
-        wrapper._logger.warning.assert_called_once_with("XFeat inference error: inference failed")
-
-    def test_call_reraises_model_error(self, wrapper):
-        error = ValueError("invalid image")
-        wrapper._model.detectAndCompute.side_effect = error
-
-        with pytest.raises(ValueError, match="invalid image"):
-            wrapper.call({"image": torch.rand(1, 3, 120, 160)})
+    def test_call_logs_and_reraises_model_error(self, wrapper):
+        wrapper._model.detectAndCompute.side_effect = RuntimeError("boom")
+        with pytest.raises(RuntimeError, match="boom"):
+            wrapper.call({"image": np.zeros((8, 10, 3), dtype=np.uint8)})
+        wrapper._logger.warning.assert_called_once_with("XFeat inference error: boom")

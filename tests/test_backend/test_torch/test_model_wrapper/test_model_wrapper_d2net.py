@@ -1,5 +1,6 @@
 from unittest.mock import MagicMock, patch
 
+import numpy as np
 import pytest
 import torch
 
@@ -99,71 +100,25 @@ class TestD2NetTorchModelWrapperLoad:
 
 class TestD2NetTorchModelWrapperCall:
     @patch("src.backend.torch.model_wrapper.d2net.process_multiscale")
-    def test_call_returns_expected_keys(self, mock_process, wrapper):
-        mock_process.return_value = (
-            torch.tensor([[10.0, 20.0]]),
-            torch.tensor([0.9]),
-            torch.ones((1, 512)),
-        )
-        wrapper._model = MagicMock()
-        result = wrapper.call({"image": torch.zeros((3, 240, 320)).numpy()})
+    def test_call_preprocesses_image_and_returns_numpy_features(self, process, wrapper):
+        process.return_value = (np.array([[1, 2, 3]]), np.array([0.8]), np.ones((1, 4)))
 
-        assert set(result) == {"keypoints", "descriptors", "scores"}
-        assert result["keypoints"] is mock_process.return_value[0]
-        assert result["scores"] is mock_process.return_value[1]
-        assert result["descriptors"] is mock_process.return_value[2]
+        result = wrapper.call({"image": np.zeros((8, 10, 3), dtype=np.uint8)})
 
-    @patch("src.backend.torch.model_wrapper.d2net.process_multiscale")
-    def test_call_uses_no_grad(self, mock_process, wrapper):
-        mock_process.return_value = (
-            torch.empty((0, 2)),
-            torch.empty((0,)),
-            torch.empty((0, 512)),
-        )
-        wrapper._model = MagicMock()
+        tensor, model = process.call_args.args
+        assert tensor.shape == (1, 3, 8, 10)
+        assert model is wrapper._model
+        assert process.call_args.kwargs == {"scales": [1]}
+        np.testing.assert_array_equal(result["keypoints"], [[2, 1]])
+        np.testing.assert_array_equal(result["descriptors"], np.ones((1, 4)))
+        np.testing.assert_array_equal(result["scores"], [0.8])
 
-        with patch("src.backend.torch.model_wrapper.d2net.torch.no_grad") as no_grad:
-            no_grad.return_value.__enter__ = MagicMock()
-            no_grad.return_value.__exit__ = MagicMock(return_value=False)
+    @patch("src.backend.torch.model_wrapper.d2net.process_multiscale", side_effect=RuntimeError("boom"))
+    def test_call_logs_and_reraises_inference_error(self, process, wrapper, mock_logger):
+        with pytest.raises(RuntimeError, match="boom"):
+            wrapper.call({"image": np.zeros((8, 10, 3), dtype=np.uint8)})
+        mock_logger.error.assert_called_once_with("D2-Net inference error: boom")
 
-            wrapper.call({"image": torch.zeros((3, 32, 32)).numpy()})
-
-            no_grad.assert_called_once()
-
-    @patch("src.backend.torch.model_wrapper.d2net.process_multiscale")
-    def test_call_passes_image_model_and_scales(self, mock_process, wrapper):
-        mock_process.return_value = (
-            torch.empty((0, 2)),
-            torch.empty((0,)),
-            torch.empty((0, 512)),
-        )
-        wrapper._model = MagicMock()
-        image = torch.zeros((3, 64, 64)).numpy()
-
-        wrapper.call({"image": image})
-
-        args = mock_process.call_args.args
-        assert torch.is_tensor(args[0])
-        assert args[0].shape == (1, 3, 64, 64)
-        assert args[1] is wrapper._model
-        assert mock_process.call_args.kwargs["scales"] == [1]
-        assert args[0].device == wrapper._device
-
-    @patch("src.backend.torch.model_wrapper.d2net.process_multiscale")
-    def test_call_logs_and_reraises_inference_error(self, mock_process, wrapper, mock_logger):
-        error = RuntimeError("inference failed")
-        mock_process.side_effect = error
-        wrapper._model = MagicMock()
-
-        with pytest.raises(RuntimeError, match="inference failed") as exc:
-            wrapper.call({"image": torch.zeros((3, 32, 32)).numpy()})
-
-        assert exc.value is error
-        mock_logger.error.assert_called_once_with("D2-Net inference error: inference failed")
-
-    def test_call_missing_image_reraises_error(self, wrapper, mock_logger):
-        wrapper._model = MagicMock()
-        with pytest.raises((TypeError, AttributeError)):
+    def test_call_missing_image_reraises_error(self, wrapper):
+        with pytest.raises(KeyError, match="image"):
             wrapper.call({})
-
-        mock_logger.error.assert_called_once()

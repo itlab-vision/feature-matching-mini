@@ -2,31 +2,14 @@ from pathlib import Path
 
 try:
     from executorch.runtime import Runtime, Verification
-except ModuleNotFoundError:
+except ModuleNotFoundError as error:
+    if error.name != 'executorch':
+        raise
     Runtime = None
     Verification = None
 
+
 from src.backend.model_wrapper_base import ModelWrapper
-
-
-EXECUTORCH_DETECTOR_MODELS = {
-    'd2net': 'd2net_xnnpack_1x3x480x640.pte',
-    'disk_lightglue': 'disk_lightglue_xnnpack_1x3x480x640.pte',
-    'superpoint_lightglue': 'superpoint_lightglue_xnnpack_1x3x480x640.pte',
-    'xfeat': 'xfeat_xnnpack_1x3x480x640.pte',
-}
-EXECUTORCH_DESCRIPTOR_MODELS = {
-    'd2net': 'd2net_xnnpack_1x3x480x640.pte',
-    'disk_lightglue': 'disk_lightglue_xnnpack_1x3x480x640.pte',
-    'superpoint_lightglue': 'superpoint_lightglue_xnnpack_1x3x480x640.pte',
-    'xfeat': 'xfeat_xnnpack_1x3x480x640.pte',
-    'hardnet': 'hardnet_xnnpack_1x1x32x32.pte',
-    'tfeat': 'tfeat_xnnpack_1x1x32x32.pte',
-}
-EXECUTORCH_MATCHER_MODELS = {
-    'disk_lightglue': 'lightglue_disk_k256_xnnpack_1x3x480x640.pte',
-    'superpoint_lightglue': 'lightglue_superpoint_k256_xnnpack_1x3x480x640.pte',
-}
 
 
 @ModelWrapper.register("executorch")

@@ -13,11 +13,10 @@ from src.algorithms import (BACKEND_ALGORITHMS, OPENCV_MATCHERS_MODE,  # noqa: E
                             get_compatible_descriptors, get_compatible_matchers)
 from src.feature_matcher import FeatureMatcherCV2  # noqa: E402
 
-import src.backend.opencv.inference_api  # noqa: E402, F401
-import src.backend.opencv.io_adapter  # noqa: E402, F401
-import src.backend.onnx.model_loader  # noqa: E402, F401
-import src.backend.onnx.inference_api  # noqa: E402, F401
-import src.backend.onnx.io_adapter  # noqa: E402, F401
+from src.backend.model_paths import (  # noqa: E402
+    EXECUTORCH_DESCRIPTOR_MODELS, EXECUTORCH_DETECTOR_MODELS,
+    ONNX_DESCRIPTOR_MODELS, ONNX_DETECTOR_MODELS)
+
 from samples.utils import build_hpatches_benchmark_config, build_hpatches_feature_matcher_config  # noqa: E402
 from samples.hpatches_task import HPatchesTask  # noqa: E402
 from samples.hpatches_data_manager import HPatchesDataManager  # noqa: E402
@@ -66,29 +65,37 @@ def configure_model_paths(args):
     args.des_threshold = args.det_threshold
     args.mat_normalize_keypoints = args.mat_backend != 'torch'
 
+    extractor_shapes = {
+        'disk_lightglue': (1, 3, 1024, 1024),
+        'superpoint_lightglue': (1, 3, 480, 640),
+        'aliked_lightglue': (1, 3, 640, 640),
+    }
     if args.det_backend == 'executorch':
-        args.det_et_model = model_path / f'{detector}_xnnpack.pte'
-        args.det_et_input_shape = {
-            'disk_lightglue': (1, 3, 1024, 1024),
-            'superpoint_lightglue': (1, 3, 480, 640),
-            'aliked_lightglue': (1, 3, 640, 640),
-        }[detector]
+        if detector in extractor_shapes:
+            args.det_et_model = model_path / f'{detector}_xnnpack.pte'
+            args.det_et_input_shape = extractor_shapes[detector]
+        else:
+            args.det_et_model = model_path / EXECUTORCH_DETECTOR_MODELS[detector]
         args.det_et_num_keypoints = num_keypoints
-    elif args.det_backend in ('onnx', 'opencv'):
-        model_names = {
-            'disk_lightglue': 'disk_1024.onnx',
-            'aliked_lightglue': 'aliked_lightglue.onnx',
-            'superpoint_lightglue': 'superpoint_lightglue.onnx',
-        }
-        setattr(args, f'{feature}_model_path', model_path / model_names[detector])
+    elif args.det_backend in ('onnx', 'opencv') and detector in ONNX_DETECTOR_MODELS:
+        setattr(args, f'{feature}_model_path', model_path / ONNX_DETECTOR_MODELS[detector])
+
+    descriptor = args.descriptor
+    descriptor_feature = descriptor.removesuffix('_lightglue')
+    if args.des_backend == 'executorch':
+        if descriptor in extractor_shapes:
+            args.des_et_model = model_path / f'{descriptor}_xnnpack.pte'
+        else:
+            args.des_et_model = model_path / EXECUTORCH_DESCRIPTOR_MODELS[descriptor]
+    elif args.des_backend in ('onnx', 'opencv') and descriptor in ONNX_DESCRIPTOR_MODELS:
+        setattr(args, f'{descriptor_feature}_model_path', model_path / ONNX_DESCRIPTOR_MODELS[descriptor])
 
     if args.mat_backend == 'executorch':
-        args.mat_et_model = model_path / f'lightglue_{feature}_k{num_keypoints}_xnnpack.pte'
+        args.mat_et_model = model_path / f'lightglue_{descriptor_feature}_k{num_keypoints}_xnnpack.pte'
         args.mat_et_num_keypoints = num_keypoints
     elif args.mat_backend in ('onnx', 'opencv') and args.matcher == 'lightglue':
-        model_name = f'lightglue_{feature}_opencv.onnx' if args.mat_backend == 'opencv' \
-            else f'lightglue_{feature}_k{num_keypoints}.onnx'
-        args.lightglue_model_path = model_path / model_name
+        suffix = 'opencv' if args.mat_backend == 'opencv' else f'k{num_keypoints}'
+        args.lightglue_model_path = model_path / f'lightglue_{descriptor_feature}_{suffix}.onnx'
 
 
 def load_existing_results(output_path):

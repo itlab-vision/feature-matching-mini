@@ -55,8 +55,11 @@ def component_config(name, component_index):
         config['threshold'] = 0.0
     if name == 'disk':
         config['disk_model_path'] = str(MODELS_DIR / 'disk_1024.onnx')
+        config['input_shape'] = (1, 3, 384, 384)
     if name == 'aliked':
         config['aliked_model_path'] = str(MODELS_DIR / 'aliked_lightglue.onnx')
+    if name == 'roma' and component_index == 2:
+        config.update(coarse_res=224, upsample_res=(280, 392))
     if component_index == 2 and config['backend'] == 'opencv':
         config['mode'] = 'simple'
     return config
@@ -77,7 +80,13 @@ def test_all_registered_methods_are_covered():
 
 @pytest.mark.parametrize('detector, descriptor, matcher', METHOD_CASES,
                          ids=[f'{detector}-{descriptor}-{matcher}' for detector, descriptor, matcher in METHOD_CASES])
-def test_method_runs_in_panorama_pipeline(detector, descriptor, matcher):
+def test_method_runs_in_panorama_pipeline(detector, descriptor, matcher, monkeypatch):
+    if detector == 'disk_lightglue':
+        from thirdparty.lightglue.lightglue import DISK
+
+        # Keep the integration test within the memory budget of CPU-only runners.
+        monkeypatch.setitem(DISK.preprocess_conf, 'resize', 384)
+
     logger = MagicMock(spec=logging.Logger)
     parameters = {
         'detector': detector,

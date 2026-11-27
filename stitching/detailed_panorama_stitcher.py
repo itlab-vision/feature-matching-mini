@@ -4,8 +4,9 @@ import time
 from pathlib import Path
 
 sys.path.append(str(Path(__file__).resolve().parents[1]))
-from stitching.panorama_utils.matchers import MatcherWrapper  # noqa: E402
-from stitching.panorama_utils.feature_extractor import FeatureExtractor  # noqa: E402
+from stitching.panorama_utils.matchers import MatcherWrapper, PipelineMatcher  # noqa: E402
+from stitching.panorama_utils.feature_extractor import FeatureExtractor, PipelineFeatureExtractor  # noqa: E402
+from stitching.panorama_utils.utils import src_features_to_image_features  # noqa: E402
 from stitching.panorama_utils.wave_corrector import WaveCorrector  # noqa: E402
 from stitching.panorama_utils.homography_estimator import HomographyEstimator  # noqa: E402
 from stitching.panorama_utils.image_transformer import ImageTransformer  # noqa: E402
@@ -35,6 +36,8 @@ class DetailedPanoramaStitcher(PanoramaStitcher):
 
     def _get_feature_extractor(self):
         name = self.parameters.get('features', 'pipeline')
+        if 'detector' in self.parameters or 'descriptor' in self.parameters:
+            name = 'pipeline'
         self.logger.info(f'Create feature extractor: {name}')
         self.features = FeatureExtractor.create(name, self.parameters, self.logger)
 
@@ -105,14 +108,23 @@ class DetailedPanoramaStitcher(PanoramaStitcher):
         images_for_features, images_scaling = self.transformer.transform(images)
         t_stage = self._measure_stage('transform images', t_stage)
         self.logger.info(f'Stitch: extract features ({self.parameters.get("features", "pipeline")})')
-        features = [self._get_features_from_image(image) for image in images_for_features]
+        source_features = None
+        if isinstance(self.features, PipelineFeatureExtractor) and isinstance(self.matcher, PipelineMatcher):
+            source_features = [self.features.extract_src(image) for image in images_for_features]
+            features = [src_features_to_image_features(data, image)
+                        for data, image in zip(source_features, images_for_features)]
+        else:
+            features = [self._get_features_from_image(image) for image in images_for_features]
+        for i, item in enumerate(features):
+            item.img_idx = i
         t_stage = self._measure_stage('extract features', t_stage)
-        if hasattr(self.matcher, 'set_images'):
-            self.matcher.set_images(images_for_features)
-        self.logger.info(f'Stitch: match features ({self.parameters["matcher"]})')
+        if isinstance(self.matcher, PipelineMatcher):
+            descriptor = self.features.descriptor if isinstance(self.features, PipelineFeatureExtractor) else None
+            self.matcher.set_images(images_for_features, source_features, descriptor)
+        self.logger.info(f'Stitch: match features ({self.parameters.get("matcher", "pipeline")})')
         pairs = self._match_features(features)
         t_stage = self._measure_stage('match features', t_stage)
-        images_scaling, images, full_img_sizes = self.subset_selector.select(
+        features, pairs, images_scaling, images, full_img_sizes = self.subset_selector.select(
             features, pairs, images_scaling, images, self.transformer.full_img_sizes)
         t_stage = self._measure_stage('select subset', t_stage)
         self.logger.info(f'Stitch: estimate homographies ({self.parameters["estimator"]})')

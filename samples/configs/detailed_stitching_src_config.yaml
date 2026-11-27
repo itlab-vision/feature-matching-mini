@@ -1,6 +1,6 @@
 - stitching_params:
     stitcher_type: 'DetailedStitcher'
-    images_dir: 'test_panorama/test_panorama1-1'
+    images_dir: 'test_panorama'
     out_file_name: 'panorama_src_aliked.jpg'
     report_file_name: 'stitching_report.yaml'
 
